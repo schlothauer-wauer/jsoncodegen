@@ -6,12 +6,90 @@ apply plugin: 'java'
 
 sourceCompatibility = 1.8
 
+def mainClass='de.lisaplus.atlas.DoCodeGen'
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile group: 'com.beust', name: 'jcommander', version: '1.7'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    compile group: 'com.beust', name: 'jcommander', version: '1.69'
     compile 'org.codehaus.groovy:groovy-all:2.3.11'
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
+
+clean {
+    delete "${buildDir}/release"
+}
+
+task dependenciesToLibDir(type: Copy) {
+    into "$buildDir/release/lib"
+    from configurations.runtime
+}
+
+task buildRelease (type: Copy) {
+    into "${buildDir}/release/lib"
+    from "${buildDir}/libs"
+
+    copy {
+        from "${project.rootDir}/src/main/resources/bin"
+        into "${buildDir}/release"
+    }
+    copy {
+        from "${project.rootDir}/src/main/resources/conf"
+        into "${buildDir}/release/conf"
+    }
+}
+
+task myRun (type: JavaExec, dependsOn: classes){
+    if(project.hasProperty('myArgs')){
+        args(myArgs.split(','))
+    }
+    if (project.hasProperty('DEBUG')) {
+        jvmArgs '-Xdebug',
+                '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=9009'
+    }
+    main = mainClass
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+dependenciesToLibDir.dependsOn jar
+buildRelease.dependsOn dependenciesToLibDir
+
+
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration_test/java')
+        }
+        /* not needed this time
+        resources.srcDir file('src/integration-test/resources')
+        */
+    }
+}
+
+task integrationTest(type: Test) {
+    doFirst {
+        // that's the place to init integration tests
+    }
+
+    doLast {
+        // that's the place to tidy up test integration environment
+    }
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+
