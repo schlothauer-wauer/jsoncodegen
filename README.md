@@ -13,4 +13,7 @@ gradle buildRelease
 
 # run program without any arguments from project
 gradle myRun
+
+# run program with arguments ... opens test schema
+gradle myRun -PmyArgs="-m,src/test/resources/schemas/ProcessDataEvent.json"
 ```
