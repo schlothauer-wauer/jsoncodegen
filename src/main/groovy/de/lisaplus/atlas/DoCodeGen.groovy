@@ -2,6 +2,7 @@ package de.lisaplus.atlas
 
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
+import groovy.json.JsonSlurper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -36,6 +37,10 @@ class DoCodeGen {
         else {
             log.info("use model file: ${model}")
         }
+
+        def jsonSlurper = new JsonSlurper()
+        def objectModel = jsonSlurper.parse(modelFile)
+        print objectModel
     }
 
     private static final Logger log=LoggerFactory.getLogger(DoCodeGen.class);
