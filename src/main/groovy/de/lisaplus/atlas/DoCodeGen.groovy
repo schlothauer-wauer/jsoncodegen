@@ -3,6 +3,8 @@ package de.lisaplus.atlas
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import de.lisaplus.atlas.model.Model
+import de.lisaplus.atlas.model.Property
+import de.lisaplus.atlas.model.PropertyType
 import de.lisaplus.atlas.model.Type
 import groovy.json.JsonSlurper
 import org.slf4j.Logger
@@ -47,7 +49,7 @@ class DoCodeGen {
         }
         Model dataModel = buildModel(modelFile)
         // TODO start CodeGen
-        dataModel.debugPrint()
+        println dataModel
     }
 
     private Model buildModel(File modelFile) {
@@ -89,8 +91,8 @@ class DoCodeGen {
         Type newType = new Type()
         newType.name = typeName
         newType.description = strFromMap(objectModel,'description')
-        // TODO set properties
-        // TODO set required properties
+        newType.properties = propsFromMap(objectModel)
+        newType.requiredProps=listFromMap(ojbectModel,'required')
         model.types.add(newType)
         return model
     }
@@ -102,6 +104,53 @@ class DoCodeGen {
     private Model modelFromMultiTypeSchema(def objectModel) {
         Model model = initModel(objectModel)
         return null
+    }
+
+    private List listFromMap(def map,String key) {
+        def listObj = map[key]
+        if (!listObj) {
+            return []
+        }
+        else {
+            return listObj
+        }
+
+    }
+
+    private List propsFromMap(def map) {
+        def propList = map['properties']
+        if (!propList) return []
+        def newPropsList = []
+        propList.each { typeName,propMap ->
+            def newProp = new Property()
+            newProp.name = typeName
+            newProp.description = strFromMap(propMap,'description')
+            setTypeFromPropMap(propMap,newProp)
+            newPropsList.add(newProp)
+        }
+        return newPropsList
+    }
+
+    private void setTypeFromPropMap(def propMap, def newType) {
+        def typeStr = strFromMap(propMap,'type')
+        if (!typeStr) throw new Exception("unknown property type: ${propMap}, ${newType}")
+        switch (typeStr) {
+            case 'integer':
+                // TODO
+                break
+            case 'number':
+                // TODO
+                break
+            case 'string':
+                // TODO
+                break
+            case 'boolean':
+                // TODO
+                break
+            default:
+                throw new Exception ("unknown type: ${typeStr}, ${propMap}")
+                // TODO
+        }
     }
 
     private String strFromMap(def map,String key,String defValue=null) {

@@ -18,8 +18,8 @@ class Model {
      */
     def requiredTypes=[]
 
-    def debugPrint() {
-        println ToStringBuilder.reflectionToString(this);
+    String toString() {
+        return ToStringBuilder.reflectionToString(this);
     }
 }
 
@@ -41,6 +41,10 @@ class Type {
      *  List of required properties, String list with property names
      */
     def requiredProps=[];
+
+    String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
 }
 
 enum PropertyType {
@@ -58,6 +62,10 @@ class Property {
     def name
     PropertyType type
     def format
+
+    String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
 }
 
 class NumProperty extends Property {
