@@ -10,8 +10,8 @@ class Model {
      * defines what format string for schema type string is mapped to what PropertyType
      */
     static def FORMAT_TYPE_MAPPING = {
-        date : new PropertyTypeCont(PropertyType.t_date)
-        date_time : new PropertyTypeCont(PropertyType.t_date_time)
+        date : new DateType()
+        date_time : new DateTimeType()
     }
 
     def title
@@ -19,12 +19,12 @@ class Model {
     /**
      * List of type definitions
      */
-    def types=[]
+    List<Type> types=[]
 
     /**
      * List of required types
      */
-    def requiredTypes=[]
+    List<String> requiredTypes=[]
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);
@@ -42,67 +42,27 @@ class Type {
     /**
      * List of properties, type of PropertyType
      */
-    def properties=[]
+    List<Property> properties=[]
     def description
 
     /**
      *  List of required properties, String list with property names
      */
-    def requiredProps=[];
+    List<String> requiredProps=[];
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
-}
-
-/**
- * simple wrapper around the enum ...
- * is needed because it seems that enums are not castable to objects
- */
-class PropertyTypeCont {
-    PropertyType type;
-
-    public PropertyTypeCont(PropertyType t) {
-        this.type = t;
-    }
-}
-
-/**
- * Defined model property types
- */
-enum PropertyType {
-    t_int,
-    t_number,
-    t_string,
-    t_key,
-    t_boolean,
-    t_date,
-    t_date_time,
-    t_complex,
-    t_array
 }
 
 class Property {
     def description
     def name
     def format
-    PropertyType type
-    Type reference
+    BaseType type
+    boolean isArray=false
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
-}
-
-class NumProperty extends Property {
-    def max
-    def exclusiveMax
-    def min
-    def exclusiveMin
-}
-
-class StringProperty extends Property {
-    def maxLength
-    def minLength
-    def pattern
 }
