@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameter
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Property
 import de.lisaplus.atlas.model.PropertyType
+import de.lisaplus.atlas.model.PropertyTypeCont
 import de.lisaplus.atlas.model.Type
 import groovy.json.JsonSlurper
 import org.slf4j.Logger
@@ -131,25 +132,61 @@ class DoCodeGen {
         return newPropsList
     }
 
-    private void setTypeFromPropMap(def propMap, def newType) {
+    private void setTypeFromPropMap(def propMap, Property newProp) {
         def typeStr = strFromMap(propMap,'type')
-        if (!typeStr) throw new Exception("unknown property type: ${propMap}, ${newType}")
+        if (!typeStr) {
+            // if there is no type maybe a reference is given
+            def refStr = strFromMap(propMap,'$ref')
+            if (!refStr) {
+                strFromMap(propMap,'type')
+                def errorMsg = "unknown property type: ${propMap}, ${newProp}"
+                log.error(errorMsg)
+                throw new Exception(errorMsg)
+            }
+            else {
+                newProp.type = PropertyType.t_complex
+                // TODO initialize from reference
+            }
+        }
         switch (typeStr) {
             case 'integer':
-                // TODO
+                newProp.type = PropertyType.t_int
                 break
             case 'number':
-                // TODO
+                newProp.type = PropertyType.t_number
                 break
             case 'string':
-                // TODO
+                def formatStr = strFromMap(propMap,'format')
+                if (!formatStr) {
+                    newProp.type = PropertyType.t_string
+                }
+                else {
+                    def mappedTypeCont = Model.FORMAT_TYPE_MAPPING[formatStr]
+                    if (!mappedType) {
+                        def errorMsg = "unsupported property format: ${formatStr}"
+                        log.error (errorMsg)
+                        /*
+                        maybe it's not needed to throw an exception but ... fail first
+                         */
+                        throw new Exception(errorMsg)
+                    }
+                    else {
+                        newProp.type = mappedTypeCont.type
+                    }
+                }
                 break
             case 'boolean':
-                // TODO
+                newProp.type = PropertyType.t_boolean
                 break
+            case 'array':
+                // can be an inline declaration or a separate type
+                newProp.type = PropertyType.t_array
+                break
+            // TODO - References
             default:
-                throw new Exception ("unknown type: ${typeStr}, ${propMap}")
-                // TODO
+                def errorMsg = "unknown type: ${typeStr}, ${propMap}"
+                log.error(errorMsg)
+                throw new Exception (errorMsg)
         }
     }
 

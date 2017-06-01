@@ -6,6 +6,14 @@ import org.apache.commons.lang3.builder.ToStringBuilder
  * Created by eiko on 31.05.17.
  */
 class Model {
+    /**
+     * defines what format string for schema type string is mapped to what PropertyType
+     */
+    static def FORMAT_TYPE_MAPPING = {
+        date : new PropertyTypeCont(PropertyType.t_date)
+        date_time : new PropertyTypeCont(PropertyType.t_date_time)
+    }
+
     def title
     def description
     /**
@@ -47,21 +55,39 @@ class Type {
     }
 }
 
+/**
+ * simple wrapper around the enum ...
+ * is needed because it seems that enums are not castable to objects
+ */
+class PropertyTypeCont {
+    PropertyType type;
+
+    public PropertyTypeCont(PropertyType t) {
+        this.type = t;
+    }
+}
+
+/**
+ * Defined model property types
+ */
 enum PropertyType {
     t_int,
+    t_number,
     t_string,
     t_key,
     t_boolean,
     t_date,
     t_date_time,
+    t_complex,
     t_array
 }
 
 class Property {
     def description
     def name
-    PropertyType type
     def format
+    PropertyType type
+    Type reference
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);

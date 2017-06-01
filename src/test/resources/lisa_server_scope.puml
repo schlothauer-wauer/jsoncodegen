@@ -1,0 +1,88 @@
+@startuml
+!define clBase #287428
+!define clInst #fff7a2
+!define clData #b2f2f6
+!define clExt #f6d5b2
+
+skinParam usecase {
+ArrowColor #767676
+ArrowFontColor #767676
+ArrowFontName Lucida Sans
+ArrowFontSize 10
+BorderColor #606060
+InterfaceBorderColor #767676
+}
+
+title Requirements LISA+ server reimplementation
+
+(<font color=white>LISA+ Server) as server clBase
+(Insallation\nscenarios) as install clInst
+(Data) as data clData
+(Extension) as ext clExt
+
+(Cloud) as cloud clInst
+(How many users) as place clInst
+(Operating\nsystem) as os clInst
+(Single\nPC) as single clInst
+(Network\ninstall) as netw clInst
+(Without\ninternet) as woinet1 clInst
+(With\ninternet) as winet1 clInst
+(How to\nmaintain) as maintenace clInst
+(How to\ninstall) as howToInstall clInst
+(Linux) as linux clInst
+(Windows) as windows clInst
+
+
+(User\nManagement) as user clData
+(Statistic\ndata) as statistic clData
+(Project\ndata) as project clData
+(LISA+\ndata) as lisa clData
+(Use case) as data_use clData
+(Full\nchange log) as change clData
+(Documents) as documents clData
+(Versioning) as version clData
+(Check-In\nCheck-Out) as checkin clData
+(Meta data) as meta clData
+(Topological\ndata) as topo clData
+(Multi\ndomain\nmodel) as domain clData
+
+(Dongle) as dongle clExt
+(Customizable) as custom clExt
+(Extra\nalgorithms) as algorithms clExt
+
+ext -- dongle
+ext -- algorithms
+ext -- custom
+
+meta -- project
+topo -- project
+version -- change
+documents -down- data
+change -right- data
+domain -- data
+data_use -- user
+data_use -- statistic
+data_use -left- project
+data_use -- lisa
+lisa -- checkin
+project -- checkin
+
+data -- data_use
+
+netw -- winet1
+netw -- woinet1
+winet1 -- single
+single -- woinet1
+single - place
+place -- netw
+install -- cloud
+maintenace -- install
+howToInstall -- install
+place -down-- install
+linux -- os
+windows -- os
+os -left- install
+install -down-- server
+data -right-- server
+ext -left- server
+@enduml
