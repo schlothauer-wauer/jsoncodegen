@@ -15,24 +15,16 @@
           "$ref": "#/definitions/uri"
         },
         "default_icon": {
-          "anyOf": [
-            {
-              "description": "FIXME: String form is deprecated.",
-              "type": "string"
+          "description": "Icon for the main toolbar.",
+          "type": "object",
+          "properties": {
+            "19": {
+              "$ref": "#/definitions/icon"
             },
-            {
-              "description": "Icon for the main toolbar.",
-              "type": "object",
-              "properties": {
-                "19": {
-                  "$ref": "#/definitions/icon"
-                },
-                "38": {
-                  "$ref": "#/definitions/icon"
-                }
-              }
+            "38": {
+              "$ref": "#/definitions/icon"
             }
-          ]
+          }
         }
       }
     },

@@ -1,7 +1,14 @@
 package de.lisaplus.atlas.builder
 
+import de.lisaplus.atlas.model.BaseType
+import de.lisaplus.atlas.model.BooleanType
+import de.lisaplus.atlas.model.ComplexType
+import de.lisaplus.atlas.model.IntType
 import de.lisaplus.atlas.model.Model
+import de.lisaplus.atlas.model.NumberType
 import de.lisaplus.atlas.model.Property
+import de.lisaplus.atlas.model.RefType
+import de.lisaplus.atlas.model.StringType
 import de.lisaplus.atlas.model.Type
 import groovy.json.JsonSlurper
 import org.slf4j.Logger
@@ -79,10 +86,51 @@ class JsonSchemaBuilder {
         propetyParent.properties.each { propObj ->
             def newProp = new Property()
             newProp.name = string2Name(propObj.key)
-            // TODO
+            newProp.description = propObj.value['description']
+            if (propObj.value['type']=='array') {
+                newProp.isArray = true
+            }
+            newProp.type = getPropertyType(propObj.value)
             propList.add(newProp)
         }
         return propList
+    }
+
+    private BaseType getPropertyType(def propObjMap) {
+        if (propObjMap.'$ref') {
+            // reference to an external type
+            RefType refType = new RefType()
+            // TODO init RefType
+            return refType
+        }
+        else if (! propObjMap.type) {
+            def errorMsg = "property object w/o any type: ${propObjMap}"
+            log.error(errorMsg)
+            throw new Exception(errorMsg)
+        }
+        else {
+            switch (propObjMap.type) {
+                case 'string':
+                    return new StringType()
+                case 'integer':
+                    return new IntType()
+                case 'number':
+                    return new NumberType()
+                case 'boolean':
+                    return new BooleanType();
+                case 'object':
+                    ComplexType complexType = new ComplexType()
+                    // TODO - init complex type
+                    return complexType;
+                case 'array':
+                    // TODO - init array type
+                    return null;
+                default:
+                    def errorMsg = "property with unknown type: ${propObjMap.type}"
+                    log.error(errorMsg)
+                    throw new Exception(errorMsg)
+            }
+        }
     }
 
     private Model initModel(def objectModel) {

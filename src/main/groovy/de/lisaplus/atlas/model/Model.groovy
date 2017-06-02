@@ -59,6 +59,9 @@ class Property {
     def description
     def name
     def format
+    /**
+     * Type of property field
+     */
     BaseType type
     boolean isArray=false
 
