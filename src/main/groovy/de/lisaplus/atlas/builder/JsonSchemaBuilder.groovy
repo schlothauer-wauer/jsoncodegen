@@ -23,6 +23,10 @@ import static de.lisaplus.atlas.builder.helper.BuildHelper.string2Name
  * Created by eiko on 01.06.17.
  */
 class JsonSchemaBuilder {
+    /**
+     * Container for all created types helps - makes reference handling easier
+     */
+    def createdTypes=[:]
     Model buildModel(File modelFile) {
         def jsonSlurper = new JsonSlurper()
         def objectModel = jsonSlurper.parse(modelFile)
@@ -64,7 +68,7 @@ class JsonSchemaBuilder {
         newType.description = strFromMap(objectModel,'description')
         newType.properties = getProperties(objectModel,typeName)
         // TODO initialize extra stuff
-        model.types.add(newType)
+        addNewType(newType,model)
         return model
     }
 
@@ -77,9 +81,24 @@ class JsonSchemaBuilder {
             newType.description = strFromMap(typeObj.value,'description')
             newType.properties = getProperties(typeObj.value,typeName)
             // TODO  initialize extra stuff
-            model.types.add(newType)
+            if (createdTypes[typeName]) {
+                def errorMsg = "schema contains dulplicate type: ${typeName}"
+                log.error(errorMsg)
+                throw new Exception(errorMsg)
+            }
+            addNewType(newType,model)
         }
         return model
+    }
+
+    private void addNewType(Type newType, def model) {
+        if (createdTypes[newType.name]) {
+            def errorMsg = "schema contains dulplicate type: ${newType.name}"
+            log.error(errorMsg)
+            throw new Exception(errorMsg)
+        }
+        createdTypes[newType.name] = newType
+        model.types.add(newType)
     }
 
     private List<Property> getProperties(def propertyParent,def parentName) {
