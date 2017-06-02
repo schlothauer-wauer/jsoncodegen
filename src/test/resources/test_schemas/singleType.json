@@ -1,0 +1,192 @@
+{
+  "id": "http://schlothauer.de/schemas/lsa-process-data.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "JSON Schema for process data of a traffic controller.",
+  "type": "object",
+  "properties": {
+    "domainUUID": {
+      "description": "RFC 4122 compliant universally unique identifier (UUID) for identifying the domain of the traffic controller.",
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    },
+    "unitNr": {
+      "description": "Unit number of the traffic controller. The unit number must be unique per domain.",
+      "type": "integer"
+    },
+    "timestamp": {
+      "description": "RFC 3339 compliant timestamp without fractional seconds. Example: '2017-04-05T12:30:00+01:00'.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "programNr": {
+      "description": "Number of the signal program; only if changed",
+      "type": "integer"
+    },
+    "tx": {
+      "description": "Cycle second; starting with 0",
+      "type": "integer"
+    },
+    "signalChanges": {
+      "description": "Signal changes for the given timestamp offset.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nr": {
+            "type": "integer"
+          },
+          "name": {
+            "description": "Name of the signal group (optional).",
+            "type": "string"
+          },
+          "code": {
+            "description": "OCIT signal code",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "nr",
+          "code"
+        ]
+      }
+    },
+    "detectorFlanks": {
+      "description": "Detector flank occurences for the given timestamp offset. The encoding format for a detector flank is '<ObjNr>(+|-)<FractionalSeconds>'. The +/- part indicates a rising/falling flank. FractionalSeconds is the millisecond part of the given timestamp where flank occured. Example: ['2+100','2-900','4+700'].",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nr": {
+            "type": "integer"
+          },
+          "name": {
+            "description": "Name of the detector (optional).",
+            "type": "string"
+          },
+          "frac": {
+            "description": "fractional seconds",
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "telegrams": {
+      "description": "Array with public transport telegrams.",
+      "type": "array",
+      "items": {
+        "description": "Public transport telegram.",
+        "type": "object",
+        "properties": {
+          "mpNr": {
+            "description": "Number of the PT detection point.",
+            "type": "integer"
+          },
+          "linie": {
+            "description": "Number of the PT line.",
+            "type": "integer"
+          },
+          "kurs": {
+            "type": "integer"
+          },
+          "route": {
+            "type": "integer"
+          },
+          "prio": {
+            "description": "Priority.",
+            "type": "integer"
+          },
+          "zuglaenge": {
+            "description": "Vehicle length.",
+            "type": "integer"
+          },
+          "richtung": {
+            "description": "Manual direction.",
+            "type": "integer"
+          },
+          "abw": {
+            "description": "Fahrplanabweichung.",
+            "type": "integer"
+          },
+          "amliProperties": {
+            "description": "OevAmliTelegramm extension.",
+            "type": "object",
+            "properties": {
+              "relKnoten": {
+                "description": "relative UnitNr des beeinflussten Knotens.",
+                "type": "integer"
+              },
+              "modifikation": {
+                "description": "gibt an, ob OEPNV Modifikation durch Zentrale aktiv ist.",
+                "type": "boolean"
+              },
+              "zeitschalter": {
+                "description": "Zeitschalterwert (TX).",
+                "type": "integer"
+              },
+              "signalplan": {
+                "description": "Laufender Signalplan (SP).",
+                "type": "integer"
+              },
+              "laufPhase": {
+                "description": "Laufende Phase (PH).",
+                "type": "integer"
+              },
+              "gewPhase": {
+                "description": "Gewuenschte Phase (UE).",
+                "type": "integer"
+              },
+              "fahrzeit": {
+                "description": "Bei Abmeldung die echte Fahrzeit des OV von Anmeldung bis Abmeldung. Bei Anmeldung die theoretisch (berechnete) Fahrzeit des OV von Anmeldung bis Abmeldung (TWF).",
+                "type": "integer"
+              },
+              "gruenAnfang": {
+                "description": "Gruenanfang der OV-Signalgruppe (GNA).",
+                "type": "integer"
+              },
+              "gruenEnde": {
+                "description": "Gruenende der OV-Signalgruppe (GNE).",
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "required": [
+          "mpNr",
+          "linie",
+          "kurs",
+          "route",
+          "prio",
+          "zuglaenge",
+          "richtung",
+          "abw"
+        ]
+      }
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Variable name.",
+            "type": "string"
+          },
+          "value": {
+            "description": "Variable value.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      }
+    }
+  },
+  "required": [
+    "domainUUID",
+    "unitNr",
+    "timestamp",
+    "tx"
+  ]
+}

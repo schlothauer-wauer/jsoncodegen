@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "JSON schema for multi type testing",
+  "description": "This is a multi type test schema :)",
+  "definitions": {
+    "action": {
+      "type": "object",
+      "properties": {
+      }
+    },
+    "command": {
+      "type": "object",
+      "properties": {
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "model_version": {
+      "description": "version of the current model",
+      "type": "number",
+      "enum": [
+        1
+      ],
+      "maximum": 1,
+      "minimum": 1
+    },
+    "default_locale": {
+      "description": "Specifies the subdirectory of _locales that contains the default strings for this extension.",
+      "type": "string",
+      "default": "en"
+    }
+  }
+}

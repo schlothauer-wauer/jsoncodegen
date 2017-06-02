@@ -4,11 +4,6 @@ import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import de.lisaplus.atlas.builder.JsonSchemaBuilder
 import de.lisaplus.atlas.model.Model
-import de.lisaplus.atlas.model.Property
-import de.lisaplus.atlas.model.PropertyType
-import de.lisaplus.atlas.model.PropertyTypeCont
-import de.lisaplus.atlas.model.Type
-import groovy.json.JsonSlurper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

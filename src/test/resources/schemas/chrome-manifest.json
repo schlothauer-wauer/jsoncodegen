@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "JSON schema for Google Chrome extension manifest files",
   "definitions": {
-    "action": {
+      "action": {
       "type": "object",
       "properties": {
         "default_title": {
