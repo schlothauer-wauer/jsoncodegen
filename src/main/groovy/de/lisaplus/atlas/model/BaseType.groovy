@@ -3,6 +3,7 @@ package de.lisaplus.atlas.model
  * Created by eiko on 01.06.17.
  */
 class BaseType {
+    boolean isArray=false
 }
 
 class MinMaxType extends BaseType {
@@ -10,6 +11,13 @@ class MinMaxType extends BaseType {
     def exclusiveMax
     def min
     def exclusiveMin
+}
+
+/**
+ * this type is choosen in too complex schemas
+ * for instance: use of patternPoperties
+ */
+class UnsupportedType extends BaseType {
 }
 
 class IntType extends MinMaxType {

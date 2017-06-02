@@ -162,6 +162,14 @@
         ]
       }
     },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "permission"
+      },
+      "uniqueItems": true
+    },
     "variables": {
       "type": "array",
       "items": {

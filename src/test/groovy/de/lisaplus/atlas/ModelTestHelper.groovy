@@ -23,6 +23,7 @@ class ModelTestHelper {
             assertEquals(expectedProperty.name,it.name)
             assertEquals(expectedProperty.description,it.description)
             assertEquals(expectedProperty.type.class,it.type.class)
+            assertEquals(expectedProperty.type.isArray,it.type.isArray)
         }
         assertTrue(found)
     }

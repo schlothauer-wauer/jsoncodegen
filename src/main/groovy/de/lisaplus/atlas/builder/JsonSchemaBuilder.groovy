@@ -10,6 +10,7 @@ import de.lisaplus.atlas.model.Property
 import de.lisaplus.atlas.model.RefType
 import de.lisaplus.atlas.model.StringType
 import de.lisaplus.atlas.model.Type
+import de.lisaplus.atlas.model.UnsupportedType
 import groovy.json.JsonSlurper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -61,7 +62,7 @@ class JsonSchemaBuilder {
         Type newType = new Type()
         newType.name = typeName
         newType.description = strFromMap(objectModel,'description')
-        newType.properties = getProperties(objectModel)
+        newType.properties = getProperties(objectModel,typeName)
         // TODO initialize extra stuff
         model.types.add(newType)
         return model
@@ -74,34 +75,29 @@ class JsonSchemaBuilder {
             Type newType = new Type()
             newType.name = typeName
             newType.description = strFromMap(typeObj.value,'description')
-            newType.properties = getProperties(typeObj.value)
+            newType.properties = getProperties(typeObj.value,typeName)
             // TODO  initialize extra stuff
             model.types.add(newType)
         }
         return model
     }
 
-    private List<Property> getProperties(def propetyParent) {
+    private List<Property> getProperties(def propertyParent,def parentName) {
         List<Property> propList = []
-        propetyParent.properties.each { propObj ->
+        propertyParent.properties.each { propObj ->
             def newProp = new Property()
             newProp.name = string2Name(propObj.key)
             newProp.description = propObj.value['description']
-            if (propObj.value['type']=='array') {
-                newProp.isArray = true
-            }
-            newProp.type = getPropertyType(propObj.value)
+            newProp.type = getPropertyType(propObj.value,parentName+string2Name(propObj.key))
             propList.add(newProp)
         }
         return propList
     }
 
-    private BaseType getPropertyType(def propObjMap) {
+    private BaseType getPropertyType(def propObjMap,def innerTypeBaseName) {
         if (propObjMap.'$ref') {
             // reference to an external type
-            RefType refType = new RefType()
-            // TODO init RefType
-            return refType
+            return initRefType(propObjMap.'$ref')
         }
         else if (! propObjMap.type) {
             def errorMsg = "property object w/o any type: ${propObjMap}"
@@ -109,27 +105,74 @@ class JsonSchemaBuilder {
             throw new Exception(errorMsg)
         }
         else {
-            switch (propObjMap.type) {
-                case 'string':
-                    return new StringType()
-                case 'integer':
-                    return new IntType()
-                case 'number':
-                    return new NumberType()
-                case 'boolean':
-                    return new BooleanType();
-                case 'object':
-                    ComplexType complexType = new ComplexType()
-                    // TODO - init complex type
-                    return complexType;
-                case 'array':
-                    // TODO - init array type
-                    return null;
-                default:
-                    def errorMsg = "property with unknown type: ${propObjMap.type}"
+            return getBaseTypeFromString(propObjMap,innerTypeBaseName)
+        }
+    }
+
+    private RefType initRefType(def refStr) {
+        if (!refStr) {
+            def errorMsg = "undefined refStr, so cancel init reference type"
+            log.error(errorMsg)
+            throw new Exception(errorMsg)
+        }
+        RefType refType = new RefType()
+        // TODO init RefType
+        return refType
+    }
+
+    private ComplexType initComplexType(def propertiesMap,def baseTypeName) {
+        if (!propertiesMap) {
+            def errorMsg = "undefined properties map, so cancel init complex type"
+            log.error(errorMsg)
+            throw new Exception(errorMsg)
+        }
+        ComplexType complexType = new ComplexType()
+        // TODO init complex type
+        return complexType
+    }
+
+    private BaseType getBaseTypeFromString(def propObjMap, def innerTypeBaseName, def isArrayAllowed=true) {
+        switch (propObjMap.type) {
+            case 'string':
+                return new StringType()
+            case 'integer':
+                return new IntType()
+            case 'number':
+                return new NumberType()
+            case 'boolean':
+                return new BooleanType()
+            case 'object':
+                if (propObjMap.patternProperties) {
+                    log.warn("unsupported 'patternProperties' entry found")
+                    return new UnsupportedType()
+                }
+                else
+                    return initComplexType(propObjMap.properties,innerTypeBaseName)
+            case 'array':
+                if (!isArrayAllowed) {
+                    def errorMsg = "detect not allowed sub array type"
                     log.error(errorMsg)
                     throw new Exception(errorMsg)
-            }
+                }
+                if (propObjMap.items.type) {
+                    BaseType ret = getBaseTypeFromString(propObjMap.items,innerTypeBaseName+'Item',false)
+                    ret.isArray = true
+                    return ret
+                }
+                else if (propObjMap.items['$ref']) {
+                    BaseType ret = initRefType(propObjMap.items['$ref'])
+                    ret.isArray = true
+                    return ret
+                }
+                else {
+                    def errorMsg = "unknown array type"
+                    log.error(errorMsg)
+                    throw new Exception(errorMsg)
+                }
+            default:
+                def errorMsg = "property with unknown type: ${propObjMap.type}"
+                log.error(errorMsg)
+                throw new Exception(errorMsg)
         }
     }
 

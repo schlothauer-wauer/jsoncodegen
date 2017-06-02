@@ -6,6 +6,7 @@ import de.lisaplus.atlas.model.ComplexType
 import de.lisaplus.atlas.model.Property
 import de.lisaplus.atlas.model.RefType
 import de.lisaplus.atlas.model.StringType
+import de.lisaplus.atlas.model.UnsupportedType
 import org.junit.Test
 import static org.junit.Assert.*
 
@@ -50,7 +51,7 @@ class MultiTypeSchema {
         ModelTestHelper.compareProperty (new Property(
                 name: 'suggested_key',
                 description: null,
-                type: new ComplexType()
+                type: new UnsupportedType()
         ),model,typeName)
     }
 }

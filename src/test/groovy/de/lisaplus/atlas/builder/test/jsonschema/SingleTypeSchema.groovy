@@ -23,11 +23,16 @@ class SingleTypeSchema {
 
         // check property count
         def typeName = 'singleType'
-        ModelTestHelper.checkPropertySize(model,typeName,9)
+        ModelTestHelper.checkPropertySize(model,typeName,10)
         ModelTestHelper.compareProperty (new Property(
                                                 name: 'domainUUID',
                                                 description: 'RFC 4122 compliant universally unique identifier (UUID) for identifying the domain of the traffic controller.',
                                                 type: new StringType()
                                             ),model,typeName)
+        ModelTestHelper.compareProperty (new Property(
+                name: 'permissions',
+                type: new StringType(isArray: true),
+        ),model,typeName)
+
     }
 }
