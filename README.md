@@ -9,6 +9,7 @@ A simple Groovy based program to do generation tasks from a JSON schema.
 ```bash
 # builds a release with all dependencies
 # release is built in PROJECT_DIR/build/release
+# before a release is build the tests are executed - skip not possible
 gradle buildRelease
 
 # run program without any arguments from project
