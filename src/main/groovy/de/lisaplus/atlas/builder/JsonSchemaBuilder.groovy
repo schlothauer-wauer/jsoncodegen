@@ -54,7 +54,8 @@ class JsonSchemaBuilder {
         Type newType = new Type()
         newType.name = typeName
         newType.description = strFromMap(objectModel,'description')
-        // TODO initialize properties
+        newType.properties = getProperties(objectModel)
+        // TODO initialize extra stuff
         model.types.add(newType)
         return model
     }
@@ -65,11 +66,23 @@ class JsonSchemaBuilder {
             def typeName = string2Name(typeObj.key)
             Type newType = new Type()
             newType.name = typeName
-            // TODO  initialize properties
             newType.description = strFromMap(typeObj.value,'description')
+            newType.properties = getProperties(typeObj.value)
+            // TODO  initialize extra stuff
             model.types.add(newType)
         }
         return model
+    }
+
+    private List<Property> getProperties(def propetyParent) {
+        List<Property> propList = []
+        propetyParent.properties.each { propObj ->
+            def newProp = new Property()
+            newProp.name = string2Name(propObj.key)
+            // TODO
+            propList.add(newProp)
+        }
+        return propList
     }
 
     private Model initModel(def objectModel) {

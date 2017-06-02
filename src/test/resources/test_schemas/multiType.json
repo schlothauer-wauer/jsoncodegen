@@ -6,11 +6,52 @@
     "action": {
       "type": "object",
       "properties": {
+        "default_title": {
+          "description": "Tooltip for the main toolbar icon.",
+          "type": "string"
+        },
+        "default_popup": {
+          "description": "The popup appears when the user clicks the icon.",
+          "$ref": "#/definitions/uri"
+        },
+        "default_icon": {
+          "anyOf": [
+            {
+              "description": "FIXME: String form is deprecated.",
+              "type": "string"
+            },
+            {
+              "description": "Icon for the main toolbar.",
+              "type": "object",
+              "properties": {
+                "19": {
+                  "$ref": "#/definitions/icon"
+                },
+                "38": {
+                  "$ref": "#/definitions/icon"
+                }
+              }
+            }
+          ]
+        }
       }
     },
     "command": {
       "type": "object",
       "properties": {
+        "description": {
+          "type": "string"
+        },
+        "suggested_key": {
+          "type": "object",
+          "patternProperties": {
+            "^(default|mac|windows|linux|chromeos)$": {
+              "type": "string",
+              "pattern": "^(Ctrl|Command|MacCtrl|Alt|Option)\\+(Shift\\+)?[A-Z]"
+            }
+          },
+          "additionalProperties": false
+        }
       }
     }
   },

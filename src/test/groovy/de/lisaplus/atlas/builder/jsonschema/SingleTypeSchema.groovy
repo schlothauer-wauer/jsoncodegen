@@ -17,5 +17,6 @@ class SingleTypeSchema {
         assertEquals(model.description,'JSON Schema for process data of a traffic controller.')
         assertNull(model.title)
         assertEquals(1,model.types.size())
+        assertEquals(9,model.types[0].properties.size())
     }
 }

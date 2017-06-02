@@ -17,5 +17,11 @@ class MultiTypeSchema {
         assertEquals(model.description,'This is a multi type test schema :)')
         assertEquals(model.title,'JSON schema for multi type testing')
         assertEquals(2,model.types.size())
+        model.types.find { it.name=='action' }.each {
+            assertEquals(3,it.properties.size())
+        }
+        model.types.find { it.name=='command' }.each {
+            assertEquals(2,it.properties.size())
+        }
     }
 }
