@@ -4,6 +4,7 @@ import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.BaseType
 import de.lisaplus.atlas.model.BooleanType
 import de.lisaplus.atlas.model.ComplexType
+import de.lisaplus.atlas.model.DummyType
 import de.lisaplus.atlas.model.IntType
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.NumberType
@@ -76,6 +77,7 @@ class JsonSchemaBuilder implements IModelBuilder {
         newType.properties = getProperties(objectModel,typeName)
         // TODO initialize extra stuff
         addNewType(newType,model)
+        checkModelForErrors(model)
         return model
     }
 
@@ -88,14 +90,19 @@ class JsonSchemaBuilder implements IModelBuilder {
             newType.description = strFromMap(typeObj.value,'description')
             newType.properties = getProperties(typeObj.value,typeName)
             // TODO  initialize extra stuff
-            if (createdTypes[typeName]) {
-                def errorMsg = "schema contains dulplicate type: ${typeName}"
-                log.error(errorMsg)
-                throw new Exception(errorMsg)
-            }
             addNewType(newType,model)
         }
+        checkModelForErrors(model)
         return model
+    }
+
+    /**
+     * check if there are any errors in the model definition
+     * for instance unresolved Dummytypes
+     * @param model
+     */
+    private checkModelForErrors(def model) {
+        // TODO
     }
 
     /**
@@ -104,10 +111,19 @@ class JsonSchemaBuilder implements IModelBuilder {
      * @param model
      */
     private void addNewType(Type newType, def model) {
-        if (createdTypes[newType.name]) {
-            def errorMsg = "schema contains dulplicate type: ${newType.name}"
-            log.error(errorMsg)
-            throw new Exception(errorMsg)
+        def alreadyCreated = createdTypes[typeName]
+        if (alreadyCreated) {
+            if (alreadyCreated instanceof DummyType) {
+                // handle forward usage of types in declarations ... references need to be updated
+                alreadyCreated.referencesToChange.each { refType ->
+                    refType.type = newType
+                }
+            }
+            else {
+                def errorMsg = "schema contains dulplicate type: ${typeName}"
+                log.error(errorMsg)
+                throw new Exception(errorMsg)
+            }
         }
         createdTypes[newType.name] = newType
         model.types.add(newType)
@@ -147,8 +163,50 @@ class JsonSchemaBuilder implements IModelBuilder {
             throw new Exception(errorMsg)
         }
         RefType refType = new RefType()
-        // TODO init RefType
+        // Examples:
+        // "$ref": "#/definitions/command"
+        // "$ref": "definitions.json#/address"
+        // "$ref": "http: //json-schema.org/geo" - HTTP not supported (eiko)
+        def localDefStrBase = '#/definitions/'
+        if (refStr.startsWith(localDefStrBase)) {
+            Type t = getLocalRefType(refStr)
+            if (t instanceof DummyType) {
+                // the needed type isn't already in the model created. later a update to the
+                // right references is needed
+                ((DummyType)t).referencesToChange.add(refType)
+            }
+        }
+        else {
+            // "$ref": "definitions.json#/address"
+            // "$ref": "http: //json-schema.org/geo" - HTTP not supported (eiko)
+            // TODO init RefType
+        }
         return refType
+    }
+
+    private Type getLocalRefType(def refStr) {
+        // "$ref": "#/definitions/command"
+        def schemaTypeName = refStr.substring(localDefStrBase.length())
+        if (schemaTypeName.indexOf('/')!=-1) {
+            // unsupported, something like: #/definitions/command/xxx
+            def errorMsg = "unsupported local reference, types need be located under #/definitions: ${refStr}"
+            log.error(errorMsg)
+            throw new Exception(errorMsg)
+        }
+        def typeName=string2Name(schemaTypeName)
+        Type alreadyCreatedType = createdTypes[typeName]
+        if (alreadyCreatedType) {
+            // the type is created in a earlier parsing step - fine :)
+            // ... but it's possible that it is a DummyType
+            return alreadyCreatedType
+        }
+        else {
+            // the reference Points to a type that is later created - more complicated :-/
+            def newDummy = new DummyType()
+            createdTypes[typeName] = newDummy
+            return newDummy
+        }
+
     }
 
     private ComplexType initComplexType(def propertiesParent,def baseTypeName) {

@@ -55,6 +55,18 @@ class Type {
     }
 }
 
+/**
+ * This type is used to handle the use of schema types before they are declared in a schema.
+ * This could happen with references
+ */
+class DummyType  extends Type {
+    /**
+     * List of RefType objects. After the real Type is created, it's needed to set the right references
+     */
+    def referencesToChange=[]
+}
+
+
 class Property {
     def description
     def name

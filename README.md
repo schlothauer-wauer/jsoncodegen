@@ -7,7 +7,7 @@ A simple Groovy based program to do generation tasks from a JSON schema.
 
 ## Unsupported JSON schema features
 * patternProperties - make no sence in model description
-
+* only references in the local document and local file system are supported
 
 ## Using
 ```bash
