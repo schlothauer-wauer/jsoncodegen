@@ -12,7 +12,7 @@
         },
         "default_popup": {
           "description": "The popup appears when the user clicks the icon.",
-          "$ref": "#/definitions/uri"
+          "$ref": "#/definitions/icon"
         },
         "default_icon": {
           "description": "Icon for the main toolbar.",
@@ -25,6 +25,24 @@
               "$ref": "#/definitions/icon"
             }
           }
+        }
+      }
+    },
+    "icon": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "suggested_key": {
+          "type": "object",
+          "patternProperties": {
+            "^(default|mac|windows|linux|chromeos)$": {
+              "type": "string",
+              "pattern": "^(Ctrl|Command|MacCtrl|Alt|Option)\\+(Shift\\+)?[A-Z]"
+            }
+          },
+          "additionalProperties": false
         }
       }
     },

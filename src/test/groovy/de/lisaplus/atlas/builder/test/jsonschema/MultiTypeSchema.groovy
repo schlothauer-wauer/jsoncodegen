@@ -22,7 +22,7 @@ class MultiTypeSchema {
         def model = builder.buildModel(modelFile)
         assertEquals(model.description,'This is a multi type test schema :)')
         assertEquals(model.title,'JSON schema for multi type testing')
-        assertEquals(2,model.types.size())
+        assertEquals(3,model.types.size())
         def typeName = 'Action'
         ModelTestHelper.checkPropertySize(model,typeName,3)
         ModelTestHelper.compareProperty (new Property(
@@ -33,7 +33,7 @@ class MultiTypeSchema {
         ModelTestHelper.compareProperty (new Property(
                 name: 'default_popup',
                 description: 'The popup appears when the user clicks the icon.',
-                type: new RefType()
+                type: new RefType(typeName: 'Icon')
         ),model,typeName)
         ModelTestHelper.compareProperty (new Property(
                 name: 'default_icon',

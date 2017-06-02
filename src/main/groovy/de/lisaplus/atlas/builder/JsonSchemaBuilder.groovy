@@ -111,12 +111,14 @@ class JsonSchemaBuilder implements IModelBuilder {
      * @param model
      */
     private void addNewType(Type newType, def model) {
+        def typeName = newType.name
         def alreadyCreated = createdTypes[typeName]
         if (alreadyCreated) {
             if (alreadyCreated instanceof DummyType) {
                 // handle forward usage of types in declarations ... references need to be updated
                 alreadyCreated.referencesToChange.each { refType ->
                     refType.type = newType
+                    refType.typeName = newType.name
                 }
             }
             else {
@@ -169,11 +171,16 @@ class JsonSchemaBuilder implements IModelBuilder {
         // "$ref": "http: //json-schema.org/geo" - HTTP not supported (eiko)
         def localDefStrBase = '#/definitions/'
         if (refStr.startsWith(localDefStrBase)) {
-            Type t = getLocalRefType(refStr)
+            def schemaTypeName = refStr.substring(localDefStrBase.length())
+            Type t = getLocalRefType(schemaTypeName)
             if (t instanceof DummyType) {
                 // the needed type isn't already in the model created. later a update to the
                 // right references is needed
                 ((DummyType)t).referencesToChange.add(refType)
+            }
+            else {
+                refType.type=t
+                refType.typeName=t.name
             }
         }
         else {
@@ -184,12 +191,12 @@ class JsonSchemaBuilder implements IModelBuilder {
         return refType
     }
 
-    private Type getLocalRefType(def refStr) {
+    private Type getLocalRefType(def schemaTypeName) {
         // "$ref": "#/definitions/command"
-        def schemaTypeName = refStr.substring(localDefStrBase.length())
+
         if (schemaTypeName.indexOf('/')!=-1) {
             // unsupported, something like: #/definitions/command/xxx
-            def errorMsg = "unsupported local reference, types need be located under #/definitions: ${refStr}"
+            def errorMsg = "unsupported local reference, types need be located under #/definitions: ${schemaTypeName}"
             log.error(errorMsg)
             throw new Exception(errorMsg)
         }

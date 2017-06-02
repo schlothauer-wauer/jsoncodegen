@@ -1,5 +1,7 @@
 package de.lisaplus.atlas
 
+import de.lisaplus.atlas.model.RefType
+
 import static org.junit.Assert.*
 
 /**
@@ -24,6 +26,9 @@ class ModelTestHelper {
             assertEquals(expectedProperty.description,it.description)
             assertEquals(expectedProperty.type.class,it.type.class)
             assertEquals(expectedProperty.type.isArray,it.type.isArray)
+            if (expectedProperty.type instanceof RefType ) {
+                assertEquals(expectedProperty.type.typeName,it.type.typeName)
+            }
         }
         assertTrue(found)
     }

@@ -33,6 +33,7 @@ class StringType extends BaseType {
 }
 
 class RefType extends BaseType {
+    def typeName
     Type type
 }
 
