@@ -3,6 +3,7 @@ package de.lisaplus.atlas
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import de.lisaplus.atlas.builder.JsonSchemaBuilder
+import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -30,12 +31,6 @@ class DoCodeGen {
         log.info("model=${model}")
         log.info("outPutBase=${outputBaseDir}")
 
-        // remove in finished version - start
-        if (!model) {
-            model='src/test/resources/schemas/ProcessDataEvent.json'
-        }
-        // remove in finished version - end
-
         def modelFile = new File (model);
         if (!modelFile.isFile()) {
             log.error("path to model file doesn't point to a file: ${model}")
@@ -44,7 +39,8 @@ class DoCodeGen {
         else {
             log.info("use model file: ${model}")
         }
-        Model dataModel = JsonSchemaBuilder.buildModel(modelFile)
+        IModelBuilder builder = new JsonSchemaBuilder()
+        Model dataModel = builder.buildModel(modelFile)
         // TODO start CodeGen
         println dataModel
     }

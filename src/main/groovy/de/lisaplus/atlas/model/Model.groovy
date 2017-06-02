@@ -60,10 +60,9 @@ class Property {
     def name
     def format
     /**
-     * Type of property field
+     * Type of property field, covers also if the property is an array
      */
     BaseType type
-    boolean isArray=false
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);

@@ -22,7 +22,7 @@ class SingleTypeSchema {
         assertEquals(1,model.types.size())
 
         // check property count
-        def typeName = 'singleType'
+        def typeName = 'SingleType'
         ModelTestHelper.checkPropertySize(model,typeName,10)
         ModelTestHelper.compareProperty (new Property(
                                                 name: 'domainUUID',

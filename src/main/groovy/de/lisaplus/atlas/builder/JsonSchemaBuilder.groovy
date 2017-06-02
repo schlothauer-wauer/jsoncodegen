@@ -1,5 +1,6 @@
 package de.lisaplus.atlas.builder
 
+import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.BaseType
 import de.lisaplus.atlas.model.BooleanType
 import de.lisaplus.atlas.model.ComplexType
@@ -22,11 +23,17 @@ import static de.lisaplus.atlas.builder.helper.BuildHelper.string2Name
 /**
  * Created by eiko on 01.06.17.
  */
-class JsonSchemaBuilder {
+class JsonSchemaBuilder implements IModelBuilder {
     /**
      * Container for all created types helps - makes reference handling easier
      */
     def createdTypes=[:]
+
+    /**
+     * builds a meta model from a model files
+     * @param modelFile
+     * @return
+     */
     Model buildModel(File modelFile) {
         def jsonSlurper = new JsonSlurper()
         def objectModel = jsonSlurper.parse(modelFile)
@@ -91,6 +98,11 @@ class JsonSchemaBuilder {
         return model
     }
 
+    /**
+     * wraps the append of a new type to a model, this function checks for double types
+     * @param newType
+     * @param model
+     */
     private void addNewType(Type newType, def model) {
         if (createdTypes[newType.name]) {
             def errorMsg = "schema contains dulplicate type: ${newType.name}"
@@ -105,7 +117,7 @@ class JsonSchemaBuilder {
         List<Property> propList = []
         propertyParent.properties.each { propObj ->
             def newProp = new Property()
-            newProp.name = string2Name(propObj.key)
+            newProp.name = string2Name(propObj.key,false)
             newProp.description = propObj.value['description']
             newProp.type = getPropertyType(propObj.value,parentName+string2Name(propObj.key))
             propList.add(newProp)
@@ -139,14 +151,17 @@ class JsonSchemaBuilder {
         return refType
     }
 
-    private ComplexType initComplexType(def propertiesMap,def baseTypeName) {
-        if (!propertiesMap) {
+    private ComplexType initComplexType(def propertiesParent,def baseTypeName) {
+        if (!propertiesParent) {
             def errorMsg = "undefined properties map, so cancel init complex type"
             log.error(errorMsg)
             throw new Exception(errorMsg)
         }
         ComplexType complexType = new ComplexType()
-        // TODO init complex type
+        Type newType = new Type()
+        newType.name = baseTypeName
+        newType.properties = getProperties(propertiesParent,baseTypeName)
+        complexType.type = newType
         return complexType
     }
 
@@ -166,7 +181,7 @@ class JsonSchemaBuilder {
                     return new UnsupportedType()
                 }
                 else
-                    return initComplexType(propObjMap.properties,innerTypeBaseName)
+                    return initComplexType(propObjMap,innerTypeBaseName)
             case 'array':
                 if (!isArrayAllowed) {
                     def errorMsg = "detect not allowed sub array type"

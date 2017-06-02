@@ -13,9 +13,10 @@ class BuildHelper {
     static String string2Name(String s,boolean firstUpper=true) {
         def ret = s.replaceAll('[^a-zA-Z0-9]','_')
         if (firstUpper) {
-            return ret.substring(0,1).toLowerCase()+ret.substring(1)
+            return ret.substring(0,1).toUpperCase()+ret.substring(1)
         }
-        return ret
+        else
+            return ret.substring(0,1).toLowerCase()+ret.substring(1)
     }
 
     static List listFromMap(def map,String key) {

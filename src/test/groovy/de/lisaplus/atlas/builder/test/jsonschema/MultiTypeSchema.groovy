@@ -23,7 +23,7 @@ class MultiTypeSchema {
         assertEquals(model.description,'This is a multi type test schema :)')
         assertEquals(model.title,'JSON schema for multi type testing')
         assertEquals(2,model.types.size())
-        def typeName = 'action'
+        def typeName = 'Action'
         ModelTestHelper.checkPropertySize(model,typeName,3)
         ModelTestHelper.compareProperty (new Property(
                 name: 'default_title',
@@ -41,7 +41,7 @@ class MultiTypeSchema {
                 type: new ComplexType()
         ),model,typeName)
 
-        typeName = 'command'
+        typeName = 'Command'
         ModelTestHelper.checkPropertySize(model,typeName,2)
         ModelTestHelper.compareProperty (new Property(
                 name: 'description',
