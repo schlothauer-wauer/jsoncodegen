@@ -22,3 +22,7 @@ gradle myRun
 # run program with arguments ... opens test schema
 gradle myRun -PmyArgs="-m,src/test/resources/schemas/ProcessDataEvent.json"
 ```
+
+## Program design
+The plant uml diagram ./docs/main_structure.puml describes the
+basic design

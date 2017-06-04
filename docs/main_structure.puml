@@ -1,0 +1,91 @@
+@startuml
+interface IModelBuilder {
+    Model buildModel(File modelFile)
+}
+
+note bottom of IModelBuilder
+    Implementation creates
+    meta model
+
+    If you want implement
+    your own builder, then
+    implement this
+end note
+
+interface ICodeGen {
+    void doCodeGen(Model model, Map<String,String> extraParams)
+}
+
+note top of ICodeGen
+    Implementation process
+    meta model and generate
+    desired stuff
+
+    If you want implementIModelBuilder
+    your own code generator, then
+    implement this
+end note
+
+
+class DoCodeGen {
+    void run()
+    static void main(String ... args)
+}
+
+class JsonSchemaBuilder
+class JavaBeanBuilder
+
+note left of DoCodeGen
+    start class that
+    handles the code gen
+    process
+end note
+
+note bottom of JsonSchemaBuilder
+    builds
+    from JSON schemas
+end note
+
+note bottom of JavaBeanBuilder
+    builds simple
+    Java beans from
+    meta model
+end note
+
+DoCodeGen o-- IModelBuilder
+DoCodeGen o-- ICodeGen
+
+IModelBuilder <|-- JsonSchemaBuilder
+ICodeGen <|-- JavaBeanBuilder
+
+class Model {
+    List<Type> types
+}
+
+class Type {
+    List<Property> properties
+}
+
+class Property {
+    BaseType type
+}
+
+BaseType <|-- BooleanType
+BaseType <|-- MinMaxType
+BaseType <|-- ComplexType
+MinMaxType <|-- DateType
+MinMaxType <|-- DateTimeType
+MinMaxType <|-- IntType
+MinMaxType <|-- NumberType
+BaseType <|-- RefType
+BaseType <|-- StringType
+BaseType <|-- UnsupportedType
+
+Property o-- BaseType
+Type o-- Property
+Model o-- Type
+
+RefType o-- Type
+ICodeGen -- Model
+
+@enduml
