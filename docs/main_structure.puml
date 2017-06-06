@@ -33,7 +33,9 @@ class DoCodeGen {
 }
 
 class JsonSchemaBuilder
-class JavaBeanBuilder
+class SingleFileGenerator
+class MultiFileGenerator
+class JavaBeanGenerator
 
 note left of DoCodeGen
     start class that
@@ -46,7 +48,7 @@ note bottom of JsonSchemaBuilder
     from JSON schemas
 end note
 
-note bottom of JavaBeanBuilder
+note bottom of JavaBeanGenerator
     builds simple
     Java beans from
     meta model
@@ -56,8 +58,11 @@ DoCodeGen o-- IModelBuilder
 DoCodeGen o-- ICodeGen
 
 IModelBuilder <|-- JsonSchemaBuilder
-ICodeGen <|-- JavaBeanBuilder
+ICodeGen <|-- MultiFileGenerator
+ICodeGen <|-- SingleFileGenerator
 
+MultiFileGenerator <|-- JavaBeanGenerator
+SingleFileGenerator <|-- SwaggerGenerator
 class Model {
     List<Type> types
 }
