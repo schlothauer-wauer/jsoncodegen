@@ -7,7 +7,7 @@ import de.lisaplus.atlas.model.Model
  * This is the base for code generators that only create one file
  * Created by eiko on 05.06.17.
  */
-class SingleFileGenarator extends GeneratorBase implements ICodeGen {
+abstract class SingleFileGenarator extends GeneratorBase implements ICodeGen {
     /**
      * This funkction is called to start the code generation process
      * @param model model that is the base for the code generation
@@ -15,7 +15,6 @@ class SingleFileGenarator extends GeneratorBase implements ICodeGen {
      * @param extraParams additional parameters to initialize the generator
      */
     void doCodeGen(Model model, String outputBasePath, Map<String,String> extraParams) {
-
     }
 
 }

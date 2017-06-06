@@ -7,7 +7,7 @@ import de.lisaplus.atlas.model.Model
  * Base class for generators that creates more than one file ... for instance JavaBeanGenerator
  * Created by eiko on 05.06.17.
  */
-class MultiFileGenarator extends GeneratorBase implements ICodeGen {
+abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
     /**
      * This funkction is called to start the code generation process
      * @param model model that is the base for the code generation
