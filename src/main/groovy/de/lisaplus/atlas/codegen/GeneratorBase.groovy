@@ -22,7 +22,7 @@ abstract class GeneratorBase {
         // TODO
     }
 
-    TemplateEngine getTemplateEngine(TemplateType templateType) {
+    private static TemplateEngine getTemplateEngine(TemplateType templateType) {
         switch(templateType) {
             case TemplateType.Xml: return new XmlTemplateEngine()
             case TemplateType.GString: return new GStringTemplateEngine()
@@ -51,12 +51,24 @@ abstract class GeneratorBase {
         return engine.createTemplate(reader);
     }
 
-    Template createTemplateFromResource (String resourceName, TemplateType templateType) {
+    /**
+     *
+     * @param templateResourceName resource in class path that contains the template
+     * @param templateType what kind of template is desired
+     * @return new created template
+     */
+    Template createTemplateFromResource (String templateResourceName, TemplateType templateType) {
         // load template
         TemplateEngine engine = getTemplateEngine(templateType)
-        Reader reader = new Reader();
-        engine.createTemplate(reader);
-        // TODO - create Template
+        ClassLoader cl = engine.getClass().getClassLoader()
+        InputStream inputStream = cl.getResourceAsStream(templateResourceName)
+        if (inputStream==null) {
+            def errorMsg = "given template resource not found: ${templateResourceName}"
+            logger.error(errorMsg)
+            throw new Exception(errorMsg)
+        }
+        BufferedReader reader = new BufferedReader( new InputStreamReader (inputStream))
+        return engine.createTemplate(reader);
     }
 
     void genForSingleType(Template template, Type type) {
