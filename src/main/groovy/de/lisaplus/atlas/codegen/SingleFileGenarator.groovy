@@ -2,6 +2,8 @@ package de.lisaplus.atlas.codegen
 
 import de.lisaplus.atlas.interf.ICodeGen
 import de.lisaplus.atlas.model.Model
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * This is the base for code generators that only create one file
@@ -16,5 +18,4 @@ abstract class SingleFileGenarator extends GeneratorBase implements ICodeGen {
      */
     void doCodeGen(Model model, String outputBasePath, Map<String,String> extraParams) {
     }
-
 }

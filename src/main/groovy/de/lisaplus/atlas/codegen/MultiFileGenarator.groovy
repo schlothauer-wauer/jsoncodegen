@@ -2,6 +2,8 @@ package de.lisaplus.atlas.codegen
 
 import de.lisaplus.atlas.interf.ICodeGen
 import de.lisaplus.atlas.model.Model
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Base class for generators that creates more than one file ... for instance JavaBeanGenerator
