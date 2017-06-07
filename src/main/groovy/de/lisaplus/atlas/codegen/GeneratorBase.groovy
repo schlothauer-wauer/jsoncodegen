@@ -8,9 +8,11 @@ import groovy.text.XmlTemplateEngine
 import groovy.text.markup.MarkupTemplateEngine
 import org.slf4j.Logger
 
+/**
+ * it ignores the XML template engine because there is no XML input
+ */
 enum TemplateType {
     GString,
-    Xml,
     Markup
 }
 
@@ -24,7 +26,6 @@ abstract class GeneratorBase {
 
     private static TemplateEngine getTemplateEngine(TemplateType templateType) {
         switch(templateType) {
-            case TemplateType.Xml: return new XmlTemplateEngine()
             case TemplateType.GString: return new GStringTemplateEngine()
             case TemplateType.Markup: return new MarkupTemplateEngine()
         }

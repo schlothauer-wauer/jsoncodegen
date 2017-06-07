@@ -10,6 +10,7 @@ A simple Groovy based program to do generation tasks from a JSON schema.
 * only references in the local document and local file system are supported
 
 ## Using
+### Using with gradle
 ```bash
 # builds a release with all dependencies
 # release is built in PROJECT_DIR/build/release
@@ -21,6 +22,19 @@ gradle myRun
 
 # run program with arguments ... opens test schema
 gradle myRun -PmyArgs="-m,src/test/resources/schemas/ProcessDataEvent.json"
+```
+### Usage of the release
+After you built a release with gradle or you download a release bundle you can start
+the program with the contained start script. If you start it with the help option you
+get a full description of the possible parameters
+```bash
+# or a similar path
+cd build/release
+# start program in bash environment
+./jsonCodeGen.sh
+
+# show help in bash environment
+./jsonCodeGen.sh --help
 ```
 
 ## Program design
