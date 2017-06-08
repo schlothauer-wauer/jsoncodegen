@@ -4,6 +4,7 @@ import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.ParameterException
 import de.lisaplus.atlas.builder.JsonSchemaBuilder
+import de.lisaplus.atlas.interf.IExternalCodeGen
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
 import groovy.text.Template
@@ -61,6 +62,9 @@ class DoCodeGen {
         else {
             log.info("use model file: ${model}")
         }
+
+        prepareOutputBaseDir(outputBaseDir)
+
         IModelBuilder builder = new JsonSchemaBuilder()
         Model dataModel = builder.buildModel(modelFile)
         // convert extra generator parameter to a map
@@ -72,15 +76,17 @@ class DoCodeGen {
             // TODO start CodeGen
             generators.each { generatorName ->
                 def trennerIndex = generatorName.indexOf('=')
-                def templateName = trennerIndex!=-1 && trennerIndex < generatorName.length() - 1? generatorName.substring(trennerIndex+1) : ''
+                def templateName = trennerIndex!=-1 && trennerIndex < generatorName.length() - 1? generatorName.substring(trennerIndex+1) : null
                 // the generator name can be a class that's known to compile time or a later linked one
                 def pureGeneratorName = trennerIndex!=-1? generatorName.substring(0,trennerIndex) : generatorName
                 // later linked generators needs to contain package seperator
                 if (pureGeneratorName.indexOf('.')!=-1) {
                     // a later linked generator
+                    useCustomGenerator(pureGeneratorName,templateName,dataModel,extraParameters,outputBaseDir)
                 }
                 else {
                     // a build in generator
+                    useBuiltInGenerator(pureGeneratorName,templateName,dataModel,extraParameters,outputBaseDir)
                 }
             }
         }
@@ -108,6 +114,72 @@ class DoCodeGen {
         }
         return map
     }
+
+    /**
+     * Creates the output directory for a later use in later programm steps
+     * @param outputBaseDir path to the desired directory
+     */
+    static void prepareOutputBaseDir(String outputBaseDir) {
+        File f = new File(outputBaseDir)
+        if (f.isDirectory()) return
+        if (f.isFile()) {
+            def errorMsg = "the given output directory already exists as a file: $outputBaseDir"
+            log.error(errorMsg)
+            throw new Exception (errorMsg)
+        }
+        f.mkdirs()
+        if (!f.isDirectory()) {
+            def errorMsg = "can't create output base dir: $outputBaseDir"
+            log.error(errorMsg)
+            throw new Exception (errorMsg)
+        }
+    }
+
+    static void useCustomGenerator(String generatorName, String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
+        // TODO
+    }
+
+    static void useBuiltInGenerator(String generatorName, String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
+        switch (generatorName) {
+            case 'java_beans':
+                ignoreTemplateMsg(generatorName, templateName)
+                // TODO
+                break
+            case 'swagger_file':
+                ignoreTemplateMsg(generatorName, templateName)
+                // TODO
+                break
+            case 'multifiles':
+                checkForTemplate(generatorName,templateName)
+                IExternalCodeGen
+                if ()
+                // TODO
+                break
+            case 'singlefile':
+                checkForTemplate(generatorName,templateName)
+                // TODO
+                break
+            default:
+                def errorMsg = "unknown built in generator: ${generatorName}"
+                log.error(errorMsg)
+                throw new Exception (errorMsg)
+        }
+    }
+
+    static void ignoreTemplateMsg(String generatorName, String templateName) {
+        if (templateName) {
+            log.warn("the given external template for generator '${generatorName}' will be ignored")
+        }
+    }
+
+    static void checkForTemplate(String generatorName, String templateName) {
+        if (!templateName) {
+            def errorMsg = "no template given for generator '${generatorName}'"
+            log.error(errorMsg)
+            throw new Exception(errorMsg)
+        }
+    }
+
 
     static void printHelp() {
         print '''

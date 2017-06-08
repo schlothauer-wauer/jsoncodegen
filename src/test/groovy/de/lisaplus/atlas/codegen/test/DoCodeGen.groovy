@@ -2,8 +2,11 @@ package de.lisaplus.atlas.codegen.test
 
 import org.junit.Test
 
+import static junit.framework.Assert.assertFalse
 import static junit.framework.Assert.assertNull
 import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertFalse
+import static org.junit.Assert.assertTrue
 
 /**
  * Created by eiko on 07.06.17.
@@ -29,5 +32,22 @@ class DoCodeGen {
         assertEquals('test with spaces',output['a'])
         assertNull(output['b'])
         assertEquals('täst with spaces',output['c'])
+    }
+
+    @Test
+    void test_prepareOutputBaseDir() {
+        def testDir='build/tmp/test_prepareOutputBaseDir/test/test2'
+        def f1 = new File ('build/tmp/test_prepareOutputBaseDir')
+        if (f1.isDirectory()) f1.deleteDir()
+        assertFalse(f1.exists())
+        def f2 = new File (testDir)
+        try {
+            assertFalse(f2.exists())
+            de.lisaplus.atlas.DoCodeGen.prepareOutputBaseDir(testDir)
+            assertTrue(f2.exists())
+        }
+        finally {
+            f1.deleteDir()
+        }
     }
 }
