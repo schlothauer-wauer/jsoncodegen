@@ -4,14 +4,17 @@ import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.ParameterException
 import de.lisaplus.atlas.builder.JsonSchemaBuilder
+import de.lisaplus.atlas.codegen.TemplateType
+import de.lisaplus.atlas.codegen.external.ExtMultiFileGenarator
+import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
 import de.lisaplus.atlas.interf.IExternalCodeGen
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
-import groovy.text.Template
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
+ * Main class to start the code generation
  * Created by eiko on 30.05.17.
  */
 class DoCodeGen {
@@ -28,22 +31,22 @@ class DoCodeGen {
     private List<String> generator_parameters
 
     @Parameter(names = ['-h','--help'], help = true)
-    private boolean help = false;
+    private boolean help = false
 
-    public static void main(String ... args) {
-        DoCodeGen doCodeGen = new DoCodeGen();
+    static void main(String ... args) {
+        DoCodeGen doCodeGen = new DoCodeGen()
         try {
             JCommander jCommander = JCommander.newBuilder()
                     .addObject(doCodeGen)
                     .build()
             jCommander.setProgramName(doCodeGen.getClass().typeName)
-            jCommander.parse(args);
+            jCommander.parse(args)
             if (doCodeGen.help) {
                 printHelp()
                 jCommander.usage()
                 return
             }
-            doCodeGen.run();
+            doCodeGen.run()
         }
         catch(ParameterException e) {
             e.usage()
@@ -54,7 +57,7 @@ class DoCodeGen {
         log.info("model=${model}")
         log.info("outPutBase=${outputBaseDir}")
 
-        def modelFile = new File (model);
+        def modelFile = new File (model)
         if (!modelFile.isFile()) {
             log.error("path to model file doesn't point to a file: ${model}")
             System.exit(1)
@@ -150,20 +153,45 @@ class DoCodeGen {
                 // TODO
                 break
             case 'multifiles':
-                checkForTemplate(generatorName,templateName)
-                IExternalCodeGen
-                if ()
-                // TODO
+                generateMultiFiles(generatorName,templateName,dataModel,extraParameters,outputBaseDir)
                 break
             case 'singlefile':
-                checkForTemplate(generatorName,templateName)
-                // TODO
+                generateSingleFile(generatorName,templateName,dataModel,extraParameters,outputBaseDir)
                 break
             default:
                 def errorMsg = "unknown built in generator: ${generatorName}"
                 log.error(errorMsg)
                 throw new Exception (errorMsg)
         }
+    }
+
+    static void generateMultiFiles(String generatorName,String templateName,Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
+        checkForTemplate(generatorName,templateName)
+        IExternalCodeGen generator = new ExtMultiFileGenarator()
+        if (isTemplateFile(templateName)) {
+            generator.initTemplateFromFile(templateName, TemplateType.GString)
+        }
+        else {
+            generator.initTemplateFromResource(templateName,TemplateType.GString)
+        }
+        generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+    }
+
+    static void generateSingleFile(String generatorName,String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
+        checkForTemplate(generatorName,templateName)
+        IExternalCodeGen generator = new ExtSingleFileGenarator()
+        if (isTemplateFile(templateName)) {
+            generator.initTemplateFromFile(templateName, TemplateType.GString)
+        }
+        else {
+            generator.initTemplateFromResource(templateName,TemplateType.GString)
+        }
+        generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+    }
+
+    static boolean isTemplateFile(String templateName) {
+        File f = new File(templateName)
+        return f.isFile()
     }
 
     static void ignoreTemplateMsg(String generatorName, String templateName) {
@@ -229,5 +257,5 @@ singlefile      - creates single file from model and extra given template
     }
 
 
-    private static final Logger log=LoggerFactory.getLogger(DoCodeGen.class);
+    private static final Logger log=LoggerFactory.getLogger(DoCodeGen.class)
 }

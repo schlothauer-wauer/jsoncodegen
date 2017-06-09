@@ -17,12 +17,12 @@ import org.slf4j.LoggerFactory
 class ExtSingleFileGenarator extends SingleFileGenarator implements IExternalCodeGen {
     @Override
     void initTemplateFromFile(String templateFile, TemplateType templateType) {
-        // TODO
+        template = createTemplateFromFile(templateFile,templateType)
     }
 
     @Override
     void initTemplateFromResource(String templateResource, TemplateType templateType) {
-        // TODO
+        template = createTemplateFromResource(templateFile,templateType)
     }
 
     Logger getLogger() {

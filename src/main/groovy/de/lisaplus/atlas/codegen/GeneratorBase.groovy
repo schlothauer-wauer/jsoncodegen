@@ -1,5 +1,7 @@
 package de.lisaplus.atlas.codegen
 
+import de.lisaplus.atlas.DoCodeGen
+import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Type
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
@@ -20,8 +22,10 @@ enum TemplateType {
  * Created by eiko on 05.06.17.
  */
 abstract class GeneratorBase {
-    File createDir() {
-        // TODO
+    Template template
+
+    void createDir(String dirName) {
+        DoCodeGen.prepareOutputBaseDir(dirName)
     }
 
     private static TemplateEngine getTemplateEngine(TemplateType templateType) {
@@ -72,9 +76,8 @@ abstract class GeneratorBase {
         return engine.createTemplate(reader);
     }
 
-    void genForSingleType(Template template, Type type) {
-
-    }
+    abstract String getDestFileName(Model dataModel, Map<String,String> extraParameters)
+    abstract String getDestDir(Model dataModel, Map<String,String> extraParameters)
 
     abstract Logger getLogger();
 }

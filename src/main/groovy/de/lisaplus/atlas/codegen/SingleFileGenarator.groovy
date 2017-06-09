@@ -17,5 +17,15 @@ abstract class SingleFileGenarator extends GeneratorBase implements ICodeGen {
      * @param extraParams additional parameters to initialize the generator
      */
     void doCodeGen(Model model, String outputBasePath, Map<String,String> extraParams) {
+        if (!template) {
+            def errorMsg = "template not initialized"
+            getLogger().error(errorMsg)
+            throw new Exception(errorMsg)
+        }
+
+        def destFileName = getDestFileName(model,extraParams)
+        def destDir = getDestDir(model,extraParams)
+
+
     }
 }
