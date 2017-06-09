@@ -22,6 +22,7 @@ class MultiTypeSchema {
         def model = builder.buildModel(modelFile)
         assertEquals(model.description,'This is a multi type test schema :)')
         assertEquals(model.title,'JSON schema for multi type testing')
+        assertEquals(1,model.version)
         assertEquals(3,model.types.size())
         def typeName = 'Action'
         ModelTestHelper.checkPropertySize(model,typeName,3)

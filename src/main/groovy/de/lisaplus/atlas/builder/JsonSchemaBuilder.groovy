@@ -277,8 +277,18 @@ class JsonSchemaBuilder implements IModelBuilder {
 
     private Model initModel(def objectModel) {
         Model model = new Model()
-        model.title = strFromMap(objectModel,'title')
-        model.description = strFromMap(objectModel,'description')
+        model.title = strFromMap(objectModel, 'title')
+        model.description = strFromMap(objectModel, 'description')
+
+        model.version = null
+
+        if (objectModel.properties && objectModel.properties.model_version && objectModel.properties.model_version.enum) {
+            objectModel.properties.model_version.enum.each {
+                if (!model.version) {
+                    model.version = it
+                }
+            }
+        }
         return model
     }
 

@@ -1,6 +1,7 @@
 package de.lisaplus.atlas.codegen.meta
 
 import de.lisaplus.atlas.codegen.SingleFileGenarator
+import de.lisaplus.atlas.model.Model
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -9,6 +10,16 @@ import org.slf4j.LoggerFactory
  */
 class SwaggerGenerator extends SingleFileGenarator {
     private static final Logger log=LoggerFactory.getLogger(SwaggerGenerator.class)
+
+    @Override
+    String getDestFileName(Model dataModel, Map<String, String> extraParameters) {
+        return null // TODO
+    }
+
+    @Override
+    String getDestDir(Model dataModel, String outputBasePath, Map<String, String> extraParameters) {
+        return null // TODO
+    }
 
     Logger getLogger() {
         return log

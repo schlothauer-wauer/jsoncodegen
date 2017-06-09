@@ -9,7 +9,7 @@ A simple Groovy based program to do generation tasks from a JSON schema.
 * patternProperties - make no sence in model description
 * only references in the local document and local file system are supported
 
-## Using
+## Handle with gradle
 ### Using with gradle
 ```bash
 # builds a release with all dependencies
@@ -40,3 +40,6 @@ cd build/release
 ## Program design
 The plant uml diagram ./docs/main_structure.puml describes the
 basic design
+
+## Usage
+[see here](src/main/resources/docs/usage.md)

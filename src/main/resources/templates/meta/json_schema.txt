@@ -1,0 +1,23 @@
+"${DOLLAR}schema": "http://json-schema.org/draft-04/schema#",
+  "title": "${model.title}",
+  "description": "${model.description}",
+  "definitions": {
+  },
+  "type": "object",
+  "properties": {
+    <% if ( model.version ) { %>
+    "model_version": {
+      "type": "number",
+      "enum": [
+        ${model.version}
+      ],
+      "maximum": ${model.version},
+      "minimum": ${model.version}
+    },
+    <% } %>
+    "default_locale": {
+      "type": "string",
+      "default": "en"
+    }
+  }
+}

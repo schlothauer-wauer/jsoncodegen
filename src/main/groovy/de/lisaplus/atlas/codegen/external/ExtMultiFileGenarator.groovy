@@ -24,6 +24,16 @@ class ExtMultiFileGenarator extends MultiFileGenarator implements IExternalCodeG
         template = createTemplateFromResource(templateFile,templateType)
     }
 
+    @Override
+    String getDestFileName(Model dataModel, Map<String, String> extraParameters) {
+        return null // TODO
+    }
+
+    @Override
+    String getDestDir(Model dataModel, String outputBasePath, Map<String, String> extraParameters) {
+        return null // TODO
+    }
+
     Logger getLogger() {
         return l
     }

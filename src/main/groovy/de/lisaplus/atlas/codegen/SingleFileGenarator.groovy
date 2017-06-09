@@ -23,9 +23,20 @@ abstract class SingleFileGenarator extends GeneratorBase implements ICodeGen {
             throw new Exception(errorMsg)
         }
 
+        def data = [
+                model:model,
+                DOLLAR:'$']
+
+        if (extraParams) {
+            data = data << ((Map)extraParams)
+        }
+
+        def ergebnis = template.make(data)
+
         def destFileName = getDestFileName(model,extraParams)
-        def destDir = getDestDir(model,extraParams)
+        def destDir = getDestDir(model,outputBasePath,extraParams)
 
-
+        File file=new File("${destDir}/${destFileName}")
+        file.write( removeEmptyLines (ergebnis.toString()) )
     }
 }

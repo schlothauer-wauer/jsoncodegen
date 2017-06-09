@@ -13,7 +13,7 @@ class Model {
         date : new DateType()
         date_time : new DateTimeType()
     }
-
+    def version
     def title
     def description
     /**

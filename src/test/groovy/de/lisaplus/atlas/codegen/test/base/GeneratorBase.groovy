@@ -1,6 +1,7 @@
 package de.lisaplus.atlas.codegen.test.base
 
 import de.lisaplus.atlas.codegen.TemplateType
+import de.lisaplus.atlas.model.Model
 import groovy.text.Template
 import org.junit.Test
 import org.slf4j.Logger
@@ -80,6 +81,15 @@ class GeneratorBase {
 class DummyGenerator extends de.lisaplus.atlas.codegen.GeneratorBase {
     private static final Logger log=LoggerFactory.getLogger(DummyGenerator.class)
 
+    @Override
+    String getDestFileName(Model dataModel, Map<String, String> extraParameters) {
+        return null
+    }
+
+    @Override
+    String getDestDir(Model dataModel, String outputBasePath, Map<String, String> extraParameters) {
+        return null
+    }
 
     Logger getLogger() {
         return log

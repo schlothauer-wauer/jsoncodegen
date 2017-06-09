@@ -25,6 +25,27 @@ class ExtSingleFileGenarator extends SingleFileGenarator implements IExternalCod
         template = createTemplateFromResource(templateFile,templateType)
     }
 
+    @Override
+    String getDestFileName(Model dataModel, Map<String, String> extraParameters) {
+        if (extraParameters.destFileName) {
+            return extraParameters.destFileName
+        }
+        else {
+            return dataModel.name + '.txt'
+        }
+    }
+
+    @Override
+    String getDestDir(Model dataModel, String outputBasePath, Map<String, String> extraParameters) {
+        if (extraParameters.outputDirExt) {
+            return outputBasePath + "/" + extraParameters.outputDirExt
+        }
+        else {
+            return outputBasePath
+        }
+    }
+
+
     Logger getLogger() {
         return l
     }

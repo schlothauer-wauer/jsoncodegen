@@ -76,8 +76,13 @@ abstract class GeneratorBase {
         return engine.createTemplate(reader);
     }
 
+    String removeEmptyLines (String genResult) {
+        String s=genResult.replaceAll(/\n\s*\n/,'\n')
+        return s.replaceAll(/;\s*\n/,';\n\n')
+    }
+
     abstract String getDestFileName(Model dataModel, Map<String,String> extraParameters)
-    abstract String getDestDir(Model dataModel, Map<String,String> extraParameters)
+    abstract String getDestDir(Model dataModel, String outputBasePath, Map<String,String> extraParameters)
 
     abstract Logger getLogger();
 }

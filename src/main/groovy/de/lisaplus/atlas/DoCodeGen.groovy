@@ -42,7 +42,7 @@ class DoCodeGen {
             jCommander.setProgramName(doCodeGen.getClass().typeName)
             jCommander.parse(args)
             if (doCodeGen.help) {
-                printHelp()
+                doCodeGen.printHelp()
                 jCommander.usage()
                 return
             }
@@ -209,51 +209,9 @@ class DoCodeGen {
     }
 
 
-    static void printHelp() {
-        print '''
-This program provides some kind of extendable code generation. As input it use
-JSON schema files that describes a model
-
-Examples:
-# 1. reads a model from file ./test/mein_modell.json
-# 2. use the internal java_bean generator
-# 3. gives the extra parameter packageBase with value 'de.sw.atlas' to the generator
-# 4. writes the output to ./test/mein_output
-de.lisaplus.atlas.DoCodeGen -o ./test/mein_output -m ./test/mein_modell.json -g java_beans -gp packageBase=de.sw.atlas 
-
-# 1. reads a model from file ./test/mein_modell.json
-# 2. use two internal java_bean generators: java_beans, swagger_file
-# 3. gives the extra parameter packageBase with value 'de.sw.atlas' to the generator
-# 4. writes the output to ./test/mein_output
-de.lisaplus.atlas.DoCodeGen -o ./test/mein_output -m ./test/mein_modell.json -g java_beans -g swagger_file \\
-    -gp packageBase=de.sw.atlas
-
-# 1. reads a model from file ./test/mein_modell.json
-# 2. use two internal 'multifiles'-generator with the external template ./test/myTemplate.txt
-# 3. gives the extra parameter packageBase with value 'de.sw.atlas' to the generator
-# 4. writes the output to ./test/mein_output
-de.lisaplus.atlas.DoCodeGen -o ./test/mein_output -m ./test/mein_modell.json -g multifiles=./test/myTemplate.txt  \\
-    -gp packageBase=de.sw.atlas
-
-Already defines internal generators with their extra parameters:
-
-1. Java related
-===============
-java_beans      - creates a set of Java beans from model
-    Extra parameter
-    ---------------
-    packageBase         - base java package used for the generation
-
-2. Service related 
-==================
-swagger_file    - creates a swagger file from model
-
-3. Base generators
-==================
-multifiles      - creates multible files from model and extra given template
-singlefile      - creates single file from model and extra given template
-
-'''
+    void printHelp() {
+        InputStream usageFile = this.class.getClassLoader().getResourceAsStream('docs/usage.md')
+        print (usageFile.getText())
     }
 
 
