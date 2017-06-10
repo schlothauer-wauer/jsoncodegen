@@ -6,6 +6,7 @@ import de.lisaplus.atlas.codegen.TemplateType
 import de.lisaplus.atlas.interf.ICodeGen
 import de.lisaplus.atlas.interf.IExternalCodeGen
 import de.lisaplus.atlas.model.Model
+import de.lisaplus.atlas.model.Type
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -26,7 +27,7 @@ class ExtSingleFileGenarator extends SingleFileGenarator implements IExternalCod
     }
 
     @Override
-    String getDestFileName(Model dataModel, Map<String, String> extraParameters) {
+    String getDestFileName(Model dataModel, Map<String, String> extraParameters, Type currentType=null) {
         if (extraParameters.destFileName) {
             return extraParameters.destFileName
         }
@@ -36,7 +37,7 @@ class ExtSingleFileGenarator extends SingleFileGenarator implements IExternalCod
     }
 
     @Override
-    String getDestDir(Model dataModel, String outputBasePath, Map<String, String> extraParameters) {
+    String getDestDir(Model dataModel, String outputBasePath, Map<String, String> extraParameters,Type currentType=null) {
         if (extraParameters.outputDirExt) {
             return outputBasePath + "/" + extraParameters.outputDirExt
         }

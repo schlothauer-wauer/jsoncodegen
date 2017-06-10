@@ -6,6 +6,7 @@ import de.lisaplus.atlas.codegen.TemplateType
 import de.lisaplus.atlas.interf.ICodeGen
 import de.lisaplus.atlas.interf.IExternalCodeGen
 import de.lisaplus.atlas.model.Model
+import de.lisaplus.atlas.model.Type
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -25,12 +26,12 @@ class ExtMultiFileGenarator extends MultiFileGenarator implements IExternalCodeG
     }
 
     @Override
-    String getDestFileName(Model dataModel, Map<String, String> extraParameters) {
+    String getDestFileName(Model dataModel, Map<String, String> extraParameters,Type currentType=null) {
         return null // TODO
     }
 
     @Override
-    String getDestDir(Model dataModel, String outputBasePath, Map<String, String> extraParameters) {
+    String getDestDir(Model dataModel, String outputBasePath, Map<String, String> extraParameters, Type currentType=null) {
         return null // TODO
     }
 

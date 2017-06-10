@@ -23,10 +23,7 @@ abstract class SingleFileGenarator extends GeneratorBase implements ICodeGen {
             throw new Exception(errorMsg)
         }
 
-        def data = [
-                model:model,
-                DOLLAR:'$']
-
+        def data = createTemplateDataMap(model)
         if (extraParams) {
             data = data << ((Map)extraParams)
         }

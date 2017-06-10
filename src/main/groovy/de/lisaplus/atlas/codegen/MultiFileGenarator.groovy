@@ -17,8 +17,24 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
      * @param extraParams additional parameters to initialize the generator
      */
     void doCodeGen(Model model, String outputBasePath, Map<String,String> extraParams) {
-        model.types*.each {
-            genForSingleType()
+        if (!template) {
+            def errorMsg = "template not initialized"
+            getLogger().error(errorMsg)
+            throw new Exception(errorMsg)
+        }
+        def data = createTemplateDataMap(model)
+        if (extraParams) {
+            data = data << ((Map)extraParams)
+        }
+
+        model.types*.each { type ->
+            data[currentType] = type
+            def ergebnis = template.make(data)
+            def destFileName = getDestFileName(model,extraParams)
+            def destDir = getDestDir(model,outputBasePath,extraParams)
+
+            File file=new File("${destDir}/${destFileName}")
+            file.write( removeEmptyLines (ergebnis.toString()) )
         }
     }
 }

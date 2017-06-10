@@ -24,7 +24,7 @@ enum TemplateType {
 abstract class GeneratorBase {
     Template template
 
-    void createDir(String dirName) {
+    static void createDir(String dirName) {
         DoCodeGen.prepareOutputBaseDir(dirName)
     }
 
@@ -76,13 +76,65 @@ abstract class GeneratorBase {
         return engine.createTemplate(reader);
     }
 
-    String removeEmptyLines (String genResult) {
+    static String removeEmptyLines (String genResult) {
         String s=genResult.replaceAll(/\n\s*\n/,'\n')
         return s.replaceAll(/;\s*\n/,';\n\n')
     }
 
-    abstract String getDestFileName(Model dataModel, Map<String,String> extraParameters)
-    abstract String getDestDir(Model dataModel, String outputBasePath, Map<String,String> extraParameters)
+    /**
+     * methon create a map object and initialize it with some basic stuff
+     * @param model
+     * @return
+     */
+    static Map createTemplateDataMap(Model model) {
+        return [
+                model:model,
+                DOLLAR:'$',
+                toLowerCase: toLowerCase,
+                toUpperCase: toUpperCase,
+                firstLowerCase: firstLowerCase,
+                firstUpperCase: firstUpperCase]
+    }
+
+    static def toLowerCase = { str ->
+        return str==null ? EMPTY : str.toLowerCase()
+    }
+
+    static def toUpperCase = { str ->
+        return str==null ? EMPTY : str.toUpperCase()
+    }
+
+    static def firstLowerCase = { str ->
+        if (!str) return EMPTY
+        def first = str.substring(0,1)
+        first = first.toLowerCase()
+        if (str.length()>1) {
+            def rest = str.substring(1)
+            return first + rest
+        }
+        else {
+            return first
+        }
+    }
+
+    static def firstUpperCase = { str ->
+        if (!str) return EMPTY
+        def first = str.substring(0,1)
+        first = first.toUpperCase()
+        if (str.length()>1) {
+            def rest = str.substring(1)
+            return first + rest
+        }
+        else {
+            return first
+        }
+    }
+
+
+    private final static String EMPTY=''
+
+    abstract String getDestFileName(Model dataModel, Map<String,String> extraParameters,Type currentType=null)
+    abstract String getDestDir(Model dataModel, String outputBasePath, Map<String,String> extraParameters,Type currentType=null)
 
     abstract Logger getLogger();
 }
