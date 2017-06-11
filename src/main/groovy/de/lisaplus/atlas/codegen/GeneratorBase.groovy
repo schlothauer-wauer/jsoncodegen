@@ -1,6 +1,7 @@
 package de.lisaplus.atlas.codegen
 
 import de.lisaplus.atlas.DoCodeGen
+import de.lisaplus.atlas.codegen.helper.java.JavaTypeConvert
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Type
 import groovy.text.GStringTemplateEngine
@@ -93,7 +94,9 @@ abstract class GeneratorBase {
                 toLowerCase: toLowerCase,
                 toUpperCase: toUpperCase,
                 firstLowerCase: firstLowerCase,
-                firstUpperCase: firstUpperCase]
+                firstUpperCase: firstUpperCase,
+                typeToJava: JavaTypeConvert.convert
+        ]
     }
 
     static def toLowerCase = { str ->
