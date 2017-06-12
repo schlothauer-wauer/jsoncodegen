@@ -48,8 +48,8 @@ cd build/release
 ```
 
 ## Program design
-The plant uml diagram ./docs/main_structure.puml describes the
-basic design
+[This plant uml diagram](docs/main_structure.puml) (main structure) describes the
+basic design.
 
 ## Usage
 [see here](src/main/resources/docs/usage.md)
