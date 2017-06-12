@@ -1,5 +1,6 @@
 package de.lisaplus.atlas.codegen.helper.java
 
+import de.lisaplus.atlas.codegen.GeneratorBase
 import de.lisaplus.atlas.model.BaseType
 import de.lisaplus.atlas.model.BooleanType
 import de.lisaplus.atlas.model.ComplexType
@@ -12,6 +13,7 @@ import de.lisaplus.atlas.model.StringType
 import de.lisaplus.atlas.model.UnsupportedType
 
 /**
+ * Converts meta model types to Java types
  * Created by eiko on 11.06.17.
  */
 class JavaTypeConvert {
@@ -22,35 +24,27 @@ class JavaTypeConvert {
         switch(type.name()) {
             case IntType.NAME:
                 return 'Integer'
-                break
             case NumberType.NAME:
                 return 'Double'
-                break
             case StringType.NAME:
                 return 'String'
-                break
             case BooleanType.NAME:
                 return 'Boolean'
-                break
             case DateType.NAME:
                 return 'Date'
-                break
             case DateTimeType.NAME:
                 return 'Date'
-                break
             case RefType.NAME:
-                // TODO
-                break
+                def typeName = type.type.name
+                return typeName
             case ComplexType.NAME:
-                // TODO
-                break
+                def typeName = type.type.name
+                return typeName
             case UnsupportedType.NAME:
-            // TODO
+                return BaseType.UNSUPPORTED_TYPE+type
             break
         default:
             return BaseType.UNKNOWN_TYPE+type
-            // TODO
         }
-        // TODO
     }
 }

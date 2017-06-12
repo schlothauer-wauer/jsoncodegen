@@ -87,7 +87,7 @@ abstract class GeneratorBase {
      * @param model
      * @return
      */
-    static Map createTemplateDataMap(Model model) {
+    Map createTemplateDataMap(Model model) {
         return [
                 model:model,
                 DOLLAR:'$',
@@ -99,15 +99,15 @@ abstract class GeneratorBase {
         ]
     }
 
-    static def toLowerCase = { str ->
+    def toLowerCase = { str ->
         return str==null ? EMPTY : str.toLowerCase()
     }
 
-    static def toUpperCase = { str ->
+    def toUpperCase = { str ->
         return str==null ? EMPTY : str.toUpperCase()
     }
 
-    static def firstLowerCase = { str ->
+    def firstLowerCase = { str ->
         if (!str) return EMPTY
         def first = str.substring(0,1)
         first = first.toLowerCase()
@@ -120,7 +120,7 @@ abstract class GeneratorBase {
         }
     }
 
-    static def firstUpperCase = { str ->
+    def firstUpperCase = { str ->
         if (!str) return EMPTY
         def first = str.substring(0,1)
         first = first.toUpperCase()

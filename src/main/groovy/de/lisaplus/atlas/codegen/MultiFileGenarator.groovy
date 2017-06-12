@@ -27,14 +27,23 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
             data = data << ((Map)extraParams)
         }
 
+        def XXX = {
+            return 'YYY'
+        }
+
+        def shouldRemoveEmptyLines = extraParams['removeEmptyLines']
+
         model.types*.each { type ->
-            data[currentType] = type
+            data.put('currentType',type)
+            data.put ('xxx',XXX)
             def ergebnis = template.make(data)
-            def destFileName = getDestFileName(model,extraParams)
-            def destDir = getDestDir(model,outputBasePath,extraParams)
+            def destFileName = getDestFileName(model,extraParams,type)
+            def destDir = getDestDir(model,outputBasePath,extraParams,type)
 
             File file=new File("${destDir}/${destFileName}")
-            file.write( removeEmptyLines (ergebnis.toString()) )
+            def resultString = shouldRemoveEmptyLines ? removeEmptyLines (ergebnis.toString()) :
+                    ergebnis.toString()
+            file.write( resultString )
         }
     }
 }

@@ -33,7 +33,11 @@ abstract class SingleFileGenarator extends GeneratorBase implements ICodeGen {
         def destFileName = getDestFileName(model,extraParams)
         def destDir = getDestDir(model,outputBasePath,extraParams)
 
+        def shouldRemoveEmptyLines = extraParams['removeEmptyLines']
+
+        def resultString = shouldRemoveEmptyLines ? removeEmptyLines (ergebnis.toString()) :
+                ergebnis.toString()
         File file=new File("${destDir}/${destFileName}")
-        file.write( removeEmptyLines (ergebnis.toString()) )
+        file.write( resultString )
     }
 }

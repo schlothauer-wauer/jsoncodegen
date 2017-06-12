@@ -1,0 +1,17 @@
+package ${packageName}
+
+<% if ( currentType.description ) { %>
+/**
+ * ${currentType.description}
+ */
+<% } %>
+public class ${ firstUpperCase.call(currentType.name) } {
+    <% currentType.properties.each { prop -> %>
+    <% if (prop.description) { %>
+    /**
+     * ${prop.description}
+     */
+    <% } %>
+    private ${ typeToJava.call(prop.type) } ${prop.name}
+    <% } %>
+}

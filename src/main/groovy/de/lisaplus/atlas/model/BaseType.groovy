@@ -7,6 +7,7 @@ abstract class BaseType {
     boolean isArray=false
     final static String WRONG_TYPE = 'CODEGEN-ERROR: Used type needs to derived from de.lisaplus.atlas.model.BaseType: '
     final static String UNKNOWN_TYPE = 'CODEGEN-ERROR: Unknown type: '
+    final static String UNSUPPORTED_TYPE = 'CODEGEN-ERROR: Unsupported type: '
 
     abstract String name()
 }

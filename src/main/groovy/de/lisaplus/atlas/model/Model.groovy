@@ -38,7 +38,7 @@ class Type {
      * ther is not title entry file name is used for type name.
      * In multi type schemas key unter definitions section is used as type name
      */
-    def name
+    String name
     /**
      * List of properties, type of PropertyType
      */
