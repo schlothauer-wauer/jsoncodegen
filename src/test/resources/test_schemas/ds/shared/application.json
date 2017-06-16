@@ -1,0 +1,33 @@
+{
+  "id": "http://schlothauer.de/schemas/shared/application.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "application data",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "Name of the application",
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+      "unique": true,
+      "visKey": true
+    },
+    "description": {
+      "description": "some more words to explain",
+      "type": "string"
+    },
+    "application_id": {
+      "description": "RFC 4122 compliant universally unique identifier (UUID) for identifying the application",
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    },
+    "active": {
+      "description": "is this entry still active",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "name",
+    "applicationID"
+  ],
+  "version": 1
+}
