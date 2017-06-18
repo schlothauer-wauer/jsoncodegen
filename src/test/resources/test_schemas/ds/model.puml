@@ -1,0 +1,67 @@
+@startuml
+
+package "license service" {
+    class domain {
+
+    }
+
+    class application {
+    }
+
+    class app_module {
+    }
+
+    domain "m" -- "n" application: relation isn't designed yet
+    application "1" -- "n" app_module
+
+    class license {
+    }
+}
+
+license "m" -- "n" app_module
+domain "1" -- "n" license
+
+
+package "user service" {
+    class user {
+        domain:string
+    }
+
+    class user_log {
+        domain:string
+    }
+
+    class "role" as role {
+        domain:string
+        name:string
+    }
+
+    class module_grant {
+        app_module_id:string
+        read:boolean
+        write:boolean
+        lock:boolean
+    }
+
+    class data_grant
+}
+role -- module_grant
+role -- data_grant
+
+role "m"--"n" user
+
+app_module -- module_grant
+
+
+user_log "n"--"1" user
+
+note top of role
+provided with the token
+of Keycloak
+end note
+
+note "server need to resolv\nthe role name\nto specific actions" as app_grants
+
+module_grant .. app_grants
+data_grant .. app_grants
+@enduml

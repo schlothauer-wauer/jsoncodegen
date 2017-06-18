@@ -13,7 +13,7 @@ class Model {
         date : new DateType()
         date_time : new DateTimeType()
     }
-    def version
+    int version
     def title
     def description
     /**
@@ -50,6 +50,12 @@ class Type {
      */
     List<String> requiredProps=[];
 
+    /**
+     * since when is the type part of the model
+     */
+    int sinceVersion
+
+
     String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
@@ -75,6 +81,10 @@ class Property {
      * Type of property field, covers also if the property is an array
      */
     BaseType type
+    /**
+     * since when is the type part of the model
+     */
+    int sinceVersion
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);
