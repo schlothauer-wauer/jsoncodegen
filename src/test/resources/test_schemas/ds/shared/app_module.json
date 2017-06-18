@@ -31,7 +31,7 @@
   },
   "required": [
     "name",
-    "applicationID"
+    "application_id"
   ],
   "version": 1
 }

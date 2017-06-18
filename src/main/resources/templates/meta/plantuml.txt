@@ -1,0 +1,7 @@
+@startuml
+<% model.types.each  { type -> %>
+/* all top level declared types - start */
+<% } %>
+
+
+@enduml

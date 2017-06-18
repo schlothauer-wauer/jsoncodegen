@@ -28,7 +28,7 @@
   },
   "required": [
     "name",
-    "domainID"
+    "domain_id"
   ],
   "version": 1
 }
