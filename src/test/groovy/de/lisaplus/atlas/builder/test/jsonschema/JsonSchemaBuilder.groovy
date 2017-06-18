@@ -20,6 +20,16 @@ class JsonSchemaBuilder {
     }
 
     @Test
+    void testExternalReferences_2() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/user.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        assertEquals(4,model.types.size())
+    }
+
+
+    @Test
     void testGetSchemaBasePath() {
         File f = new File ('src/test/resources/test_schemas/multiType.json')
         /*
