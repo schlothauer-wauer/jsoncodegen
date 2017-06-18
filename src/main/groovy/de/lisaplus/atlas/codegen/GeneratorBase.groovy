@@ -78,8 +78,9 @@ abstract class GeneratorBase {
     }
 
     static String removeEmptyLines (String genResult) {
-        String s=genResult.replaceAll(/\n\s*\n/,'\n')
-        return s.replaceAll(/;\s*\n/,';\n\n')
+        String s=genResult.replaceAll(/\n\s*\n\s*\n/,'\n')
+//        return s.replaceAll(/;\s*\n/,';\n\n')
+        return s;
     }
 
     /**
