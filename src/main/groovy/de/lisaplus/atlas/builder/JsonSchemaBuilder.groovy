@@ -258,7 +258,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                 ExternalType extT = new ExternalType()
                 extT.refStr = refStr
                 extT.initFromType(tmpT)
-                externalTypes.put(extT.name,extT)
+                externalTypes.put(refStr,extT)
                 return extT
             }
         }
@@ -297,7 +297,7 @@ class JsonSchemaBuilder implements IModelBuilder {
 
     }
 
-    private ComplexType initComplexType(def propertiesParent,def baseTypeName) {
+    private ComplexType initComplexType(def propertiesParent,def baseTypeName, String currentSchemaPath) {
         if (!propertiesParent) {
             def errorMsg = "undefined properties map, so cancel init complex type"
             log.error(errorMsg)
@@ -306,7 +306,7 @@ class JsonSchemaBuilder implements IModelBuilder {
         ComplexType complexType = new ComplexType()
         Type newType = new Type()
         newType.name = baseTypeName
-        newType.properties = getProperties(propertiesParent,baseTypeName)
+        newType.properties = getProperties(propertiesParent,baseTypeName,currentSchemaPath)
         complexType.type = newType
         return complexType
     }
@@ -327,7 +327,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                     return new UnsupportedType()
                 }
                 else
-                    return initComplexType(propObjMap,innerTypeBaseName)
+                    return initComplexType(propObjMap,innerTypeBaseName,currentSchemaPath)
             case 'array':
                 if (!isArrayAllowed) {
                     def errorMsg = "detect not allowed sub array type"
