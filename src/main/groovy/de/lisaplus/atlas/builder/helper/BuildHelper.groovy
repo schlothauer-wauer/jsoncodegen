@@ -19,6 +19,28 @@ class BuildHelper {
             return ret.substring(0,1).toLowerCase()+ret.substring(1)
     }
 
+    static String makeCamelCase(String s) {
+        if (!s) return s
+        int i = s.indexOf('_')
+        int txtLen = s.length()
+        while (i!=-1) {
+            if (i<txtLen) {
+                String nextChar = s.substring(i+1,i+2)
+                nextChar = nextChar.toUpperCase()
+                String tmp = s.substring(0,i)
+                tmp += nextChar
+                if (i<txtLen-1) {
+                    tmp += s.substring(i+2)
+                }
+                s = tmp
+                i = s.indexOf('_')
+            }
+            else
+                break
+        }
+        return s
+    }
+
     static List listFromMap(def map,String key) {
         def listObj = map[key]
         if (!listObj) {

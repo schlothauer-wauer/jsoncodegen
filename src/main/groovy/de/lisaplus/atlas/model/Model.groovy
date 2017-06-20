@@ -39,6 +39,12 @@ class Type {
      * In multi type schemas key unter definitions section is used as type name
      */
     String name
+
+    /**
+     * for Stephan :)
+     */
+    String color='#000000'
+
     /**
      * List of properties, type of PropertyType
      */

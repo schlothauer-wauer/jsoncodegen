@@ -1,5 +1,6 @@
 package de.lisaplus.atlas.builder
 
+import de.lisaplus.atlas.codegen.helper.java.TypeToColor
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.BaseType
 import de.lisaplus.atlas.model.BooleanType
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory
 
 import static de.lisaplus.atlas.builder.helper.BuildHelper.strFromMap
 import static de.lisaplus.atlas.builder.helper.BuildHelper.string2Name
+import static de.lisaplus.atlas.builder.helper.BuildHelper.makeCamelCase
 
 /**
  * Creates meta model from JSON schema
@@ -98,6 +100,7 @@ class JsonSchemaBuilder implements IModelBuilder {
 
     private addExternalTypesToModel(Model model) {
         externalTypes.each { typeObj ->
+            TypeToColor.setColor(typeObj.value)
             model.types.add(typeObj.value)
         }
     }
@@ -149,6 +152,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                 throw new Exception(errorMsg)
             }
         }
+        TypeToColor.setColor(newType)
         createdTypes[newType.name] = newType
         model.types.add(newType)
     }
@@ -159,7 +163,8 @@ class JsonSchemaBuilder implements IModelBuilder {
             def newProp = new Property()
             newProp.name = string2Name(propObj.key,false)
             newProp.description = propObj.value['description']
-            newProp.type = getPropertyType(propObj.value,parentName+string2Name(propObj.key),currentSchemaPath)
+            String key = makeCamelCase(propObj.key)
+            newProp.type = getPropertyType(propObj.value,parentName+string2Name(key),currentSchemaPath)
             propList.add(newProp)
         }
         return propList

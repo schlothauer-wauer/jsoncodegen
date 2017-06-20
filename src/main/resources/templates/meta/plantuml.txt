@@ -1,8 +1,18 @@
 @startuml
+skinparam class {
+	BackgroundColor #FFFFFF
+	ArrowColor #000000
+	BorderColor #000000
+}
+
 <% model.types.each  { type -> %>
-class ${firstUpperCase.call(type.name)} {
+class ${firstUpperCase.call(type.name)} << ( ,${type.color}) >> {
     <% type.properties.each  { prop -> %>
-    ${prop.name}: ${typeToJava.call(prop.type)}
+        <% if (prop.type instanceof de.lisaplus.atlas.model.RefType ) { %>
+    -<color:${prop.type.type.color} >${prop.name}: ${typeToJava.call(prop.type)}</color>
+        <% } else { %>
+    -${prop.name}: ${typeToJava.call(prop.type)}
+        <% } %>
     <% } %>
 }
     <% if (type.description) { %>
@@ -11,6 +21,7 @@ ${breakTxt.call(type.description,10)}
 end note
     <% } %>
 <% } %>
+hide methods
 
 <% model.types.each  { type -> %>
     <% type.properties.each  { prop -> %>
