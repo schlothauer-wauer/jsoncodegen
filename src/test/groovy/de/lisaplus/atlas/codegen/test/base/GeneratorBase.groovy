@@ -1,6 +1,8 @@
 package de.lisaplus.atlas.codegen.test.base
 
+import de.lisaplus.atlas.codegen.SingleFileGenarator
 import de.lisaplus.atlas.codegen.TemplateType
+import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Type
 import groovy.text.Template
@@ -9,6 +11,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import static junit.framework.Assert.fail
+import static junit.framework.TestCase.assertEquals
 import static junit.framework.TestCase.assertNull
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertNotNull
@@ -75,6 +78,19 @@ class GeneratorBase {
         catch(Exception e) {
             assertEquals('given template resource not found: templates/xxxx.tmpl',e.message)
         }
+    }
+
+    @Test
+    void testTextBreak() {
+        def de.lisaplus.atlas.codegen.GeneratorBase generator = new ExtSingleFileGenarator()
+        def result1 = generator.breakTxt("Das ist ein langer Text",5)
+        def expected1 = 'Das ist\nein langer\nText'
+        assertEquals(expected1,result1)
+
+        def result2 = generator.breakTxt("Das ist ein langer Text",3)
+        def expected2 = 'Das\nist\nein\nlanger\nText'
+        assertEquals(expected2,result2)
+
     }
 
 }

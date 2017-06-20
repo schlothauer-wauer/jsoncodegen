@@ -1,7 +1,23 @@
 @startuml
 <% model.types.each  { type -> %>
-/* all top level declared types - start */
+class ${firstUpperCase.call(type.name)} {
+    <% type.properties.each  { prop -> %>
+    ${prop.name}: ${typeToJava.call(prop.type)}
+    <% } %>
+}
+    <% if (type.description) { %>
+note top of ${firstUpperCase.call(type.name)}
+${breakTxt.call(type.description,10)}
+end note
+    <% } %>
 <% } %>
 
+<% model.types.each  { type -> %>
+    <% type.properties.each  { prop -> %>
+        <% if (prop.type instanceof de.lisaplus.atlas.model.RefType ) { %>
+${firstUpperCase.call(type.name)} *-- <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.type.type.name) }
+        <% } %>
+    <% } %>
+<% } %>
 
 @enduml
