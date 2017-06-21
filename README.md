@@ -9,7 +9,7 @@ A simple Groovy based program to do generation tasks from a JSON schema.
 * Gradle
 
 ## Unsupported JSON schema features
-* patternProperties - make no sence in model description
+* patternProperties - make no sense in model description
 * only references in the local document and local file system are supported
 
 ## Handle with gradle
@@ -50,7 +50,7 @@ cd build/release
 ./jsonCodeGen.sh --help
 ```
 
-To get a better unterstanding how the programm works see [here](src/test/groovy/de/lisaplus/atlas/codegen/test/PlantUml.groovy)
+To get a better understanding how the program works see [here](src/test/groovy/de/lisaplus/atlas/codegen/test/PlantUml.groovy)
 
 ## Program design
 ![Basic class design](http://www.plantuml.com/plantuml/png/5SX13iCm20NHgxG7gDddCfMBKUp8XWW-olMJRaPFynxACvkaprS7pjY8l5vb7-Zvon1dKuYYi2qAxjFGQuf_hd_f25Es9hiehHfuLZEEnqE_0Kz6kfGprxm1)
