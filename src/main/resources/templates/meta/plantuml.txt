@@ -3,13 +3,27 @@ skinparam class {
 	BackgroundColor #FFFFFF
 	ArrowColor #000000
 	BorderColor #000000
+	FontName Courier
+	FontSize 12
+}
+
+skinparam note {
+	BackgroundColor #dedede
+	BorderColor #000000
+	FontSize 10
+}
+
+
+skinparam classAttribute {
+	FontName Courier
+	FontSize 12
 }
 
 <% model.types.each  { type -> %>
 class ${firstUpperCase.call(type.name)} << ( ,${type.color}) >> {
     <% type.properties.each  { prop -> %>
         <% if (prop.type instanceof de.lisaplus.atlas.model.RefType ) { %>
-    -<color:${prop.type.type.color} >${prop.name}: ${typeToJava.call(prop.type)}</color>
+    -<color:${prop.type.type.color} ><b>${prop.name}: ${typeToJava.call(prop.type)}</b></color>
         <% } else { %>
     -${prop.name}: ${typeToJava.call(prop.type)}
         <% } %>
@@ -25,8 +39,8 @@ hide methods
 
 <% model.types.each  { type -> %>
     <% type.properties.each  { prop -> %>
-        <% if (prop.type instanceof de.lisaplus.atlas.model.RefType ) { %>
-${firstUpperCase.call(type.name)} *-- <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.type.type.name) }
+        <% if ((prop.type instanceof de.lisaplus.atlas.model.RefType) || (prop.type instanceof de.lisaplus.atlas.model.ComplexType)) { %>
+${firstUpperCase.call(type.name)} *-- <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.type.type.name) } ${ prop.type.type.color }
         <% } %>
     <% } %>
 <% } %>

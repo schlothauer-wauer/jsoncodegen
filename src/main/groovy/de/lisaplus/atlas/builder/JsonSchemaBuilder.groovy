@@ -90,7 +90,7 @@ class JsonSchemaBuilder implements IModelBuilder {
         Type newType = new Type()
         newType.name = typeName
         newType.description = strFromMap(objectModel,'description')
-        newType.properties = getProperties(objectModel,typeName,currentSchemaPath)
+        newType.properties = getProperties(model,objectModel,typeName,currentSchemaPath)
         // TODO initialize extra stuff
         addNewType(newType,model)
         addExternalTypesToModel(model)
@@ -112,7 +112,7 @@ class JsonSchemaBuilder implements IModelBuilder {
             Type newType = new Type()
             newType.name = typeName
             newType.description = strFromMap(typeObj.value,'description')
-            newType.properties = getProperties(typeObj.value,typeName,currentSchemaPath)
+            newType.properties = getProperties(model,typeObj.value,typeName,currentSchemaPath)
             // TODO  initialize extra stuff
             addNewType(newType,model)
         }
@@ -157,20 +157,20 @@ class JsonSchemaBuilder implements IModelBuilder {
         model.types.add(newType)
     }
 
-    private List<Property> getProperties(def propertyParent,def parentName,String currentSchemaPath) {
+    private List<Property> getProperties(Model model,def propertyParent,def parentName,String currentSchemaPath) {
         List<Property> propList = []
         propertyParent.properties.each { propObj ->
             def newProp = new Property()
             newProp.name = string2Name(propObj.key,false)
             newProp.description = propObj.value['description']
             String key = makeCamelCase(propObj.key)
-            newProp.type = getPropertyType(propObj.value,parentName+string2Name(key),currentSchemaPath)
+            newProp.type = getPropertyType(model,propObj.value,parentName+string2Name(key),currentSchemaPath)
             propList.add(newProp)
         }
         return propList
     }
 
-    private BaseType getPropertyType(def propObjMap,def innerTypeBaseName,String currentSchemaPath) {
+    private BaseType getPropertyType(Model model,def propObjMap,def innerTypeBaseName,String currentSchemaPath) {
         if (propObjMap.'$ref') {
             // reference to an external type
             return initRefType(propObjMap.'$ref',currentSchemaPath)
@@ -181,7 +181,7 @@ class JsonSchemaBuilder implements IModelBuilder {
             throw new Exception(errorMsg)
         }
         else {
-            return getBaseTypeFromString(currentSchemaPath,propObjMap,innerTypeBaseName)
+            return getBaseTypeFromString(model,currentSchemaPath,propObjMap,innerTypeBaseName)
         }
     }
 
@@ -302,7 +302,7 @@ class JsonSchemaBuilder implements IModelBuilder {
 
     }
 
-    private ComplexType initComplexType(def propertiesParent,def baseTypeName, String currentSchemaPath) {
+    private ComplexType initComplexType(Model model,def propertiesParent,def baseTypeName, String currentSchemaPath) {
         if (!propertiesParent) {
             def errorMsg = "undefined properties map, so cancel init complex type"
             log.error(errorMsg)
@@ -311,12 +311,13 @@ class JsonSchemaBuilder implements IModelBuilder {
         ComplexType complexType = new ComplexType()
         Type newType = new Type()
         newType.name = baseTypeName
-        newType.properties = getProperties(propertiesParent,baseTypeName,currentSchemaPath)
+        newType.properties = getProperties(model,propertiesParent,baseTypeName,currentSchemaPath)
         complexType.type = newType
+        addNewType(newType,model)
         return complexType
     }
 
-    private BaseType getBaseTypeFromString(String currentSchemaPath,def propObjMap, def innerTypeBaseName, def isArrayAllowed=true) {
+    private BaseType getBaseTypeFromString(Model model,String currentSchemaPath,def propObjMap, def innerTypeBaseName, def isArrayAllowed=true) {
         switch (propObjMap.type) {
             case 'string':
                 return new StringType()
@@ -332,7 +333,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                     return new UnsupportedType()
                 }
                 else
-                    return initComplexType(propObjMap,innerTypeBaseName,currentSchemaPath)
+                    return initComplexType(model,propObjMap,innerTypeBaseName,currentSchemaPath)
             case 'array':
                 if (!isArrayAllowed) {
                     def errorMsg = "detect not allowed sub array type"
@@ -340,7 +341,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                     throw new Exception(errorMsg)
                 }
                 if (propObjMap.items.type) {
-                    BaseType ret = getBaseTypeFromString(currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item',false)
+                    BaseType ret = getBaseTypeFromString(model,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item',false)
                     ret.isArray = true
                     return ret
                 }
