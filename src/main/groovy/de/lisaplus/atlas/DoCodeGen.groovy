@@ -19,19 +19,19 @@ import org.slf4j.LoggerFactory
  */
 class DoCodeGen {
     @Parameter(names = [ '-m', '--model' ], description = "Path to JSON schema to parse", required = true)
-    private String model
+    String model
 
     @Parameter(names = [ '-o', '--outputBase' ], description = "Base directory for the output", required = true)
-    private String outputBaseDir
+    String outputBaseDir
 
     @Parameter(names = ['-g', '--generator'], description = "generator that are used with the model. This parameter can be used multiple times")
-    private List<String> generators
+    List<String> generators = []
 
     @Parameter(names = ['-gp', '--generator-parameter'], description = "special parameter that are passed to template via maps")
-    private List<String> generator_parameters
+    List<String> generator_parameters = []
 
     @Parameter(names = ['-h','--help'], help = true)
-    private boolean help = false
+    boolean help = false
 
     static void main(String ... args) {
         DoCodeGen doCodeGen = new DoCodeGen()

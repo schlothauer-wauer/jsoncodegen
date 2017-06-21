@@ -78,8 +78,9 @@ abstract class GeneratorBase {
     }
 
     static String removeEmptyLines (String genResult) {
-        String s=genResult.replaceAll(/\n\s*\n/,'\n')
-        return s.replaceAll(/;\s*\n/,';\n\n')
+        String s=genResult.replaceAll(/\n\s*\n\s*\n/,'\n')
+//        return s.replaceAll(/;\s*\n/,';\n\n')
+        return s;
     }
 
     /**
@@ -95,8 +96,42 @@ abstract class GeneratorBase {
                 toUpperCase: toUpperCase,
                 firstLowerCase: firstLowerCase,
                 firstUpperCase: firstUpperCase,
-                typeToJava: JavaTypeConvert.convert
+                typeToJava: JavaTypeConvert.convert,
+                breakTxt: breakTxt
         ]
+    }
+
+    def breakTxt = { String txtToBreak,int charPerLine,String breakText='\n' ->
+        if (!txtToBreak) return EMPTY
+        StringBuilder sb = new StringBuilder()
+        int txtLen = txtToBreak.length()
+        int aktPos = 0
+        while (aktPos < txtLen) {
+            if ((aktPos + charPerLine) >= txtLen) {
+                // The rest of the word is smaller than the desired char count per line
+                sb.append(txtToBreak.substring(aktPos))
+                break;
+            } else {
+                sb.append(txtToBreak.substring(aktPos, aktPos + charPerLine))
+                aktPos += charPerLine
+                if (txtToBreak.substring(aktPos, aktPos + 1) == ' ') {
+                    sb.append(breakText)
+                    aktPos++
+                } else {
+                    for (aktPos; aktPos < txtLen; aktPos++) {
+                        String subStr = txtToBreak.substring(aktPos, aktPos + 1)
+                        if (subStr == ' ') {
+                            sb.append(breakText)
+                            aktPos++
+                            break
+                        } else {
+                            sb.append(subStr)
+                        }
+                    }
+                }
+            }
+        }
+        return sb.toString()
     }
 
     def toLowerCase = { str ->

@@ -1,10 +1,12 @@
 package de.lisaplus.atlas.builder
 
+import de.lisaplus.atlas.codegen.helper.java.TypeToColor
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.BaseType
 import de.lisaplus.atlas.model.BooleanType
 import de.lisaplus.atlas.model.ComplexType
 import de.lisaplus.atlas.model.DummyType
+import de.lisaplus.atlas.model.ExternalType
 import de.lisaplus.atlas.model.IntType
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.NumberType
@@ -17,11 +19,12 @@ import groovy.json.JsonSlurper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import static de.lisaplus.atlas.builder.helper.BuildHelper.listFromMap
 import static de.lisaplus.atlas.builder.helper.BuildHelper.strFromMap
 import static de.lisaplus.atlas.builder.helper.BuildHelper.string2Name
+import static de.lisaplus.atlas.builder.helper.BuildHelper.makeCamelCase
 
 /**
+ * Creates meta model from JSON schema
  * Created by eiko on 01.06.17.
  */
 class JsonSchemaBuilder implements IModelBuilder {
@@ -29,6 +32,11 @@ class JsonSchemaBuilder implements IModelBuilder {
      * Container for all created types helps - makes reference handling easier
      */
     def createdTypes=[:]
+
+    /**
+     * Container for type from external schemas
+     */
+    Map<String,ExternalType> externalTypes = [:]
 
     /**
      * builds a meta model from a model files
@@ -43,13 +51,14 @@ class JsonSchemaBuilder implements IModelBuilder {
             log.error(errorMsg)
             throw new Exception(errorMsg)
         }
+        String currentSchemaPath = getBasePathFromModelFile(modelFile)
         if (objectModel['definitions']) {
             // multi type schema
-            return modelFromMultiTypeSchema(objectModel)
+            return modelFromMultiTypeSchema(objectModel,currentSchemaPath)
         }
         else if (objectModel['properties']) {
             // single type schema
-            return modelFromSingeTypeSchema(objectModel,modelFile.getName())
+            return modelFromSingeTypeSchema(objectModel,modelFile.getName(),currentSchemaPath)
         }
         else {
             def errorMsg='unknown schema structure'
@@ -58,7 +67,14 @@ class JsonSchemaBuilder implements IModelBuilder {
         }
     }
 
-    private Model modelFromSingeTypeSchema(def objectModel, String modelFileName) {
+    static String getBasePathFromModelFile(modelFile) {
+        def path = modelFile.getPath()
+        def name = modelFile.getName()
+        def index = path.indexOf(name)
+        return path.substring(0,index)
+    }
+
+    private Model modelFromSingeTypeSchema(def objectModel, String modelFileName,String currentSchemaPath) {
         Model model = initModel(objectModel)
         def typeName = strFromMap(objectModel,'title')
         if (!typeName) {
@@ -74,24 +90,33 @@ class JsonSchemaBuilder implements IModelBuilder {
         Type newType = new Type()
         newType.name = typeName
         newType.description = strFromMap(objectModel,'description')
-        newType.properties = getProperties(objectModel,typeName)
+        newType.properties = getProperties(model,objectModel,typeName,currentSchemaPath)
         // TODO initialize extra stuff
         addNewType(newType,model)
+        addExternalTypesToModel(model)
         checkModelForErrors(model)
         return model
     }
 
-    private Model modelFromMultiTypeSchema(def objectModel) {
+    private addExternalTypesToModel(Model model) {
+        externalTypes.each { typeObj ->
+            TypeToColor.setColor(typeObj.value)
+            model.types.add(typeObj.value)
+        }
+    }
+
+    private Model modelFromMultiTypeSchema(def objectModel,String currentSchemaPath) {
         Model model = initModel(objectModel)
         objectModel.definitions.each { typeObj ->
             def typeName = string2Name(typeObj.key)
             Type newType = new Type()
             newType.name = typeName
             newType.description = strFromMap(typeObj.value,'description')
-            newType.properties = getProperties(typeObj.value,typeName)
+            newType.properties = getProperties(model,typeObj.value,typeName,currentSchemaPath)
             // TODO  initialize extra stuff
             addNewType(newType,model)
         }
+        addExternalTypesToModel(model)
         checkModelForErrors(model)
         return model
     }
@@ -127,26 +152,28 @@ class JsonSchemaBuilder implements IModelBuilder {
                 throw new Exception(errorMsg)
             }
         }
+        TypeToColor.setColor(newType)
         createdTypes[newType.name] = newType
         model.types.add(newType)
     }
 
-    private List<Property> getProperties(def propertyParent,def parentName) {
+    private List<Property> getProperties(Model model,def propertyParent,def parentName,String currentSchemaPath) {
         List<Property> propList = []
         propertyParent.properties.each { propObj ->
             def newProp = new Property()
             newProp.name = string2Name(propObj.key,false)
             newProp.description = propObj.value['description']
-            newProp.type = getPropertyType(propObj.value,parentName+string2Name(propObj.key))
+            String key = makeCamelCase(propObj.key)
+            newProp.type = getPropertyType(model,propObj.value,parentName+string2Name(key),currentSchemaPath)
             propList.add(newProp)
         }
         return propList
     }
 
-    private BaseType getPropertyType(def propObjMap,def innerTypeBaseName) {
+    private BaseType getPropertyType(Model model,def propObjMap,def innerTypeBaseName,String currentSchemaPath) {
         if (propObjMap.'$ref') {
             // reference to an external type
-            return initRefType(propObjMap.'$ref')
+            return initRefType(propObjMap.'$ref',currentSchemaPath)
         }
         else if (! propObjMap.type) {
             def errorMsg = "property object w/o any type: ${propObjMap}"
@@ -154,11 +181,11 @@ class JsonSchemaBuilder implements IModelBuilder {
             throw new Exception(errorMsg)
         }
         else {
-            return getBaseTypeFromString(propObjMap,innerTypeBaseName)
+            return getBaseTypeFromString(model,currentSchemaPath,propObjMap,innerTypeBaseName)
         }
     }
 
-    private RefType initRefType(def refStr) {
+    private RefType initRefType(def refStr,String currentSchemaPath) {
         if (!refStr) {
             def errorMsg = "undefined refStr, so cancel init reference type"
             log.error(errorMsg)
@@ -186,9 +213,68 @@ class JsonSchemaBuilder implements IModelBuilder {
         else {
             // "$ref": "definitions.json#/address"
             // "$ref": "http: //json-schema.org/geo" - HTTP not supported (eiko)
-            // TODO init RefType
+            Type t = getExternalRefType(refStr,currentSchemaPath)
+            refType.type=t
+            refType.typeName=t.name
         }
         return refType
+    }
+    private Type getExternalRefType(def refStr,String currentSchemaPath) {
+        def alreadyLoaded = externalTypes[refStr]
+        if (alreadyLoaded) {
+            return alreadyLoaded
+        }
+        else {
+            def indexOfTrenner = refStr.indexOf(EXT_REF_TRENNER)
+            if (indexOfTrenner != -1) {
+                // "$ref": "definitions.json#/address"
+                // reference to an external multi type schema
+                def fileName = refStr.substring(0,indexOfTrenner)
+                Model tmpModel = loadModelFromExternalFile(fileName,refStr,currentSchemaPath)
+                if ((!tmpModel) || (!tmpModel.types)) {
+                    throw new Exception("loaded model doesn't contain types")
+                }
+                desiredName = refStr.substring(indexOfTrenner+EXT_REF_TRENNER.length())
+                ExternalType extT = null
+                tmpModel.types.each { type ->
+                    if (type.name==desiredName) {
+                        extT = new ExternalType()
+                    }
+                }
+                if (extT==null) {
+                    throw new Exception("can't fine external type ${desiredName} in model: ${fileName}")
+                }
+                else {
+                    extT.refStr = refStr
+                    extT.initFromType(type)
+                    externalTypes.put(extT.name,extT)
+                    return extT
+                }
+            }
+            else {
+                // "$ref": "definitions.json"
+                // reference to an external single type schema
+                def fileName = refStr
+                Model tmpModel = loadModelFromExternalFile(fileName,refStr,currentSchemaPath)
+                if ((!tmpModel) || (!tmpModel.types)) {
+                    throw new Exception("loaded model doesn't contain types")
+                }
+                Type tmpT = tmpModel.types[0]
+                ExternalType extT = new ExternalType()
+                extT.refStr = refStr
+                extT.initFromType(tmpT)
+                externalTypes.put(refStr,extT)
+                return extT
+            }
+        }
+    }
+
+    private Model loadModelFromExternalFile(String fileName, String refStr,String currentSchemaPath) {
+        File modelFile = new File(currentSchemaPath+fileName)
+        if (!modelFile.exists()) {
+            throw new Exception ("can't find external reference File: ${modelFile.path}, refStr=${refStr}")
+        }
+        return buildModel(modelFile)
     }
 
     private Type getLocalRefType(def schemaTypeName) {
@@ -216,7 +302,7 @@ class JsonSchemaBuilder implements IModelBuilder {
 
     }
 
-    private ComplexType initComplexType(def propertiesParent,def baseTypeName) {
+    private ComplexType initComplexType(Model model,def propertiesParent,def baseTypeName, String currentSchemaPath) {
         if (!propertiesParent) {
             def errorMsg = "undefined properties map, so cancel init complex type"
             log.error(errorMsg)
@@ -225,12 +311,13 @@ class JsonSchemaBuilder implements IModelBuilder {
         ComplexType complexType = new ComplexType()
         Type newType = new Type()
         newType.name = baseTypeName
-        newType.properties = getProperties(propertiesParent,baseTypeName)
+        newType.properties = getProperties(model,propertiesParent,baseTypeName,currentSchemaPath)
         complexType.type = newType
+        addNewType(newType,model)
         return complexType
     }
 
-    private BaseType getBaseTypeFromString(def propObjMap, def innerTypeBaseName, def isArrayAllowed=true) {
+    private BaseType getBaseTypeFromString(Model model,String currentSchemaPath,def propObjMap, def innerTypeBaseName, def isArrayAllowed=true) {
         switch (propObjMap.type) {
             case 'string':
                 return new StringType()
@@ -246,7 +333,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                     return new UnsupportedType()
                 }
                 else
-                    return initComplexType(propObjMap,innerTypeBaseName)
+                    return initComplexType(model,propObjMap,innerTypeBaseName,currentSchemaPath)
             case 'array':
                 if (!isArrayAllowed) {
                     def errorMsg = "detect not allowed sub array type"
@@ -254,12 +341,12 @@ class JsonSchemaBuilder implements IModelBuilder {
                     throw new Exception(errorMsg)
                 }
                 if (propObjMap.items.type) {
-                    BaseType ret = getBaseTypeFromString(propObjMap.items,innerTypeBaseName+'Item',false)
+                    BaseType ret = getBaseTypeFromString(model,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item',false)
                     ret.isArray = true
                     return ret
                 }
                 else if (propObjMap.items['$ref']) {
-                    BaseType ret = initRefType(propObjMap.items['$ref'])
+                    BaseType ret = initRefType(propObjMap.items['$ref'],currentSchemaPath)
                     ret.isArray = true
                     return ret
                 }
@@ -280,7 +367,6 @@ class JsonSchemaBuilder implements IModelBuilder {
         model.title = strFromMap(objectModel, 'title')
         model.description = strFromMap(objectModel, 'description')
 
-        model.version = null
 
         if (objectModel.properties && objectModel.properties.model_version && objectModel.properties.model_version.enum) {
             objectModel.properties.model_version.enum.each {
@@ -292,5 +378,6 @@ class JsonSchemaBuilder implements IModelBuilder {
         return model
     }
 
+    private static final String EXT_REF_TRENNER='#/'
     private static final Logger log=LoggerFactory.getLogger(JsonSchemaBuilder.class);
 }

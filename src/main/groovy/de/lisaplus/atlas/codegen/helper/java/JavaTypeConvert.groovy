@@ -23,23 +23,21 @@ class JavaTypeConvert {
         }
         switch(type.name()) {
             case IntType.NAME:
-                return 'Integer'
+                return type.isArray? 'List<Integer>' : 'Integer'
             case NumberType.NAME:
-                return 'Double'
+                return type.isArray? 'List<Double>' : 'Double'
             case StringType.NAME:
-                return 'String'
+                return type.isArray? 'List<String>' : 'String'
             case BooleanType.NAME:
-                return 'Boolean'
+                return type.isArray? 'List<Boolean>' : 'Boolean'
             case DateType.NAME:
-                return 'Date'
+                return type.isArray? 'List<Double>' : 'Date'
             case DateTimeType.NAME:
-                return 'Date'
+                return type.isArray? 'List<Double>' : 'Date'
             case RefType.NAME:
-                def typeName = type.type.name
-                return typeName
+                return type.isArray? "List<${type.type.name}>" : type.type.name
             case ComplexType.NAME:
-                def typeName = type.type.name
-                return typeName
+                return type.isArray? "List<${type.type.name}>" : type.type.name
             case UnsupportedType.NAME:
                 return BaseType.UNSUPPORTED_TYPE+type
             break

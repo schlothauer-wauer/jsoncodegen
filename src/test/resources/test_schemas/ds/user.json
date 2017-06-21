@@ -12,7 +12,7 @@
         },
         "user": {
           "description": "What user owns this entry",
-          "$ref": "#definitions/user"
+          "$ref": "#/definitions/user"
         },
         "type": {
           "description": "type of the entry",
@@ -54,7 +54,7 @@
         "roles": {
           "type": "array",
           "items": {
-            "$ref": "#defitions/role"
+            "$ref": "#/definitions/role"
           }
         },
         "active": {
@@ -125,12 +125,6 @@
           "type": "boolean"
         }
       }
-    },
-    "module_grant": {
-
-    },
-    "data_grant": {
-
     }
   },
   "type": "object",

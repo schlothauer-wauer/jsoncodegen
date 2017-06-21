@@ -50,6 +50,7 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
   
 ###Base generators
 * multifiles - creates multible files from model and extra given template
+  - includeExtTypes - also use external type to generate files
   - outputDirExt - an needed subpath below the given outputBasePath
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
 

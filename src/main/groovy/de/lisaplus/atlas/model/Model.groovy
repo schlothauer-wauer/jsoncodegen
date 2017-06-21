@@ -39,6 +39,12 @@ class Type {
      * In multi type schemas key unter definitions section is used as type name
      */
     String name
+
+    /**
+     * for Stephan :)
+     */
+    String color='#000000'
+
     /**
      * List of properties, type of PropertyType
      */
@@ -59,6 +65,14 @@ class Type {
     String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
+
+    void initFromType (Type t) {
+        this.name = t.name
+        this.properties = t.properties
+        this.description = t.description
+        this.requiredProps = t.requiredProps
+        this.sinceVersion = t.sinceVersion
+    }
 }
 
 /**
@@ -72,6 +86,12 @@ class DummyType  extends Type {
     def referencesToChange=[]
 }
 
+/**
+ * this type describes an external type
+ */
+class ExternalType extends Type {
+    String refStr
+}
 
 class Property {
     def description
