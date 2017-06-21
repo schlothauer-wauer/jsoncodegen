@@ -367,13 +367,15 @@ class JsonSchemaBuilder implements IModelBuilder {
         model.title = strFromMap(objectModel, 'title')
         model.description = strFromMap(objectModel, 'description')
 
-
         if (objectModel.properties && objectModel.properties.model_version && objectModel.properties.model_version.enum) {
             objectModel.properties.model_version.enum.each {
                 if (!model.version) {
                     model.version = it
                 }
             }
+        }
+        else if (objectModel.version) {
+            model.version = objectModel.version
         }
         return model
     }
