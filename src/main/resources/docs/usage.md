@@ -36,25 +36,25 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
     -gp destFileNameExt=.java -gp packageName=de.sw.atlas.test
 ```
 
-##Already defines internal generators with their extra parameters:
+## Already defines internal generators with their extra parameters:
 
-###Java related
+### Java related
 * java_beans - creates a set of Java beans from model
   - packageName - what is the package for the generated beans
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
   
-###Service related 
+### Service related 
 * swagger_file - creates a swagger file from model
   - destFileName - name of the generated file
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
   
-###Base generators
-* multifiles - creates multible files from model and extra given template
+### Base generators
+* multifiles - creates multiple files from model and extra given template
   - includeExtTypes - also use external type to generate files
-  - outputDirExt - an needed subpath below the given outputBasePath
+  - outputDirExt - a needed subpath below the given outputBasePath
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
 
 * singlefile - creates single file from model and extra given template
-  - outputDirExt - an needed subpath below the given outputBasePath
+  - outputDirExt - a needed subpath below the given outputBasePath
   - destFileName - filename for the generated file
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
