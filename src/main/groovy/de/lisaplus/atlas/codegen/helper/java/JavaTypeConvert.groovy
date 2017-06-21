@@ -31,9 +31,9 @@ class JavaTypeConvert {
             case BooleanType.NAME:
                 return type.isArray? 'List<Boolean>' : 'Boolean'
             case DateType.NAME:
-                return type.isArray? 'List<Double>' : 'Date'
+                return type.isArray? 'List<Date>' : 'Date'
             case DateTimeType.NAME:
-                return type.isArray? 'List<Double>' : 'Date'
+                return type.isArray? 'List<Date>' : 'Date'
             case RefType.NAME:
                 return type.isArray? "List<${type.type.name}>" : type.type.name
             case ComplexType.NAME:
