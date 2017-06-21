@@ -45,9 +45,9 @@ cd build/release
 
 # show help in bash environment
 ./jsonCodeGen.sh --help
+```
 
 To get a better unterstanding how the programm works see [here](src/test/groovy/de/lisaplus/atlas/codegen/test/PlantUml.groovy)
-```
 
 ## Program design
 ![Basic class design](http://www.plantuml.com/plantuml/png/5SX13iCm20NHgxG7gDddCfMBKUp8XWW-olMJRaPFynxACvkaprS7pjY8l5vb7-Zvon1dKuYYi2qAxjFGQuf_hd_f25Es9hiehHfuLZEEnqE_0Kz6kfGprxm1)
