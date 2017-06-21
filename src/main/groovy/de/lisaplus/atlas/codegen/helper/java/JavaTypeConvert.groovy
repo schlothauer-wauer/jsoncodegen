@@ -40,7 +40,6 @@ class JavaTypeConvert {
                 return type.isArray? "List<${type.type.name}>" : type.type.name
             case UnsupportedType.NAME:
                 return BaseType.UNSUPPORTED_TYPE+type
-            break
         default:
             return BaseType.UNKNOWN_TYPE+type
         }

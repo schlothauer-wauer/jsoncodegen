@@ -2,6 +2,7 @@ package de.lisaplus.atlas.codegen
 
 import de.lisaplus.atlas.DoCodeGen
 import de.lisaplus.atlas.codegen.helper.java.JavaTypeConvert
+import de.lisaplus.atlas.codegen.helper.java.SwaggerTypeConvert
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Type
 import groovy.text.GStringTemplateEngine
@@ -80,6 +81,11 @@ abstract class GeneratorBase {
     static String removeEmptyLines (String genResult) {
         String s=genResult.replaceAll(/\n\s*\n\s*\n/,'\n')
 //        return s.replaceAll(/;\s*\n/,';\n\n')
+        s = s.replaceAll(/\n\s*\n/,'\n')
+        /*
+        s = s.replaceAll(/:\s*\n\s*\n/,':\n')
+        s = s.replaceAll(/;\s*\n\s*\n/,';\n')
+        */
         return s;
     }
 
@@ -97,6 +103,8 @@ abstract class GeneratorBase {
                 firstLowerCase: firstLowerCase,
                 firstUpperCase: firstUpperCase,
                 typeToJava: JavaTypeConvert.convert,
+                typeToSwagger: SwaggerTypeConvert.convert,
+                typeFormatToSwagger: SwaggerTypeConvert.format,
                 breakTxt: breakTxt
         ]
     }

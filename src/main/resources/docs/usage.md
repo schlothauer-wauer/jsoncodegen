@@ -37,15 +37,18 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
 ```
 
 ##Already defines internal generators with their extra parameters:
+* generator parameter marked with (!) are needed
 
 ###Java related
 * java_beans - creates a set of Java beans from model
-  - packageName - what is the package for the generated beans
+  - packageName - what is the package for the generated beans (!)
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
   
 ###Service related 
 * swagger_file - creates a swagger file from model
-  - destFileName - name of the generated file
+  - host - name for the host entry
+  - basePath - text for the basePath entry
+  - destFileName - name of the generated file (!)
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
   
 ###Base generators

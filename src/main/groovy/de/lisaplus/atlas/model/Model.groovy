@@ -109,4 +109,8 @@ class Property {
     String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
+
+    boolean isRefTypeOrComplexType() {
+        return type && ( type instanceof RefType || type instanceof ComplexType )
+    }
 }

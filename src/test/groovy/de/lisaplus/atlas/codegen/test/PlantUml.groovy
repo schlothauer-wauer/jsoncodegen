@@ -5,6 +5,7 @@ import org.junit.Test
 import static junit.framework.Assert.assertTrue
 
 /**
+ * Tests the plantuml generator and template
  * Created by eiko on 19.06.17.
  */
 class PlantUml {
