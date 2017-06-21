@@ -1,3 +1,6 @@
+#Branch Info
+Is branch is used to implement a swagger generator
+
 # jsonCodeGen
 A simple Groovy based program to do generation tasks from a JSON schema.
 
