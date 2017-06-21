@@ -1,6 +1,3 @@
-# branch info
-This is a my personal development branch ... so stay away :D
-
 # jsonCodeGen
 A simple Groovy based program to do generation tasks from a JSON schema.
 
@@ -48,6 +45,8 @@ cd build/release
 
 # show help in bash environment
 ./jsonCodeGen.sh --help
+
+To get a better unterstanding how the programm works see [here](src/test/groovy/de/lisaplus/atlas/codegen/test/PlantUml.groovy)
 ```
 
 ## Program design
