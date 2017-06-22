@@ -3,6 +3,7 @@ package de.lisaplus.atlas.codegen
 import de.lisaplus.atlas.DoCodeGen
 import de.lisaplus.atlas.codegen.helper.java.JavaTypeConvert
 import de.lisaplus.atlas.codegen.helper.java.SwaggerTypeConvert
+import de.lisaplus.atlas.model.InnerType
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Type
 import groovy.text.GStringTemplateEngine
@@ -102,11 +103,16 @@ abstract class GeneratorBase {
                 toUpperCase: toUpperCase,
                 firstLowerCase: firstLowerCase,
                 firstUpperCase: firstUpperCase,
+                isInnerType: isInnerType,
                 typeToJava: JavaTypeConvert.convert,
                 typeToSwagger: SwaggerTypeConvert.convert,
                 typeFormatToSwagger: SwaggerTypeConvert.format,
                 breakTxt: breakTxt
         ]
+    }
+
+    def isInnerType = { type ->
+        return type && (type instanceof InnerType )
     }
 
     def breakTxt = { String txtToBreak,int charPerLine,String breakText='\n' ->

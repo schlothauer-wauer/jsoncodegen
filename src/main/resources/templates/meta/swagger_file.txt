@@ -19,33 +19,43 @@ basePath: /v${model.version}
 produces:
   - application/json
 paths:
-<% model.types.each { type -> %>
+<% model.types.findAll { return ! isInnerType.call(it) }.each { type -> %>
   /${toLowerCase.call(type.name)}:
     get:
+      summary: Get one or more ${type.name} objects
+      parameters:
+      tags:
+        - ${type.name}
+        - QUERY
     post:
+      summary: Add new ${type.name} object
+      parameters:
+      tags:
+        - ${type.name}
+        - ADD
     put:
+      summary: Update or replace ${type.name} object
+      parameters:
+      tags:
+        - ${type.name}
+        - EDIT
     delete:
+      summary: Delete ${type.name} object
+      parameters:
+      tags:
+        - ${type.name}
+        - DELETE
     head:
-    options:
+      summary: Check whether ${type.name} object exists
+      parameters:
+      tags:
+        - ${type.name}
+        - TEST
     default:
       description: Unexpected error
       schema:
       ${DOLLAR}ref: '#/definitions/Error'
 <% } %>
-  /pets:
-    get:
-      description: Returns all pets from the system that the user has access
-      responses:
-        '200':
-          description: A list of pets.
-          schema:
-            type: array
-            items:
-              ${DOLLAR}ref: '#/definitions/Domain'
-        default:
-          description: Unexpected error
-          schema:
-            ${DOLLAR}ref: '#/definitions/Role'
 definitions:
 <% model.types.each { type -> %>
   ${firstUpperCase.call(type.name)}:
@@ -82,3 +92,14 @@ definitions:
         <% } %>
     <% } %>
 <% } %>
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
+

@@ -61,6 +61,10 @@ class Type {
      */
     int sinceVersion
 
+    /**
+     * types that reference this type
+     */
+    List<Type> refOwner
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);
@@ -84,6 +88,12 @@ class DummyType  extends Type {
      * List of RefType objects. After the real Type is created, it's needed to set the right references
      */
     def referencesToChange=[]
+}
+
+/**
+ * this type is for inner declarations of complex types
+ */
+class InnerType extends Type {
 }
 
 /**

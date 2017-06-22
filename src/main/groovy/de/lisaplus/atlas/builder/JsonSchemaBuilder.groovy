@@ -7,6 +7,7 @@ import de.lisaplus.atlas.model.BooleanType
 import de.lisaplus.atlas.model.ComplexType
 import de.lisaplus.atlas.model.DummyType
 import de.lisaplus.atlas.model.ExternalType
+import de.lisaplus.atlas.model.InnerType
 import de.lisaplus.atlas.model.IntType
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.NumberType
@@ -117,16 +118,31 @@ class JsonSchemaBuilder implements IModelBuilder {
             addNewType(newType,model)
         }
         addExternalTypesToModel(model)
+        initRefOwnerForTypes(model)
         checkModelForErrors(model)
         return model
     }
+
+    /**
+     * fill for all types the list refOwner with object
+     * @param model
+     */
+    private static void initRefOwnerForTypes(Model model) {
+        model.types.findAll { return ! it instanceof InnerType }.each { type ->
+            type.properties.findAll { it.type instanceof RefType && it.type. }.each {
+
+                }
+            }
+        }
+    }
+
 
     /**
      * check if there are any errors in the model definition
      * for instance unresolved Dummytypes
      * @param model
      */
-    private checkModelForErrors(def model) {
+    private void checkModelForErrors(def model) {
         // TODO
     }
 
@@ -309,7 +325,7 @@ class JsonSchemaBuilder implements IModelBuilder {
             throw new Exception(errorMsg)
         }
         ComplexType complexType = new ComplexType()
-        Type newType = new Type()
+        Type newType = new InnerType()
         newType.name = baseTypeName
         newType.properties = getProperties(model,propertiesParent,baseTypeName,currentSchemaPath)
         complexType.type = newType
