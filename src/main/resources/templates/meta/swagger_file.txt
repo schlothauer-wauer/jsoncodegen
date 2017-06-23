@@ -20,9 +20,19 @@ produces:
   - application/json
 paths:
 <% model.types.findAll { return ! isInnerType.call(it) }.each { type -> %>
-    /${toLowerCase.call(type.name)}
-    <% type.refOwner.each { %>
-    /${toLowerCase.call(type.name)}{${toLowerCase.call(type.name)}_id}
+    /${toLowerCase.call(type.name)}:
+    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}:
+    <% type.refOwner.each { refOwner1 -> %>
+    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}/${toLowerCase.call(refOwner1.name)}
+    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}/${toLowerCase.call(refOwner1.name)}/{${toLowerCase.call(refOwner1.name)}_id}
+        <% refOwner1.refOwner.each { refOwner2 -> %>
+    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}/${toLowerCase.call(refOwner1.name)}/{${toLowerCase.call(refOwner1.name)}_id}/${toLowerCase.call(refOwner2.name)}
+    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}/${toLowerCase.call(refOwner1.name)}/{${toLowerCase.call(refOwner1.name)}_id}/${toLowerCase.call(refOwner2.name)}/{${toLowerCase.call(refOwner2.name)}_id}
+            <% refOwner2.refOwner.each { refOwner3 -> %>
+    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}/${toLowerCase.call(refOwner1.name)}/{${toLowerCase.call(refOwner1.name)}_id}/${toLowerCase.call(refOwner2.name)}/${toLowerCase.call(refOwner3.name)}
+    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}/${toLowerCase.call(refOwner1.name)}/{${toLowerCase.call(refOwner1.name)}_id}/${toLowerCase.call(refOwner2.name)}/${toLowerCase.call(refOwner3.name)}/{${toLowerCase.call(refOwner3.name)}_id}
+            <% } %>
+        <% } %>
     <% } %>
 <% } %>
 definitions:
