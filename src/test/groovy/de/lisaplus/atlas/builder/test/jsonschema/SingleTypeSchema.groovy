@@ -19,7 +19,7 @@ class SingleTypeSchema {
         def model = builder.buildModel(modelFile)
         assertEquals(model.description,'JSON Schema for process data of a traffic controller.')
         assertNull(model.title)
-        assertEquals(1,model.types.size())
+        assertEquals(6,model.types.size())
 
         // check property count
         def typeName = 'SingleType'

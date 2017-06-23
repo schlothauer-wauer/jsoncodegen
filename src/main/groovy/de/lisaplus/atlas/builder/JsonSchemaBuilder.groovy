@@ -95,7 +95,8 @@ class JsonSchemaBuilder implements IModelBuilder {
         // TODO initialize extra stuff
         addNewType(newType,model)
         addExternalTypesToModel(model)
-        checkModelForErrors(model)
+        model.initRefOwnerForTypes()
+        model.checkModelForErrors()
         return model
     }
 
@@ -118,32 +119,9 @@ class JsonSchemaBuilder implements IModelBuilder {
             addNewType(newType,model)
         }
         addExternalTypesToModel(model)
-        initRefOwnerForTypes(model)
-        checkModelForErrors(model)
+        model.initRefOwnerForTypes()
+        model.checkModelForErrors()
         return model
-    }
-
-    /**
-     * fill for all types the list refOwner with object
-     * @param model
-     */
-    private static void initRefOwnerForTypes(Model model) {
-        model.types.findAll { return ! it instanceof InnerType }.each { type ->
-            type.properties.findAll { it.type instanceof RefType && it.type. }.each {
-
-                }
-            }
-        }
-    }
-
-
-    /**
-     * check if there are any errors in the model definition
-     * for instance unresolved Dummytypes
-     * @param model
-     */
-    private void checkModelForErrors(def model) {
-        // TODO
     }
 
     /**

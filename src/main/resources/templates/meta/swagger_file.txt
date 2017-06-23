@@ -20,41 +20,10 @@ produces:
   - application/json
 paths:
 <% model.types.findAll { return ! isInnerType.call(it) }.each { type -> %>
-  /${toLowerCase.call(type.name)}:
-    get:
-      summary: Get one or more ${type.name} objects
-      parameters:
-      tags:
-        - ${type.name}
-        - QUERY
-    post:
-      summary: Add new ${type.name} object
-      parameters:
-      tags:
-        - ${type.name}
-        - ADD
-    put:
-      summary: Update or replace ${type.name} object
-      parameters:
-      tags:
-        - ${type.name}
-        - EDIT
-    delete:
-      summary: Delete ${type.name} object
-      parameters:
-      tags:
-        - ${type.name}
-        - DELETE
-    head:
-      summary: Check whether ${type.name} object exists
-      parameters:
-      tags:
-        - ${type.name}
-        - TEST
-    default:
-      description: Unexpected error
-      schema:
-      ${DOLLAR}ref: '#/definitions/Error'
+    /${toLowerCase.call(type.name)}
+    <% type.refOwner.each { %>
+    /${toLowerCase.call(type.name)}{${toLowerCase.call(type.name)}_id}
+    <% } %>
 <% } %>
 definitions:
 <% model.types.each { type -> %>

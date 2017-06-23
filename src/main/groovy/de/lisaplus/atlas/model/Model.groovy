@@ -29,6 +29,31 @@ class Model {
     String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
+
+    /**
+     * fill for all types the list refOwner with object
+     * @param model
+     */
+    void initRefOwnerForTypes() {
+        types.findAll {
+            !(it instanceof InnerType) }.each { t ->
+                types.findAll {
+                    it.name!=t.name }. each { currentType ->
+                        currentType.properties.find {
+                            it.type instanceof RefType && it.type.type.name==t.name }.each {
+                                t.refOwner.add(currentType)
+                }
+            }
+        }
+    }
+
+    /**
+     * checks whether the model has some errors
+     */
+    void checkModelForErrors() {
+        // TODO
+    }
+
 }
 
 class Type {
@@ -64,7 +89,7 @@ class Type {
     /**
      * types that reference this type
      */
-    List<Type> refOwner
+    List<Type> refOwner=[]
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);
