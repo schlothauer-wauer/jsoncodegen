@@ -38,7 +38,7 @@ class Model {
         types.findAll {
             !(it instanceof InnerType) }.each { t ->
                 types.findAll {
-                    it.name!=t.name }. each { currentType ->
+                    it.name!=t.name && (!(it instanceof InnerType) )}. each { currentType ->
                         currentType.properties.find {
                             it.type instanceof RefType && it.type.type.name==t.name }.each {
                                 t.refOwner.add(currentType)

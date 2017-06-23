@@ -1,3 +1,52 @@
+<%
+    // If you declare a closure you can use it inside the template
+    def printPath = { type,pathStr ->
+    /*
+    return """
+  /${pathStr}:
+    get:
+"""
+    */
+    return ''
+    }
+
+    /**
+     * Print path for List URLs
+     */
+    def printIDPath = { List typeList ->
+        def pathStr=''
+        typeList.each {
+                pathStr += '/'
+                pathStr += toLowerCase.call(it.name)
+                pathStr += "/{${toLowerCase.call(it.name)}_id}"
+        }
+    return """
+  ${pathStr}:
+    get:
+"""
+    }
+
+    /**
+     * Print path for ID URLs
+     */
+    def printListPath = { List typeList ->
+        def pathStr=''
+        def lastElem = typeList[typeList.size()-1]
+        typeList.each {
+                pathStr += '/'
+                pathStr += toLowerCase.call(it.name)
+                if (it!=lastElem) {
+                    pathStr += "/{${toLowerCase.call(it.name)}_id}"
+                }
+        }
+        def ret = """
+  ${pathStr}:
+    get:
+"""
+        return ret
+    }
+%>
+
 swagger: '2.0'
 info:
   title: ${model.title}
@@ -20,17 +69,17 @@ produces:
   - application/json
 paths:
 <% model.types.findAll { return ! isInnerType.call(it) }.each { type -> %>
-    /${toLowerCase.call(type.name)}:
-    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}:
+  ${printListPath([type])}
+  ${printIDPath([type])}
     <% type.refOwner.each { refOwner1 -> %>
-    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}/${toLowerCase.call(refOwner1.name)}
-    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}/${toLowerCase.call(refOwner1.name)}/{${toLowerCase.call(refOwner1.name)}_id}
+  ${printListPath([type,refOwner1])}
+  ${printIDPath([type,refOwner1])}
         <% refOwner1.refOwner.each { refOwner2 -> %>
-    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}/${toLowerCase.call(refOwner1.name)}/{${toLowerCase.call(refOwner1.name)}_id}/${toLowerCase.call(refOwner2.name)}
-    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}/${toLowerCase.call(refOwner1.name)}/{${toLowerCase.call(refOwner1.name)}_id}/${toLowerCase.call(refOwner2.name)}/{${toLowerCase.call(refOwner2.name)}_id}
+  ${printListPath([type,refOwner1,refOwner2])}
+  ${printIDPath([type,refOwner1,refOwner2])}
             <% refOwner2.refOwner.each { refOwner3 -> %>
-    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}/${toLowerCase.call(refOwner1.name)}/{${toLowerCase.call(refOwner1.name)}_id}/${toLowerCase.call(refOwner2.name)}/${toLowerCase.call(refOwner3.name)}
-    /${toLowerCase.call(type.name)}/{${toLowerCase.call(type.name)}_id}/${toLowerCase.call(refOwner1.name)}/{${toLowerCase.call(refOwner1.name)}_id}/${toLowerCase.call(refOwner2.name)}/${toLowerCase.call(refOwner3.name)}/{${toLowerCase.call(refOwner3.name)}_id}
+  ${printListPath([type,refOwner1,refOwner2,refOwner3])}
+  ${printIDPath([type,refOwner1,refOwner2,refOwner3])}
             <% } %>
         <% } %>
     <% } %>
@@ -81,4 +130,3 @@ definitions:
         type: string
       fields:
         type: string
-
