@@ -1,15 +1,17 @@
 <%
-    // If you declare a closure you can use it inside the template
-    def printPath = { type,pathStr ->
-    /*
-    return """
-  /${pathStr}:
-    get:
+    def getParameterStr = { List typeList,boolean isIdPath ->
+        if ((!typeList) || ((typeList.size()==1) && (!isIdPath)) return ''
+        typeList.findAll {
+        }.each {
+
+        }
+        def ret = """      parameters:
+${parameterStr}
 """
-    */
-    return ''
+        return ret
     }
 
+    // If you declare a closure you can use it inside the template
     /**
      * Print path for List URLs
      */
@@ -20,9 +22,15 @@
                 pathStr += toLowerCase.call(it.name)
                 pathStr += "/{${toLowerCase.call(it.name)}_id}"
         }
+        def lastItem = typeList[typeList.size()-1]
+        def summary = lastItem.description ? lastItem.description : '???'
+        def parameterStr = getParameterStr(typeList)
     return """
   ${pathStr}:
     get:
+      summary: ${summary}
+      description: returns object by id
+${parameterStr}
 """
     }
 
@@ -39,9 +47,15 @@
                     pathStr += "/{${toLowerCase.call(it.name)}_id}"
                 }
         }
+        def lastItem = typeList[typeList.size()-1]
+        def summary = lastItem.description ? lastItem.description : '???'
+        def parameterStr = getParameterStr(typeList)
         def ret = """
   ${pathStr}:
     get:
+      summary: ${summary}
+      description: returns object list
+${parameterStr}
 """
         return ret
     }
