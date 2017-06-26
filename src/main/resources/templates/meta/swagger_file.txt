@@ -1,14 +1,64 @@
 <%
     def getParameterStr = { List typeList,boolean isIdPath ->
-        if ((!typeList) || ((typeList.size()==1) && (!isIdPath)) return ''
+        if ((!typeList) || ((typeList.size()==1) && (!isIdPath))) return ''
+        def parameterStr=''
         typeList.findAll {
+            isIdPath || (it != typeList[typeList.size()-1])
         }.each {
-
+            def descriptionStr = it.description ? it.description : '???'
+            parameterStr += "\n        - name: ${it.name.toLowerCase()}_id"
+            parameterStr += '\n          in: path'
+            parameterStr += "\n          description: $descriptionStr"
+            parameterStr += '\n          required: true'
+            parameterStr += '\n          type: integer'
+            parameterStr += '\n          format: int64'
         }
         def ret = """      parameters:
 ${parameterStr}
 """
         return ret
+    }
+
+    /**
+     * prints out tags section
+     */
+    def printTags = { type ->
+        return """      tags:
+        - GET
+        - ${type.name}"""
+    }
+
+    /**
+     * prints out response section for ID-Paths
+     */
+    def printIdResponse = { type ->
+        return """      responses:
+        200:
+          description: in case of success
+          schema:
+            ${DOLLAR}ref: '#/definitions/${type.name}'
+        default:
+          description: Unexpected error
+          schema:
+            ${DOLLAR}ref: '#/definitions/Error'"""
+    }
+
+
+    /**
+     * prints out response section for List-Paths
+     */
+    def printListResponse = { type ->
+        return """      responses:
+        200:
+          description: in case of success
+          schema:
+            type: array
+            items:
+              ${DOLLAR}ref: '#/definitions/${type.name}'
+        default:
+          description: Unexpected error
+          schema:
+            ${DOLLAR}ref: '#/definitions/Error'"""
     }
 
     // If you declare a closure you can use it inside the template
@@ -24,18 +74,20 @@ ${parameterStr}
         }
         def lastItem = typeList[typeList.size()-1]
         def summary = lastItem.description ? lastItem.description : '???'
-        def parameterStr = getParameterStr(typeList)
+        def parameterStr = getParameterStr(typeList,true)
     return """
   ${pathStr}:
     get:
       summary: ${summary}
       description: returns object by id
 ${parameterStr}
+${printTags(lastItem)}
+${printIdResponse(lastItem)}
 """
     }
 
     /**
-     * Print path for ID URLs
+     * Print path for List URLs
      */
     def printListPath = { List typeList ->
         def pathStr=''
@@ -49,13 +101,15 @@ ${parameterStr}
         }
         def lastItem = typeList[typeList.size()-1]
         def summary = lastItem.description ? lastItem.description : '???'
-        def parameterStr = getParameterStr(typeList)
+        def parameterStr = getParameterStr(typeList,false)
         def ret = """
   ${pathStr}:
     get:
       summary: ${summary}
       description: returns object list
 ${parameterStr}
+${printTags(lastItem)}
+${printListResponse(lastItem)}
 """
         return ret
     }

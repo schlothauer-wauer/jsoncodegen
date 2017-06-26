@@ -41,7 +41,9 @@ class Model {
                     it.name!=t.name && (!(it instanceof InnerType) )}. each { currentType ->
                         currentType.properties.find {
                             it.type instanceof RefType && it.type.type.name==t.name }.each {
-                                t.refOwner.add(currentType)
+                                if (!t.refOwner.contains(currentType)) {
+                                    t.refOwner.add(currentType)
+                                }
                 }
             }
         }
@@ -101,6 +103,11 @@ class Type {
         this.description = t.description
         this.requiredProps = t.requiredProps
         this.sinceVersion = t.sinceVersion
+    }
+
+    boolean equals(Object b) {
+        if (! b instanceof Type) return false
+        return name==b.name
     }
 }
 
