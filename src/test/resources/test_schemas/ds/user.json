@@ -70,6 +70,10 @@
     "role": {
       "type": "object",
       "properties": {
+        "domain": {
+          "description": "what is the related domain",
+          "$ref": "./shared/domain.json"
+        },
         "name": {
           "description": "Name of the role",
           "type": "string",

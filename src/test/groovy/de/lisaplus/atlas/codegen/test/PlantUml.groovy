@@ -5,6 +5,7 @@ import org.junit.Test
 import static junit.framework.Assert.assertTrue
 
 /**
+ * Tests the plantuml generator and template
  * Created by eiko on 19.06.17.
  */
 class PlantUml {
@@ -29,6 +30,18 @@ class PlantUml {
         doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
         doCodeGen.outputBaseDir='tmp'
         doCodeGen.generator_parameters.add('destFileName=license.puml')
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
+
+    @Test
+    void createUserModel_BuiltIn() {
+        def destFile='tmp/user_model.puml'
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model='src/test/resources/test_schemas/ds/user.json'
+        doCodeGen.generators.add('plantuml')
+        doCodeGen.outputBaseDir='tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
         doCodeGen.run()
         assertTrue(new File(destFile).exists())

@@ -3,6 +3,10 @@ skinparam class {
 	BackgroundColor #FFFFFF
 	ArrowColor #000000
 	BorderColor #000000
+
+	BorderColor<<InnerType>> #777777
+	BackgroundColor<<InnerType>> #EEEEEE
+
 	FontName Courier
 	FontSize 12
 }
@@ -20,9 +24,9 @@ skinparam classAttribute {
 }
 
 <% model.types.each  { type -> %>
-class ${firstUpperCase.call(type.name)} << ( ,${type.color}) >> {
+class ${firstUpperCase.call(type.name)} <% if ( type instanceof de.lisaplus.atlas.model.InnerType ) { %> <<InnerType>> <% } %> << ( ,${type.color}) >> {
     <% type.properties.each  { prop -> %>
-        <% if (prop.type instanceof de.lisaplus.atlas.model.RefType ) { %>
+        <% if (prop.isRefTypeOrComplexType()) { %>
     -<color:${prop.type.type.color} ><b>${prop.name}: ${typeToJava.call(prop.type)}</b></color>
         <% } else { %>
     -${prop.name}: ${typeToJava.call(prop.type)}
@@ -39,7 +43,7 @@ hide methods
 
 <% model.types.each  { type -> %>
     <% type.properties.each  { prop -> %>
-        <% if ((prop.type instanceof de.lisaplus.atlas.model.RefType) || (prop.type instanceof de.lisaplus.atlas.model.ComplexType)) { %>
+        <% if (prop.isRefTypeOrComplexType()) { %>
 ${firstUpperCase.call(type.name)} *-- <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.type.type.name) } ${ prop.type.type.color }
         <% } %>
     <% } %>

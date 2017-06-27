@@ -7,6 +7,7 @@ import de.lisaplus.atlas.model.BooleanType
 import de.lisaplus.atlas.model.ComplexType
 import de.lisaplus.atlas.model.DummyType
 import de.lisaplus.atlas.model.ExternalType
+import de.lisaplus.atlas.model.InnerType
 import de.lisaplus.atlas.model.IntType
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.NumberType
@@ -94,7 +95,8 @@ class JsonSchemaBuilder implements IModelBuilder {
         // TODO initialize extra stuff
         addNewType(newType,model)
         addExternalTypesToModel(model)
-        checkModelForErrors(model)
+        model.initRefOwnerForTypes()
+        model.checkModelForErrors()
         return model
     }
 
@@ -117,17 +119,9 @@ class JsonSchemaBuilder implements IModelBuilder {
             addNewType(newType,model)
         }
         addExternalTypesToModel(model)
-        checkModelForErrors(model)
+        model.initRefOwnerForTypes()
+        model.checkModelForErrors()
         return model
-    }
-
-    /**
-     * check if there are any errors in the model definition
-     * for instance unresolved Dummytypes
-     * @param model
-     */
-    private checkModelForErrors(def model) {
-        // TODO
     }
 
     /**
@@ -309,7 +303,7 @@ class JsonSchemaBuilder implements IModelBuilder {
             throw new Exception(errorMsg)
         }
         ComplexType complexType = new ComplexType()
-        Type newType = new Type()
+        Type newType = new InnerType()
         newType.name = baseTypeName
         newType.properties = getProperties(model,propertiesParent,baseTypeName,currentSchemaPath)
         complexType.type = newType
@@ -367,13 +361,15 @@ class JsonSchemaBuilder implements IModelBuilder {
         model.title = strFromMap(objectModel, 'title')
         model.description = strFromMap(objectModel, 'description')
 
-
         if (objectModel.properties && objectModel.properties.model_version && objectModel.properties.model_version.enum) {
             objectModel.properties.model_version.enum.each {
                 if (!model.version) {
                     model.version = it
                 }
             }
+        }
+        else if (objectModel.version) {
+            model.version = objectModel.version
         }
         return model
     }

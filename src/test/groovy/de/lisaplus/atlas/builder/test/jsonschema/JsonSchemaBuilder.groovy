@@ -25,7 +25,7 @@ class JsonSchemaBuilder {
         assertTrue(modelFile.isFile())
         def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
         def model = builder.buildModel(modelFile)
-        assertEquals(6,model.types.size())
+        assertEquals(8,model.types.size())
     }
 
 

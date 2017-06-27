@@ -16,6 +16,8 @@ class Model {
     int version
     def title
     def description
+    def fileName
+
     /**
      * List of type definitions
      */
@@ -29,6 +31,33 @@ class Model {
     String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
+
+    /**
+     * fill for all types the list refOwner with object
+     * @param model
+     */
+    void initRefOwnerForTypes() {
+        types.findAll {
+            !(it instanceof InnerType) }.each { t ->
+                types.findAll {
+                    it.name!=t.name && (!(it instanceof InnerType) )}. each { currentType ->
+                        currentType.properties.find {
+                            it.type instanceof RefType && it.type.type.name==t.name }.each {
+                                if (!t.refOwner.contains(currentType)) {
+                                    t.refOwner.add(currentType)
+                                }
+                }
+            }
+        }
+    }
+
+    /**
+     * checks whether the model has some errors
+     */
+    void checkModelForErrors() {
+        // TODO
+    }
+
 }
 
 class Type {
@@ -61,6 +90,10 @@ class Type {
      */
     int sinceVersion
 
+    /**
+     * types that reference this type
+     */
+    List<Type> refOwner=[]
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);
@@ -73,6 +106,11 @@ class Type {
         this.requiredProps = t.requiredProps
         this.sinceVersion = t.sinceVersion
     }
+
+    boolean equals(Object b) {
+        if (! b instanceof Type) return false
+        return name==b.name
+    }
 }
 
 /**
@@ -84,6 +122,12 @@ class DummyType  extends Type {
      * List of RefType objects. After the real Type is created, it's needed to set the right references
      */
     def referencesToChange=[]
+}
+
+/**
+ * this type is for inner declarations of complex types
+ */
+class InnerType extends Type {
 }
 
 /**
@@ -108,5 +152,9 @@ class Property {
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);
+    }
+
+    boolean isRefTypeOrComplexType() {
+        return type && ( type instanceof RefType || type instanceof ComplexType )
     }
 }

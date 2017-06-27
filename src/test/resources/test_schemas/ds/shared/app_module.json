@@ -1,7 +1,7 @@
 {
   "id": "http://schlothauer.de/schemas/shared/app_module.json",
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "application spezific module",
+  "description": "application specific module",
   "type": "object",
   "properties": {
     "name": {

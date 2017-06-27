@@ -10,6 +10,8 @@ import de.lisaplus.atlas.model.Type
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import static de.lisaplus.atlas.builder.helper.BuildHelper.string2Name
+
 /**
  * This is the published version of SingleFileGenerator. With external template it can be used for own generation
  * tasks
@@ -32,7 +34,7 @@ class ExtSingleFileGenarator extends SingleFileGenarator implements IExternalCod
             return extraParameters.destFileName
         }
         else {
-            return dataModel.name + '.txt'
+            return string2Name("${dataModel.title}.swagger",false)
         }
     }
 

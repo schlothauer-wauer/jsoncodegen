@@ -12,11 +12,11 @@ import static de.lisaplus.atlas.builder.helper.BuildHelper.string2Name
 /**
  * Created by eiko on 05.06.17.
  */
-class SwaggerGenerator extends SingleFileGenarator {
-    private static final Logger log=LoggerFactory.getLogger(SwaggerGenerator.class)
+class PlantUmlGenerator extends SingleFileGenarator {
+    private static final Logger log=LoggerFactory.getLogger(PlantUmlGenerator.class)
 
     void initTemplate() {
-        template = createTemplateFromResource('templates/meta/swagger_file.txt',TemplateType.GString)
+        template = createTemplateFromResource('templates/meta/plantuml.txt',TemplateType.GString)
     }
 
     @Override
@@ -25,7 +25,7 @@ class SwaggerGenerator extends SingleFileGenarator {
             return extraParameters.destFileName
         }
         else {
-            return "${string2Name(dataModel.title,false)}.swagger"
+            return "${string2Name(dataModel.title,false)}.puml"
         }
     }
 
