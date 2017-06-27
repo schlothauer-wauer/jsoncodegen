@@ -7,6 +7,8 @@ import de.lisaplus.atlas.builder.JsonSchemaBuilder
 import de.lisaplus.atlas.codegen.TemplateType
 import de.lisaplus.atlas.codegen.external.ExtMultiFileGenarator
 import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
+import de.lisaplus.atlas.codegen.meta.PlantUmlGenerator
+import de.lisaplus.atlas.codegen.meta.SwaggerGenerator
 import de.lisaplus.atlas.interf.IExternalCodeGen
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
@@ -148,9 +150,15 @@ class DoCodeGen {
                 ignoreTemplateMsg(generatorName, templateName)
                 // TODO
                 break
-            case 'swagger_file':
-                ignoreTemplateMsg(generatorName, templateName)
-                // TODO
+            case 'swagger':
+                SwaggerGenerator generator = new SwaggerGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
+            case 'plantuml':
+                PlantUmlGenerator generator = new PlantUmlGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break
             case 'multifiles':
                 generateMultiFiles(generatorName,templateName,dataModel,extraParameters,outputBaseDir)

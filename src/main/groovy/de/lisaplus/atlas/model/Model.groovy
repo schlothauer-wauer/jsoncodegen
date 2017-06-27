@@ -16,6 +16,8 @@ class Model {
     int version
     def title
     def description
+    def fileName
+
     /**
      * List of type definitions
      */

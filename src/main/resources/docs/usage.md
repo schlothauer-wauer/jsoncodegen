@@ -11,10 +11,10 @@ Examples:
 de.lisaplus.atlas.DoCodeGen -o ./test/mein_output -m ./test/mein_modell.json -g java_beans -gp packageBase=de.sw.atlas 
 
 # 1. reads a model from file ./test/mein_modell.json
-# 2. use two internal java_bean generators: java_beans, swagger_file
+# 2. use two internal java_bean generators: java_beans, swagger
 # 3. gives the extra parameter packageBase with value 'de.sw.atlas' to the generator
 # 4. writes the output to ./test/mein_output
-de.lisaplus.atlas.DoCodeGen -o ./test/mein_output -m ./test/mein_modell.json -g java_beans -g swagger_file \
+de.lisaplus.atlas.DoCodeGen -o ./test/mein_output -m ./test/mein_modell.json -g java_beans -g swagger \
     -gp packageBase=de.sw.atlas
 
 # 1. reads a model from file ./test/mein_modell.json
@@ -45,7 +45,7 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
   
 ### Service related 
-* swagger_file - creates a swagger file from model
+* swagger - creates a swagger file from model
   - host - name for the host entry
   - basePath - text for the basePath entry
   - destFileName - name of the generated file (!)
