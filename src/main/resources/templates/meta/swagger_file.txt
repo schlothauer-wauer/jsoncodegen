@@ -24,7 +24,6 @@ ${parameterStr}
      */
     def printTags = { type ->
         return """      tags:
-        - GET
         - ${type.name}"""
     }
 
