@@ -1,4 +1,8 @@
+<% if (extraParam.markdown) { %>
+```plantuml
+<% } else { %>
 @startuml
+<% } %>
 skinparam class {
 	BackgroundColor #FFFFFF
 	ArrowColor #000000
@@ -48,5 +52,8 @@ ${firstUpperCase.call(type.name)} *-- <% if(prop.type.isArray) { %>"many"<% } %>
         <% } %>
     <% } %>
 <% } %>
-
+<% if (extraParam.markdown) { %>
+```
+<% } else { %>
 @enduml
+<% } %>

@@ -46,4 +46,18 @@ class PlantUml {
         doCodeGen.run()
         assertTrue(new File(destFile).exists())
     }
+
+    @Test
+    void createUserModel_Markdown() {
+        def destFile='tmp/user_puml.md'
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model='src/test/resources/test_schemas/ds/user.json'
+        doCodeGen.generators.add('plantuml')
+        doCodeGen.outputBaseDir='tmp'
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.generator_parameters.add('markdown=true')
+        doCodeGen.generator_parameters.add('destFileName=user_puml.md')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
 }
