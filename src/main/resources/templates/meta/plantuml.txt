@@ -52,6 +52,7 @@ ${firstUpperCase.call(type.name)} *-- <% if(prop.type.isArray) { %>"many"<% } %>
         <% } %>
     <% } %>
 <% } %>
+footer powered by plantuml, created with jsonCodeGen
 <% if (extraParam.markdown) { %>
 ```
 <% } else { %>

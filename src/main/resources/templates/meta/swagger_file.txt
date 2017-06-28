@@ -113,7 +113,7 @@ ${printListResponse(lastItem)}
         return ret
     }
 %>
-
+# generated with jsonCodeGen
 swagger: '2.0'
 info:
   title: ${model.title}
