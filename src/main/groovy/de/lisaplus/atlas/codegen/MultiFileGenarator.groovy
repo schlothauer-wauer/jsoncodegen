@@ -24,7 +24,10 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
         }
         def data = createTemplateDataMap(model)
         if (extraParams) {
-            data = data << ((Map)extraParams)
+            data.extraParam = extraParams
+        }
+        else {
+            data.extraParam = [:]
         }
 
         def shouldRemoveEmptyLines = extraParams['removeEmptyLines']

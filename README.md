@@ -45,6 +45,10 @@ cd build/release
 
 # show help in bash environment
 ./jsonCodeGen.sh --help
+
+# example swagger call
+build/release/jsonCodeGen.sh -g swagger -o ~/tmp -m src/test/resources/test_schemas/ds/user.json \
+  -gp removeEmptyLines=true -gp host=api.lisaplus.de
 ```
 
 To get a better understanding how the program works see [here](src/test/groovy/de/lisaplus/atlas/codegen/test/PlantUml.groovy)

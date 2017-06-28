@@ -119,16 +119,16 @@ info:
   title: ${model.title}
   description: ${model.description}
   version: "${model.version}"
-<% if (hasProperty('host')) { %>
-host: ${host}
+<% if (extraParam.host) { %>
+host: ${extraParam.host}
 <% } else { %>
 host: please.change.com
 <% } %>
 schemes:
     - http
     - https
-<% if (hasProperty('basePath')) { %>
-basePath: ${basePath}
+<% if (extraParam.basePath) { %>
+basePath: ${extraParam.basePath}
 <% } else { %>
 basePath: /v${model.version}
 <% } %>
