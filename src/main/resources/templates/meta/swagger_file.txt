@@ -128,7 +128,11 @@ schemes:
     - http
     - https
 <% if (extraParam.basePath) { %>
+    <% if (extraParam.appendVersionToPath) { %>
+basePath: ${extraParam.basePath}/v${model.version}
+    <% } else { %>
 basePath: ${extraParam.basePath}
+    <% } %>
 <% } else { %>
 basePath: /v${model.version}
 <% } %>

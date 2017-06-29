@@ -48,6 +48,7 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
 * swagger - creates a swagger file from model
   - host - name for the host entry
   - basePath - text for the basePath entry
+  - appendVersionToPath - if true the versions is append to an additional configured basePath 
   - destFileName - name of the generated file (!)
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
   
