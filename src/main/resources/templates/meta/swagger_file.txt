@@ -138,6 +138,12 @@ basePath: /v${model.version}
 <% } %>
 produces:
   - application/json
+<% if (extraParam.extraProduces) { %>
+    <% extraParam.extraProduces.split(',').each { %>
+  - ${it.trim()}
+    <% } %>
+<% } %>
+
 paths:
 <% model.types.findAll { return ! isInnerType.call(it) }.each { type -> %>
   ${printListPath([type])}
