@@ -1,15 +1,54 @@
-group 'de.lisaplus.atlas'
-version '1.0-SNAPSHOT'
-
 apply plugin: 'groovy'
 apply plugin: 'java'
+/*
+apply plugin: 'maven'
+*/
+apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
 
 def mainClass='de.lisaplus.atlas.DoCodeGen'
 
+project.group = 'de.lisaplus.tools'
+project.version = '0.2'
+def releaseArchiveName = "jsonCodeGen_${project.version}.zip"
+/*
+ * the following attributes need to be declared in $HOME/.gradle/gradle.properties
+    mavenReleaseRepo=http://localhost:8081/content/repositories/releases
+    mavenSnapshotRepo=http://localhost:8081/content/repositories/snapshots
+    mavenUser=admin
+    mavenUserPwd=admin123
+    mavenBaseRepo=http://localhost:8081/content/groups/public
+ **/
+publishing {
+    publications {
+        libraryJar(MavenPublication) {
+            from components.java
+            artifact zipRelease
+        }
+    }
+    repositories {
+        maven {
+            url "${project.version.endsWith('-SNAPSHOT') ? mavenSnapshotRepo : mavenReleaseRepo }"
+            credentials {
+                username = "${mavenUser}"
+                password = "${mavenUserPwd}"
+            }
+        }
+    }
+}
+
 repositories {
+    mavenLocal()
+    maven {
+        url "${mavenBaseRepo}"
+    }
     mavenCentral()
+}
+
+artifacts {
+    archives jar
+    archives file: new File("$releaseArchiveName"), name: 'jsonCodeGen', type: 'zip'
 }
 
 dependencies {
@@ -42,6 +81,14 @@ task buildRelease (type: Copy) {
         from "${project.rootDir}/src/main/resources/conf"
         into "${buildDir}/release/conf"
     }
+}
+
+task zipRelease (type: Zip) {
+    from "${buildDir}/release"
+    include '*'
+    include '*/*'
+    archiveName "$releaseArchiveName"
+    destinationDir(file("${buildDir}"))
 }
 
 task myRun (type: JavaExec, dependsOn: classes){
@@ -86,7 +133,7 @@ task integrationTest(type: Test) {
     doLast {
         // that's the place to tidy up test integration environment
     }
-    testClassesDir = sourceSets.integrationTest.output.classesDir
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
     outputs.upToDateWhen { false }
 }
@@ -94,4 +141,5 @@ task integrationTest(type: Test) {
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
 buildRelease.dependsOn test
+zipRelease.dependsOn buildRelease
 
