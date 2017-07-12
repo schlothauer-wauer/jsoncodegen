@@ -60,4 +60,33 @@ class PlantUml {
         doCodeGen.run()
         assertTrue(new File(destFile).exists())
     }
+
+    static void test_v4_base(def outputFileBase) {
+        def destFile="tmp/${outputFileBase}.puml"
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model="src/test/resources/schemas/${outputFileBase}.json"
+        doCodeGen.generators.add('plantuml')
+        doCodeGen.outputBaseDir='tmp'
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.generator_parameters.add("destFileName=${outputFileBase}.puml".toString())
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
+
+
+    @Test
+    void test_v4() {
+        test_v4_base("test_4")
+
+        test_v4_base("CnResponseType")
+        test_v4_base("CycCollectionType")
+        test_v4_base("DetCollectionType")
+        test_v4_base("GeoCollectionType")
+        test_v4_base("LocCollectionType")
+        test_v4_base("ProcessDataEvent")
+        test_v4_base("StdCollectionType")
+        test_v4_base("TimCollectionType")
+        test_v4_base("Container")
+    }
+
 }

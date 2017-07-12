@@ -1,0 +1,903 @@
+{
+  "type": "object",
+  "id": "urn:jsonschema:generated:Topology",
+  "properties": {
+    "mapData": {
+      "type": "object",
+      "id": "urn:jsonschema:generated:MapData",
+      "properties": {
+        "restrictionList": {
+          "type": "object",
+          "id": "urn:jsonschema:generated:RestrictionClassList",
+          "properties": {
+            "restrictionClassAssignment": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "id": "urn:jsonschema:generated:RestrictionClassAssignment",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "users": {
+                    "type": "object",
+                    "id": "urn:jsonschema:generated:RestrictionUserTypeList",
+                    "properties": {
+                      "user": {
+                        "type": "object",
+                        "id": "urn:jsonschema:generated:RestrictionUserType",
+                        "properties": {
+                          "basicTypeOrRegional": {
+                            "type": "array"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "dataParameters": {
+          "type": "object",
+          "id": "urn:jsonschema:generated:DataParameters",
+          "properties": {
+            "lastCheckedDate": {
+              "type": "string"
+            },
+            "processAgency": {
+              "type": "string"
+            }
+          }
+        },
+        "msgIssueRevision": {
+          "type": "integer"
+        },
+        "intersections": {
+          "type": "object",
+          "id": "urn:jsonschema:generated:IntersectionGeometryList",
+          "properties": {
+            "intersectionGeometry": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "id": "urn:jsonschema:generated:IntersectionGeometry",
+                "properties": {
+                  "speedLimits": {
+                    "type": "object",
+                    "id": "urn:jsonschema:generated:SpeedLimitList",
+                    "properties": {
+                      "regulatorySpeedLimit": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "id": "urn:jsonschema:generated:RegulatorySpeedLimit",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "UNKNOWN",
+                                "MAX_SPEED_IN_SCHOOL_ZONE",
+                                "MAX_SPEED_IN_SCHOOL_ZONE_WHEN_CHILDREN_ARE_PRESENT",
+                                "MAX_SPEED_IN_CONSTRUCTION_ZONE",
+                                "VEHICLE_MIN_SPEED",
+                                "VEHICLE_MAX_SPEED",
+                                "VEHICLE_NIGHT_MAX_SPEED",
+                                "TRUCK_MIN_SPEED",
+                                "TRUCK_MAX_SPEED",
+                                "TRUCK_NIGHT_MAX_SPEED",
+                                "VEHICLES_WITH_TRAILERS_MIN_SPEED",
+                                "VEHICLES_WITH_TRAILERS_MAX_SPEED",
+                                "VEHICLES_WITH_TRAILERS_NIGHT_MAX_SPEED",
+                                "NOMINAL_SPEED"
+                              ]
+                            },
+                            "speed": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "laneSet": {
+                    "type": "object",
+                    "id": "urn:jsonschema:generated:LaneList",
+                    "properties": {
+                      "genericLane": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "id": "urn:jsonschema:generated:GenericLane",
+                          "properties": {
+                            "connectsTo": {
+                              "type": "object",
+                              "id": "urn:jsonschema:generated:ConnectToList",
+                              "properties": {
+                                "connection": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "id": "urn:jsonschema:generated:Connection",
+                                    "properties": {
+                                      "userClass": {
+                                        "type": "integer"
+                                      },
+                                      "connectionID": {
+                                        "type": "integer"
+                                      },
+                                      "remoteIntersection": {
+                                        "type": "object",
+                                        "$ref": "urn:jsonschema:generated:IntersectionReferenceID"
+                                      },
+                                      "signalGroup": {
+                                        "type": "integer"
+                                      },
+                                      "connectingLane": {
+                                        "type": "object",
+                                        "id": "urn:jsonschema:generated:ConnectingLane",
+                                        "properties": {
+                                          "lane": {
+                                            "type": "integer"
+                                          },
+                                          "maneuver": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "laneID": {
+                              "type": "integer"
+                            },
+                            "nodes": {
+                              "type": "object",
+                              "id": "urn:jsonschema:generated:NodeSetXY",
+                              "properties": {
+                                "nodeXY": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "id": "urn:jsonschema:generated:NodeXY",
+                                    "properties": {
+                                      "attributes": {
+                                        "type": "object",
+                                        "id": "urn:jsonschema:generated:NodeAttributeSetXY",
+                                        "properties": {
+                                          "dwidth": {
+                                            "type": "integer"
+                                          },
+                                          "data": {
+                                            "type": "object",
+                                            "id": "urn:jsonschema:generated:LaneDataAttributeList",
+                                            "properties": {
+                                              "laneDataAttribute": {
+                                                "type": "object",
+                                                "id": "urn:jsonschema:generated:LaneDataAttribute",
+                                                "properties": {
+                                                  "speedLimitsOrRegional": {
+                                                    "type": "array"
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "delevation": {
+                                            "type": "integer"
+                                          },
+                                          "localNode": {
+                                            "type": "object",
+                                            "id": "urn:jsonschema:generated:NodeAttributeXYList",
+                                            "properties": {
+                                              "nodeAttributeXY": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "RESERVED",
+                                                    "STOP_LINE",
+                                                    "ROUNDED_CAP_STYLE_A",
+                                                    "ROUNDED_CAP_STYLE_B",
+                                                    "MERGE_POINT",
+                                                    "DIVERGE_POINT",
+                                                    "DOWNSTREAM_STOP_LINE",
+                                                    "DOWNSTREAM_START_NODE",
+                                                    "CLOSED_TO_TRAFFIC",
+                                                    "SAFE_ISLAND",
+                                                    "CURB_PRESENT_AT_STEP_OFF",
+                                                    "HYDRANT_PRESENT",
+                                                    "YIELD"
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "disabled": {
+                                            "type": "object",
+                                            "id": "urn:jsonschema:generated:SegmentAttributesXYList",
+                                            "properties": {
+                                              "segmentAttributeXY": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "RESERVED",
+                                                    "DO_NOT_BLOCK",
+                                                    "WHITE_LINE",
+                                                    "MERGING_LANE_LEFT",
+                                                    "MERGING_LANE_RIGHT",
+                                                    "CURB_ON_LEFT",
+                                                    "CURB_ON_RIGHT",
+                                                    "LOADINGZONE_ON_LEFT",
+                                                    "LOADINGZONE_ON_RIGHT",
+                                                    "TURN_OUT_POINT_ON_LEFT",
+                                                    "TURN_OUT_POINT_ON_RIGHT",
+                                                    "ADJACENT_PARKING_ON_LEFT",
+                                                    "ADJACENT_PARKING_ON_RIGHT",
+                                                    "ADJACENT_BIKE_LANE_ON_LEFT",
+                                                    "ADJACENT_BIKE_LANE_ON_RIGHT",
+                                                    "SHARED_BIKE_LANE",
+                                                    "BIKE_BOX_IN_FRONT",
+                                                    "TRANSIT_STOP_ON_LEFT",
+                                                    "TRANSIT_STOP_ON_RIGHT",
+                                                    "TRANSIT_STOP_IN_LANE",
+                                                    "SHARED_WITH_TRACKED_VEHICLE",
+                                                    "SAFE_ISLAND",
+                                                    "LOW_CURBS_PRESENT",
+                                                    "RUMBLE_STRIP_PRESENT",
+                                                    "AUDIBLE_SIGNALING_PRESENT",
+                                                    "ADAPTIVE_TIMING_PRESENT",
+                                                    "RF_SIGNAL_REQUEST_PRESENT",
+                                                    "PARTIAL_CURB_INTRUSION",
+                                                    "TAPER_TO_LEFT",
+                                                    "TAPER_TO_RIGHT",
+                                                    "TAPER_TO_CENTER_LINE",
+                                                    "PARALLEL_PARKING",
+                                                    "HEAD_IN_PARKING",
+                                                    "FREE_PARKING",
+                                                    "TIME_RESTRICTIONS_ON_PARKING",
+                                                    "COST_TO_PARK",
+                                                    "MID_BLOCK_CURB_PRESENT",
+                                                    "UN_EVEN_PAVEMENT_PRESENT"
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "enabled": {
+                                            "type": "object",
+                                            "$ref": "urn:jsonschema:generated:SegmentAttributesXYList"
+                                          }
+                                        }
+                                      },
+                                      "nodeLatLon": {
+                                        "type": "object",
+                                        "id": "urn:jsonschema:generated:NodeLLmD64B",
+                                        "properties": {
+                                          "lon": {
+                                            "type": "integer"
+                                          },
+                                          "lat": {
+                                            "type": "integer"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "egressApproach": {
+                              "type": "integer"
+                            },
+                            "regional": {
+                              "type": "object",
+                              "id": "urn:jsonschema:generated:REGIONRegGenericLane",
+                              "properties": {
+                                "addGrpC": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "id": "urn:jsonschema:generated:ConnectionTrajectoryAddGrpC",
+                                    "properties": {
+                                      "nodes": {
+                                        "type": "object",
+                                        "$ref": "urn:jsonschema:generated:NodeSetXY"
+                                      },
+                                      "connectionID": {
+                                        "type": "integer"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "laneAttributes": {
+                              "type": "object",
+                              "id": "urn:jsonschema:generated:LaneAttributes",
+                              "properties": {
+                                "directionalUse": {
+                                  "type": "string"
+                                },
+                                "crosswalk": {
+                                  "type": "string"
+                                },
+                                "bikeLane": {
+                                  "type": "string"
+                                },
+                                "trackedvehicle": {
+                                  "type": "string"
+                                },
+                                "sharedWith": {
+                                  "type": "string"
+                                },
+                                "vehicle": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "ingressApproach": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "refPoint": {
+                    "type": "object",
+                    "id": "urn:jsonschema:generated:Position3D",
+                    "properties": {
+                      "altitude": {
+                        "type": "integer"
+                      },
+                      "lat": {
+                        "type": "integer"
+                      },
+                      "long": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "laneWidth": {
+                    "type": "integer"
+                  },
+                  "id": {
+                    "type": "object",
+                    "id": "urn:jsonschema:generated:IntersectionReferenceID",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "region": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "revision": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "defaultVariant": {
+      "type": "integer"
+    },
+    "controlData": {
+      "type": "object",
+      "id": "urn:jsonschema:generated:ControlData",
+      "properties": {
+        "controller": {
+          "type": "object",
+          "id": "urn:jsonschema:generated:TLC",
+          "properties": {
+            "outputs": {
+              "type": "object",
+              "id": "urn:jsonschema:generated:OutputList",
+              "properties": {
+                "output": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "urn:jsonschema:generated:VlogIO"
+                  }
+                }
+              }
+            },
+            "serialNumber": {
+              "type": "string"
+            },
+            "descriptiveName": {
+              "type": "string"
+            },
+            "tlcPosition": {
+              "type": "object",
+              "$ref": "urn:jsonschema:generated:Position3D"
+            },
+            "inputs": {
+              "type": "object",
+              "id": "urn:jsonschema:generated:InputList",
+              "properties": {
+                "input": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "id": "urn:jsonschema:generated:VlogIO",
+                    "properties": {
+                      "ioType": {
+                        "type": "string"
+                      },
+                      "alias": {
+                        "type": "string"
+                      },
+                      "vlogIdx": {
+                        "type": "integer"
+                      },
+                      "comment": {
+                        "type": "string"
+                      },
+                      "ioName": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "name": {
+              "type": "string"
+            },
+            "tlcIdentifier": {
+              "type": "string"
+            },
+            "vlogID": {
+              "type": "string"
+            },
+            "alias": {
+              "type": "string"
+            },
+            "tlcType": {
+              "type": "string"
+            },
+            "brand": {
+              "type": "string"
+            },
+            "uniqueID": {
+              "type": "string"
+            }
+          }
+        },
+        "controlledIntersections": {
+          "type": "object",
+          "id": "urn:jsonschema:generated:IntersectionGeometryAddList",
+          "properties": {
+            "controlledIntersection": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "id": "urn:jsonschema:generated:IntersectionGeometryAdd",
+                "properties": {
+                  "signalGroupRelations": {
+                    "type": "object",
+                    "id": "urn:jsonschema:generated:SignalGroupRelationList",
+                    "properties": {
+                      "signalGroupRelation": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "id": "urn:jsonschema:generated:SignalGroupRelation",
+                          "properties": {
+                            "clearanceTimeType": {
+                              "type": "string",
+                              "enum": [
+                                "PROTECTED_BY_CLEARANCE",
+                                "PROTECTED_BY_INTERGREEN"
+                              ]
+                            },
+                            "clearanceTime": {
+                              "type": "integer"
+                            },
+                            "fromSignalGroup": {
+                              "type": "integer"
+                            },
+                            "toSignalGroup": {
+                              "type": "integer"
+                            },
+                            "alias": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "sensors": {
+                    "type": "object",
+                    "id": "urn:jsonschema:generated:SensorList",
+                    "properties": {
+                      "sensor": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "id": "urn:jsonschema:generated:Sensor",
+                          "properties": {
+                            "sensorPosition": {
+                              "type": "object",
+                              "id": "urn:jsonschema:generated:Position",
+                              "properties": {
+                                "lat": {
+                                  "type": "integer"
+                                },
+                                "long": {
+                                  "type": "integer"
+                                }
+                              }
+                            },
+                            "sensorOutput": {
+                              "type": "string"
+                            },
+                            "length": {
+                              "type": "integer"
+                            },
+                            "sensorDeviceType": {
+                              "type": "string",
+                              "enum": [
+                                "UNKNOWN",
+                                "INDUCTION_LOOP",
+                                "COMMUNICATION_LOOP",
+                                "PUSH_BUTTON",
+                                "CAMERA",
+                                "RADAR",
+                                "MOTION_DETECTOR",
+                                "PRESSURE_SENSOR",
+                                "INFRARED",
+                                "RADIO"
+                              ]
+                            },
+                            "geoShape": {
+                              "type": "object",
+                              "id": "urn:jsonschema:generated:GeoShape",
+                              "properties": {
+                                "indexPoint": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "id": "urn:jsonschema:generated:IndexedPosition",
+                                    "properties": {
+                                      "index": {
+                                        "type": "integer"
+                                      },
+                                      "lat": {
+                                        "type": "integer"
+                                      },
+                                      "long": {
+                                        "type": "integer"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "occupationTime": {
+                              "type": "integer"
+                            },
+                            "sensorID": {
+                              "type": "integer"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "width": {
+                              "type": "integer"
+                            },
+                            "sensorAllocations": {
+                              "type": "object",
+                              "id": "urn:jsonschema:generated:SensorAllocationList",
+                              "properties": {
+                                "sensorAllocation": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "id": "urn:jsonschema:generated:SensorAllocation",
+                                    "properties": {
+                                      "laneID": {
+                                        "type": "integer"
+                                      },
+                                      "distance": {
+                                        "type": "integer"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "alias": {
+                              "type": "string"
+                            },
+                            "vlogIdx": {
+                              "type": "integer"
+                            },
+                            "gapTime": {
+                              "type": "integer"
+                            },
+                            "sensorRelations": {
+                              "type": "object",
+                              "id": "urn:jsonschema:generated:SensorRelationList",
+                              "properties": {
+                                "sensorRelation": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "id": "urn:jsonschema:generated:SensorRelation",
+                                    "properties": {
+                                      "laneID": {
+                                        "type": "integer"
+                                      },
+                                      "purpose": {
+                                        "type": "string",
+                                        "enum": [
+                                          "MEASURE",
+                                          "VERIFICATION",
+                                          "GAP_MEASURE",
+                                          "GAP_VERIFICATION",
+                                          "SAFETY",
+                                          "CONGESTION",
+                                          "PLATOON"
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "descriptiveName": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "intersectionType": {
+                    "type": "string",
+                    "enum": [
+                      "INTERSECTION",
+                      "ROUNDABOUT"
+                    ]
+                  },
+                  "signalGroups": {
+                    "type": "object",
+                    "id": "urn:jsonschema:generated:SignalGroupList",
+                    "properties": {
+                      "sg": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "id": "urn:jsonschema:generated:SignalGroup",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "alias": {
+                              "type": "string"
+                            },
+                            "vlogIdx": {
+                              "type": "integer"
+                            },
+                            "signalGroup": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "intersectionID": {
+                    "type": "object",
+                    "$ref": "urn:jsonschema:generated:IntersectionReferenceID"
+                  },
+                  "alias": {
+                    "type": "string"
+                  },
+                  "approaches": {
+                    "type": "object",
+                    "id": "urn:jsonschema:generated:ApproachList",
+                    "properties": {
+                      "approach": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "id": "urn:jsonschema:generated:Approach",
+                          "properties": {
+                            "approachLanes": {
+                              "type": "object",
+                              "id": "urn:jsonschema:generated:LaneReferenceList",
+                              "properties": {
+                                "approachLane": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "id": "urn:jsonschema:generated:ApproachLane",
+                                    "properties": {
+                                      "lanePosition": {
+                                        "type": "integer"
+                                      },
+                                      "laneID": {
+                                        "type": "integer"
+                                      },
+                                      "length": {
+                                        "type": "integer"
+                                      },
+                                      "capacity": {
+                                        "type": "integer"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "alias": {
+                              "type": "string"
+                            },
+                            "approachID": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "variants": {
+                    "type": "object",
+                    "id": "urn:jsonschema:generated:VariantList",
+                    "properties": {
+                      "variant": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "id": "urn:jsonschema:generated:Variant",
+                          "properties": {
+                            "enabledLanes": {
+                              "type": "object",
+                              "id": "urn:jsonschema:generated:EnabledLaneList",
+                              "properties": {
+                                "laneID": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            },
+                            "activePeriods": {
+                              "type": "object",
+                              "id": "urn:jsonschema:generated:ActivePeriodList",
+                              "properties": {
+                                "activePeriod": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "id": "urn:jsonschema:generated:ActivePeriod",
+                                    "properties": {
+                                      "days": {
+                                        "type": "integer"
+                                      },
+                                      "beginTime": {
+                                        "type": "integer",
+                                        "format": "UTC_MILLISEC"
+                                      },
+                                      "endTime": {
+                                        "type": "integer",
+                                        "format": "UTC_MILLISEC"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "variantCategory": {
+                              "type": "string",
+                              "enum": [
+                                "NORMAL_OPERATION",
+                                "CONGESTION",
+                                "INCIDENT",
+                                "EMERGENCY",
+                                "EVENT",
+                                "ENVIRONMENTAL",
+                                "TEMPORARILY_CLOSED",
+                                "CLOSED",
+                                "ROAD_WORK",
+                                "EXTREME_WEATHER_CONDITION"
+                              ]
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "comment": {
+                              "type": "string"
+                            },
+                            "variantID": {
+                              "type": "integer"
+                            },
+                            "vlogIndicator": {
+                              "type": "object",
+                              "id": "urn:jsonschema:generated:VlogIndicator",
+                              "properties": {
+                                "vlogIdx": {
+                                  "type": "integer"
+                                },
+                                "matchValue": {
+                                  "type": "integer"
+                                },
+                                "vlogCat": {
+                                  "type": "string",
+                                  "enum": [
+                                    "DP",
+                                    "IS",
+                                    "FC",
+                                    "US",
+                                    "DS"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "formatVersion": {
+      "type": "string"
+    },
+    "version": {
+      "type": "object",
+      "id": "urn:jsonschema:generated:Version",
+      "properties": {
+        "versionID": {
+          "type": "integer"
+        },
+        "endDate": {
+          "type": "integer",
+          "format": "UTC_MILLISEC"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "integer",
+          "format": "UTC_MILLISEC"
+        },
+        "timestamp": {
+          "type": "integer",
+          "format": "UTC_MILLISEC"
+        }
+      }
+    }
+  }
+}

@@ -12,6 +12,13 @@ abstract class BaseType {
     abstract String name()
 }
 
+class VoidType extends BaseType {
+    String name () {
+        return NAME
+    }
+    final static NAME='VOID'
+}
+
 abstract class MinMaxType extends BaseType {
     def max
     def exclusiveMax

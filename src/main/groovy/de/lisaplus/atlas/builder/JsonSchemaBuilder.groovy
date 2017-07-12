@@ -16,6 +16,7 @@ import de.lisaplus.atlas.model.RefType
 import de.lisaplus.atlas.model.StringType
 import de.lisaplus.atlas.model.Type
 import de.lisaplus.atlas.model.UnsupportedType
+import de.lisaplus.atlas.model.VoidType
 import groovy.json.JsonSlurper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -343,6 +344,9 @@ class JsonSchemaBuilder implements IModelBuilder {
                     BaseType ret = initRefType(propObjMap.items['$ref'],currentSchemaPath)
                     ret.isArray = true
                     return ret
+                }
+                else if (propObjMap.items.size()==0) {
+                    return new VoidType()
                 }
                 else {
                     def errorMsg = "unknown array type"
