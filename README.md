@@ -1,6 +1,9 @@
 # jsonCodeGen
 A simple Groovy based program to do generation tasks from a JSON schema.
 
+## Branch information
+This branch establish the possibility to mark model references as aggregation or composition in UML sense.
+
 ## Requirements
 * Java 8
 * Gradle v4.*
