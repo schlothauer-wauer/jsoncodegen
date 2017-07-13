@@ -2,6 +2,7 @@ package de.lisaplus.atlas.builder
 
 import de.lisaplus.atlas.codegen.helper.java.TypeToColor
 import de.lisaplus.atlas.interf.IModelBuilder
+import de.lisaplus.atlas.model.AggregationType
 import de.lisaplus.atlas.model.BaseType
 import de.lisaplus.atlas.model.BooleanType
 import de.lisaplus.atlas.model.ComplexType
@@ -160,6 +161,23 @@ class JsonSchemaBuilder implements IModelBuilder {
             newProp.description = propObj.value['description']
             String key = makeCamelCase(propObj.key)
             newProp.type = getPropertyType(model,propObj.value,parentName+string2Name(key),currentSchemaPath)
+            if (newProp.type instanceof RefType) {
+                if (propObj.key.toLowerCase().endsWith('_id')) {
+                    newProp.aggregationType = AggregationType.aggregation
+                } else {
+                    /**
+                     * additional extension of JSON schema ... property attribute 'aggregationType'
+                     */
+                    if (propObj.value.'aggregationType') {
+                        if (propObj.value.aggregationType.toLowerCase() == 'aggregation') {
+                            newProp.aggregationType = AggregationType.aggregation
+                        } else {
+                            newProp.aggregationType = AggregationType.composition
+                        }
+                    } else
+                        newProp.aggregationType = AggregationType.composition
+                }
+            }
             propList.add(newProp)
         }
         return propList

@@ -48,7 +48,11 @@ hide methods
 <% model.types.each  { type -> %>
     <% type.properties.each  { prop -> %>
         <% if (prop.isRefTypeOrComplexType()) { %>
+            <% if (prop.isAggregation()) { %>
+${firstUpperCase.call(type.name)} o-- <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.type.type.name) } ${ prop.type.type.color }
+            <% } else { %>
 ${firstUpperCase.call(type.name)} *-- <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.type.type.name) } ${ prop.type.type.color }
+            <% } %>
         <% } %>
     <% } %>
 <% } %>
