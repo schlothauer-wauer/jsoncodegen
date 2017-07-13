@@ -25,7 +25,12 @@ class PlantUmlGenerator extends SingleFileGenarator {
             return extraParameters.destFileName
         }
         else {
-            return "${string2Name(dataModel.title,false)}.puml"
+            if (dataModel.title) {
+                return "${string2Name(dataModel.title,false)}.puml"
+            }
+            else {
+                return "datamodel_${new Date().time}.puml"
+            }
         }
     }
 
