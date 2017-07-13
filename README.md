@@ -1,6 +1,9 @@
 # jsonCodeGen
 A simple Groovy based program to do generation tasks from a JSON schema.
 
+## Branch information
+This branch establish the possibility to mark model references as aggregation or composition in UML sense.
+
 ## Requirements
 * Java 8
 * Gradle v4.*
@@ -8,6 +11,45 @@ A simple Groovy based program to do generation tasks from a JSON schema.
 ## Unsupported JSON schema features
 * patternProperties - make no sense in model description
 * only references in the local document and local file system are supported
+
+## Additional features
+* easier version markup in model
+* mark attributes as aggreation types (references) with suffix '_id'
+* additional property attribute 'aggregationType' to set the specific attribute information
+
+```javascript
+    // How to mark different aggregation types in the model
+    // Attention, this works only for "$ref" types!
+    ...
+    "Greens": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "green_id": {
+            // aggregation
+            "$ref": "#/definitions/GreenType"
+        },
+        "green_obj": {
+            // composition
+            "$ref": "#/definitions/GreenType"
+        },
+        "green_obj": {
+            // aggregation
+            "aggregationType": "aggregation",
+            "$ref": "#/definitions/GreenType"
+        },
+        "greens": {
+          // composotion
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GreenType"
+          }
+        }
+      }
+    },
+    ...
+```
+
 
 ## Handle with gradle
 ### Using with gradle

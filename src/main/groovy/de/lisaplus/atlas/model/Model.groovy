@@ -137,10 +137,19 @@ class ExternalType extends Type {
     String refStr
 }
 
+enum AggregationType {
+    aggregation, composition
+}
+
 class Property {
     def description
     def name
     def format
+
+    /**
+     * marks the property how it should implemented, as reference or as object
+     */
+    AggregationType aggregationType=AggregationType.composition
     /**
      * Type of property field, covers also if the property is an array
      */
@@ -156,5 +165,9 @@ class Property {
 
     boolean isRefTypeOrComplexType() {
         return type && ( type instanceof RefType || type instanceof ComplexType )
+    }
+
+    boolean isAggregation() {
+        return aggregationType==AggregationType.aggregation
     }
 }
