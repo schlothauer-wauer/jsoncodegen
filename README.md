@@ -1,9 +1,6 @@
 # jsonCodeGen
 A simple Groovy based program to do generation tasks from a JSON schema.
 
-Branchinfo: implements additional path operations (put, post, delete) for the swagger file.
-
-
 ## Requirements
 * Java 8
 * Gradle v4.*
