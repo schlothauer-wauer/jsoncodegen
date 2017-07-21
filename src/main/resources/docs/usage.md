@@ -47,7 +47,6 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
 ### Service related 
 * swagger - creates a swagger file from model
   - host - name for the host entry
-  - extraProduces - comma separated list of extra produces mime types, for instance 'application/xml'
   - basePath - text for the basePath entry
   - appendVersionToPath - if true the versions is append to an additional configured basePath 
   - destFileName - name of the generated file (!)
