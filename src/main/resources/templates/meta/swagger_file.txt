@@ -1,4 +1,8 @@
 <%
+    def printOperationId = { operationStr, pathStr ->
+        return "${operationStr}${firstUpperCase.call(pathStr).replaceAll('[^a-zA-Z0-9]','_').replaceAll('__','_')}"
+    }
+
     def getParameterStr = { List typeList,boolean isIdPath ->
         if ((!typeList) || ((typeList.size()==1) && (!isIdPath))) return ''
         def parameterStr=''
@@ -6,17 +10,35 @@
             isIdPath || (it != typeList[typeList.size()-1])
         }.each {
             def descriptionStr = it.description ? it.description : '???'
-            parameterStr += "\n        - name: ${it.name.toLowerCase()}_id"
-            parameterStr += '\n          in: path'
-            parameterStr += "\n          description: $descriptionStr"
+            parameterStr += "\n        - name: \"${it.name.toLowerCase()}_id\""
+            parameterStr += '\n          in: "path"'
+            parameterStr += "\n          description: \"$descriptionStr\""
             parameterStr += '\n          required: true'
-            parameterStr += '\n          type: integer'
-            parameterStr += '\n          format: int64'
+            parameterStr += '\n          type: "integer"'
+            parameterStr += '\n          format: "int64"'
         }
-        def ret = """      parameters:
+        def ret = """\n      parameters:
 ${parameterStr}
 """
         return ret
+    }
+
+    def printParametersSectionForPost = { parameterStr ->
+        if (!parameterStr) {
+            return '      parameters:'
+        }
+        else {
+            return parameterStr
+        }
+    }
+
+    def printAdditionalParametersForPostAndPut = { item ->
+        return """        - name: "bodyParam"
+          in: "body"
+          description: "object to save"
+          required: true
+          schema:
+            ${DOLLAR}ref: "#/definitions/${item.name}\""""
     }
 
     /**
@@ -33,13 +55,13 @@ ${parameterStr}
     def printIdResponse = { type ->
         return """      responses:
         200:
-          description: in case of success
+          description: "in case of success"
           schema:
-            ${DOLLAR}ref: '#/definitions/${type.name}'
+            ${DOLLAR}ref: "#/definitions/${type.name}"
         default:
-          description: Unexpected error
+          description: "Unexpected error"
           schema:
-            ${DOLLAR}ref: '#/definitions/Error'"""
+            ${DOLLAR}ref: "#/definitions/Error\""""
     }
 
 
@@ -49,16 +71,32 @@ ${parameterStr}
     def printListResponse = { type ->
         return """      responses:
         200:
-          description: in case of success
+          description: "in case of success"
           schema:
-            type: array
+            type: "array"
             items:
-              ${DOLLAR}ref: '#/definitions/${type.name}'
+              ${DOLLAR}ref: "#/definitions/${type.name}"
         default:
-          description: Unexpected error
+          description: "Unexpected error"
           schema:
-            ${DOLLAR}ref: '#/definitions/Error'"""
+            ${DOLLAR}ref: "#/definitions/Error\""""
     }
+
+    /**
+     * prints out response section for List-Paths
+     */
+    def printPostPutDeleteResponse = { type ->
+        return """      responses:
+        200:
+          description: "in case of success"
+          schema:
+            ${DOLLAR}ref: "#/definitions/IdObj"
+        default:
+          description: "Unexpected error"
+          schema:
+            ${DOLLAR}ref: "#/definitions/Error\""""
+    }
+
 
     // If you declare a closure you can use it inside the template
     /**
@@ -77,11 +115,36 @@ ${parameterStr}
     return """
   ${pathStr}:
     get:
-      summary: ${summary}
-      description: returns object by id
-${parameterStr}
 ${printTags(lastItem)}
+      summary: ${summary}
+      description: "returns object by id"
+      operationId: "${printOperationId('get',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+${parameterStr}
 ${printIdResponse(lastItem)}
+    put:
+${printTags(lastItem)}
+      summary: "update ${lastItem.name}"
+      description: "update existing ${lastItem.name}"
+      operationId: "${printOperationId('upd',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+      consumes:
+        - "application/xml"
+        - "application/json"
+${parameterStr}
+${printAdditionalParametersForPostAndPut(lastItem)}
+${printPostPutDeleteResponse()}
+    delete:
+${printTags(lastItem)}
+      summary: "delete ${lastItem.name}"
+      description: "delete existing ${lastItem.name}"
+      operationId: "${printOperationId('del',pathStr)}"
+${parameterStr}
+${printPostPutDeleteResponse()}
 """
     }
 
@@ -104,44 +167,53 @@ ${printIdResponse(lastItem)}
         def ret = """
   ${pathStr}:
     get:
-      summary: ${summary}
-      description: returns object list
-${parameterStr}
 ${printTags(lastItem)}
+      summary: "${summary}"
+      description: "returns object list"
+      operationId: "${printOperationId('get',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+${parameterStr}
 ${printListResponse(lastItem)}
+    post:
+${printTags(lastItem)}
+      summary: "add a new ${lastItem.name}"
+      description: ""
+      operationId: "${printOperationId('add',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+      consumes:
+        - "application/xml"
+        - "application/json"
+${printParametersSectionForPost(parameterStr)}
+${printAdditionalParametersForPostAndPut(lastItem)}
+${printPostPutDeleteResponse()}
 """
         return ret
     }
-%>
-# generated with jsonCodeGen
-swagger: '2.0'
+%>swagger: "2.0"
 info:
-  title: ${model.title}
-  description: ${model.description}
+  title: "${model.title}"
+  description: "${model.description}"
   version: "${model.version}"
 <% if (extraParam.host) { %>
-host: ${extraParam.host}
+host: "${extraParam.host}"
 <% } else { %>
-host: please.change.com
+host: "please.change.com"
 <% } %>
 schemes:
-    - http
-    - https
+  - "http"
+  - "https"
 <% if (extraParam.basePath) { %>
     <% if (extraParam.appendVersionToPath) { %>
-basePath: ${extraParam.basePath}/v${model.version}
+basePath: "${extraParam.basePath}/v${model.version}"
     <% } else { %>
-basePath: ${extraParam.basePath}
+basePath: "${extraParam.basePath}"
     <% } %>
 <% } else { %>
-basePath: /v${model.version}
-<% } %>
-produces:
-  - application/json
-<% if (extraParam.extraProduces) { %>
-    <% extraParam.extraProduces.split(',').each { %>
-  - ${it.trim()}
-    <% } %>
+basePath: "/v${model.version}"
 <% } %>
 
 paths:
@@ -172,38 +244,43 @@ definitions:
         type: array
         items:
             <% if ((prop.isRefTypeOrComplexType())) { %>
-          ${DOLLAR}ref: '#/definitions/${prop.type.type.name}'
+          ${DOLLAR}ref: "#/definitions/${prop.type.type.name}"
             <% } else { %>
                 <% if (prop.description) { %>
-          description: ${prop.description}
+          description: "${prop.description}"
                 <% } %>
-          type: ${typeToSwagger.call(prop.type)}
+          type: "${typeToSwagger.call(prop.type)}"
                 <% if (typeFormatToSwagger.call(prop.type)) { %>
-          format: ${typeFormatToSwagger.call(prop.type)}
+          format: "${typeFormatToSwagger.call(prop.type)}"
                 <% } %>
             <% } %>
         <% } else { %>
             <% if (prop.isRefTypeOrComplexType()) { %>
-        ${DOLLAR}ref: '#/definitions/${prop.type.type.name}'
+        ${DOLLAR}ref: "#/definitions/${prop.type.type.name}"
             <% } else { %>
                 <% if (prop.description) { %>
-        description: ${prop.description}
+        description: "${prop.description}"
                 <% } %>
-        type: ${typeToSwagger.call(prop.type)}
+        type: "${typeToSwagger.call(prop.type)}"
                 <% if (typeFormatToSwagger.call(prop.type)) { %>
-        format: ${typeFormatToSwagger.call(prop.type)}
+        format: "${typeFormatToSwagger.call(prop.type)}"
                 <% } %>
             <% } %>
         <% } %>
     <% } %>
 <% } %>
   Error:
-    type: object
+    type: "object"
     properties:
       code:
-        type: integer
-        format: int32
+        type: "integer"
+        format: "int32"
       message:
-        type: string
+        type: "string"
       fields:
-        type: string
+        type: "string"
+  IdObj:
+    type: "object"
+    properties:
+      id:
+        type: "string"
