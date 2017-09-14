@@ -104,8 +104,10 @@ class JsonSchemaBuilder implements IModelBuilder {
 
     private addExternalTypesToModel(Model model) {
         externalTypes.each { typeObj ->
-            TypeToColor.setColor(typeObj.value)
-            model.types.add(typeObj.value)
+            if (!model.types.contains(typeObj.value)) {
+                TypeToColor.setColor(typeObj.value)
+                model.types.add(typeObj.value)
+            }
         }
     }
 
@@ -143,9 +145,13 @@ class JsonSchemaBuilder implements IModelBuilder {
                 }
             }
             else {
-                def errorMsg = "schema contains dulplicate type: ${typeName}"
-                log.error(errorMsg)
-                throw new Exception(errorMsg)
+                if (propertiesDontMatch(alreadyCreated.properties, newType.properties)) {
+                    def errorMsg = "schema contains dulplicate type: ${typeName}"
+                    log.error(errorMsg)
+                    throw new Exception(errorMsg)
+                }
+                else
+                    return
             }
         }
         TypeToColor.setColor(newType)
@@ -376,6 +382,35 @@ class JsonSchemaBuilder implements IModelBuilder {
                 log.error(errorMsg)
                 throw new Exception(errorMsg)
         }
+    }
+
+    private boolean propertiesDontMatch(def propList1, def propList2) {
+        if (propList1==null && propList2!=null) {
+            return true
+        }
+        if (propList1!=null && propList2==null) {
+            return true
+        }
+        if (propList1==null && propList2==null) {
+            return true
+        }
+        if (propList1.size()!=propList2.size()) {
+            return true
+        }
+        for (def i=0;i<propList1.size();i++) {
+            def prop1 = propList1[i]
+            def prop2 = propList2[i]
+            if (prop1.type.NAME != prop2.type.NAME) {
+                return true
+            }
+            if (prop1.name != prop2.name) {
+                return true
+            }
+            if (prop1.format != prop2.format) {
+                return true
+            }
+        }
+        return false
     }
 
     private Model initModel(def objectModel) {

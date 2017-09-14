@@ -55,4 +55,23 @@ class MultiTypeSchema {
                 type: new UnsupportedType()
         ),model,typeName)
     }
+
+    @Test
+    void testComplexIncludes() {
+        File f1 = new File('.')
+        def s = f1.getAbsolutePath()
+
+        File f = new File('../../gitlab/lisa-server_models/model/junction.json')
+        if (f.exists()) {
+            def builder = new JsonSchemaBuilder()
+            def model = builder.buildModel(f)
+            assertNotNull(model)
+            int globalIdCount=0;
+            model.types.each {
+                if (it.name=='Global_id')
+                    globalIdCount++;
+            }
+            assertEquals(1,globalIdCount)
+        }
+    }
 }
