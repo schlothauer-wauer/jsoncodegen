@@ -15,14 +15,16 @@
       "description": "some more words to explain",
       "type": "string"
     },
-    "module_id": {
-      "description": "RFC 4122 compliant universally unique identifier (UUID) for identifying the module",
+    "gid": {
+      "description": "global identifier",
       "type": "string",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+      "format": "uuid"
     },
-    "app": {
+    "app_id": {
       "description": "Which application owns that module",
-      "$ref": "./application.json"
+      "type": "string",
+      "format": "uuid",
+      "ref": "./application.json"
     },
     "active": {
       "description": "is this entry still active",
@@ -31,7 +33,7 @@
   },
   "required": [
     "name",
-    "application_id"
+    "gid"
   ],
   "version": 1
 }

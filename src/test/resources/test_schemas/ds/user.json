@@ -6,13 +6,17 @@
     "user_log": {
       "type": "object",
       "properties": {
-        "domain": {
+        "domain_id": {
           "description": "what is the related domain",
-          "$ref": "./shared/domain.json"
+          "type": "string",
+          "format": "uuid",
+          "ref": "./shared/domain.json"
         },
-        "user": {
+        "user_id": {
           "description": "What user owns this entry",
-          "$ref": "#/definitions/user"
+          "type": "string",
+          "format": "uuid",
+          "ref": "#/definitions/user"
         },
         "type": {
           "description": "type of the entry",
@@ -31,9 +35,11 @@
     "user": {
       "type": "object",
       "properties": {
-        "domain": {
+        "domain_id": {
           "description": "what is the related domain",
-          "$ref": "./shared/domain.json"
+          "type": "string",
+          "format": "uuid",
+          "ref": "./shared/domain.json"
         },
         "name": {
           "description": "login name of the user",
@@ -45,11 +51,9 @@
           "type": "string",
           "visKey": true
         },
-        "user_id": {
-          "description": "RFC 4122 compliant universally unique identifier (UUID)",
+        "gid": {
           "type": "string",
-          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
-          "unique": true
+          "format": "uuid",
         },
         "roles": {
           "type": "array",
@@ -70,9 +74,11 @@
     "role": {
       "type": "object",
       "properties": {
-        "domain": {
+        "domain_id": {
           "description": "what is the related domain",
-          "$ref": "./shared/domain.json"
+          "type": "string",
+          "format": "uuid",
+          "ref": "./shared/domain.json"
         },
         "name": {
           "description": "Name of the role",

@@ -15,11 +15,10 @@
       "description": "some words to explain",
       "type": "string"
     },
-    "domain_id": {
-      "description": "RFC 4122 compliant universally unique identifier (UUID) for identifying the domain",
+    "gid": {
+      "description": "global identifier",
       "type": "string",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
-      "unique": true
+      "format": "uuid"
     },
     "active": {
       "description": "is this entry still active",

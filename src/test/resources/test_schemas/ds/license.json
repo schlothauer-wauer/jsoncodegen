@@ -6,9 +6,15 @@
     "license": {
       "type": "object",
         "properties": {
-          "domain": {
+          "gid": {
+            "type": "string",
+            "format": "uuid",
+          },
+          "domain_id": {
             "description": "what is the related domain",
-            "$ref": "./shared/domain.json"
+            "type": "string",
+            "format": "uuid",
+            "ref": "./shared/domain.json"
           },
           "app_modues" : {
             "type": "array",

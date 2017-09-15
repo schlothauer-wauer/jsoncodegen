@@ -15,10 +15,10 @@
       "description": "some more words to explain",
       "type": "string"
     },
-    "application_id": {
-      "description": "RFC 4122 compliant universally unique identifier (UUID) for identifying the application",
+    "gid": {
+      "description": "global identifier",
       "type": "string",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+      "format": "uuid"
     },
     "active": {
       "description": "is this entry still active",
@@ -27,7 +27,7 @@
   },
   "required": [
     "name",
-    "application_id"
+    "gid"
   ],
   "version": 1
 }

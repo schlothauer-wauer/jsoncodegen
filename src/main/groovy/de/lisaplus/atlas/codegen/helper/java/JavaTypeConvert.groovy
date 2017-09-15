@@ -10,6 +10,8 @@ import de.lisaplus.atlas.model.IntType
 import de.lisaplus.atlas.model.NumberType
 import de.lisaplus.atlas.model.RefType
 import de.lisaplus.atlas.model.StringType
+import de.lisaplus.atlas.model.UUIDType
+import de.lisaplus.atlas.model.VoidType
 import de.lisaplus.atlas.model.UnsupportedType
 
 /**
@@ -28,6 +30,8 @@ class JavaTypeConvert {
                 return type.isArray? 'List<Double>' : 'Double'
             case StringType.NAME:
                 return type.isArray? 'List<String>' : 'String'
+            case UUIDType.NAME:
+                return type.isArray? 'List<UUID>' : 'UUID'
             case BooleanType.NAME:
                 return type.isArray? 'List<Boolean>' : 'Boolean'
             case DateType.NAME:
@@ -40,8 +44,10 @@ class JavaTypeConvert {
                 return type.isArray? "List<${type.type.name}>" : type.type.name
             case UnsupportedType.NAME:
                 return BaseType.UNSUPPORTED_TYPE+type
+            case VoidType.NAME:
+                return 'void'
         default:
-            return BaseType.UNKNOWN_TYPE+type
+            return "${BaseType.UNKNOWN_TYPE}\n$type\n${type.name()}"
         }
     }
 }

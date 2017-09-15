@@ -48,13 +48,18 @@ hide methods
 <% model.types.each  { type -> %>
     <% def linkedTypes=[] %>
     <% type.properties.each  { prop -> %>
-        <% if (prop.isRefTypeOrComplexType() && (!linkedTypes.contains(type.name))) { %>
-            <% if (prop.isAggregation()) { %>
+        <% if (prop.isRefTypeOrComplexType()) { %>
+            <% def testStr="${type.name}-${prop.type.type.name}"%>
+            <% if(!linkedTypes.contains(testStr)) { %>
+                <% if (prop.isAggregation()) { %>
 ${firstUpperCase.call(type.name)} o-- <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.type.type.name) } ${ prop.type.type.color }
-            <% } else { %>
+                <% } else { %>
 ${firstUpperCase.call(type.name)} *-- <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.type.type.name) } ${ prop.type.type.color }
+                <% } %>
+                <% linkedTypes.add(testStr) %>
             <% } %>
-            <% linkedTypes.add(type.name) %>
+        <% } else if (prop.implicitRef) { %>
+            ${firstUpperCase.call(type.name)} .. <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.implicitRef.type.name) } ${ prop.implicitRef.type.color }
         <% } %>
     <% } %>
 <% } %>
