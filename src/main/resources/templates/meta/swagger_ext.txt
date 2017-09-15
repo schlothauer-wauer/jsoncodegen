@@ -57,7 +57,7 @@ ${parameterStr}
         200:
           description: "in case of success"
           schema:
-            ${DOLLAR}ref: "#/definitions/${type.name}"
+            ${DOLLAR}ref: "#/definitions/${type.name}Response"
         default:
           description: "Unexpected error"
           schema:
@@ -75,7 +75,7 @@ ${parameterStr}
           schema:
             type: "array"
             items:
-              ${DOLLAR}ref: "#/definitions/${type.name}"
+              ${DOLLAR}ref: "#/definitions/${type.name}Response"
         default:
           description: "Unexpected error"
           schema:
@@ -269,6 +269,20 @@ definitions:
         <% } %>
     <% } %>
 <% } %>
+<% model.types.findAll { return ! isInnerType.call(it) }.each { type -> %>
+  ${firstUpperCase.call(type.name)}Response:
+    type: object
+    properties:
+      data:
+        description: "retrieved data"
+        type: "array"
+        items:
+          ${DOLLAR}ref: "#/definitions/${firstUpperCase.call(type.name)}"
+      meta:
+          description: "meta information about that resource"
+          ${DOLLAR}ref: "#/definitions/Meta"
+<% } %>
+
   Error:
     type: "object"
     properties:
@@ -300,10 +314,37 @@ definitions:
       icon:
         description: "icon to use for that link"
         type: "string"
+  Entry:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      caption:
+        type: "string"
+      type:
+        type: "string"
+        enum: [int,string,boolean,date,datetime]
+  EntryItem:
+    type: "array"
+    items:
+      ${DOLLAR}ref: "#/definitions/Entry"
   Meta:
     type: "object"
     properties:
+      count_info:
+        type: "object"
+        properties:
+          start:
+            type: "integer"
+          count:
+            type: "integer"
+          max:
+            type: "integer"
       links:
         type: "array"
         items:
-          $ref: "#/definitions/Link"
+          ${DOLLAR}ref: "#/definitions/Link"
+      item_descr:
+        type: "array"
+        items:
+            ${DOLLAR}ref: "#/definitions/EntryItem"
