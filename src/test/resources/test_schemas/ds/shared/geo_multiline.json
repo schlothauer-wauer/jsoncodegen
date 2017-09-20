@@ -1,0 +1,23 @@
+{
+  "id": "http://schlothauer.de/schemas/shared/geo_multiline.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Multiline geo-type",
+  "type": "object",
+  "properties": {
+    "projection": {
+      "description": "geographic projection used for this object",
+      "type": "string"
+    },
+    "points": {
+      "description": "points of the multiline in the right order",
+      "type": "array",
+      "items": {
+        "$ref": "./geo_point.json"
+      }
+    }
+  },
+  "required": [
+    "points"
+  ],
+  "version": 1
+}
