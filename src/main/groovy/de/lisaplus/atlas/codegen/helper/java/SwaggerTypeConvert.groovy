@@ -18,6 +18,8 @@ class SwaggerTypeConvert {
                 return 'number'
             case StringType.NAME:
                 return 'string'
+            case UUIDType.NAME:
+                return 'string'
             case BooleanType.NAME:
                 return 'boolean'
             case DateType.NAME:

@@ -20,14 +20,14 @@ class Model {
         boolean found=false
         model.types.find { it.name==typeName }.each { type ->
             found=true
-            assertEquals(3,type.refOwner.size())
+            assertEquals(0,type.refOwner.size())
         }
         assertTrue(found)
         typeName='Application'
         found=false
         model.types.find { it.name==typeName }.each { type ->
             found=true
-            assertEquals(1,type.refOwner.size())
+            assertEquals(0,type.refOwner.size())
         }
         assertTrue(found)
         typeName='App_module'
@@ -49,7 +49,7 @@ class Model {
         found=false
         model.types.find { it.name==typeName }.each { type ->
             found=true
-            assertEquals(1,type.refOwner.size())
+            assertEquals(0,type.refOwner.size())
         }
         assertTrue(found)
         typeName='User_log'

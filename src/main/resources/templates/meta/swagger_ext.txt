@@ -1,0 +1,364 @@
+<%
+    def printOperationId = { operationStr, pathStr ->
+        return "${operationStr}${firstUpperCase.call(pathStr).replaceAll('[^a-zA-Z0-9]','_').replaceAll('__','_')}"
+    }
+
+    def getParameterStr = { List typeList,boolean isIdPath ->
+        if ((!typeList) || ((typeList.size()==1) && (!isIdPath))) return ''
+        def parameterStr=''
+        typeList.findAll {
+            isIdPath || (it != typeList[typeList.size()-1])
+        }.each {
+            def descriptionStr = it.description ? it.description : '???'
+            parameterStr += "\n        - name: \"${it.name.toLowerCase()}_id\""
+            parameterStr += '\n          in: "path"'
+            parameterStr += "\n          description: \"$descriptionStr\""
+            parameterStr += '\n          required: true'
+            parameterStr += '\n          type: "integer"'
+            parameterStr += '\n          format: "int64"'
+        }
+        def ret = """\n      parameters:
+${parameterStr}
+"""
+        return ret
+    }
+
+    def printParametersSectionForPost = { parameterStr ->
+        if (!parameterStr) {
+            return '      parameters:'
+        }
+        else {
+            return parameterStr
+        }
+    }
+
+    def printAdditionalParametersForPostAndPut = { item ->
+        return """        - name: "bodyParam"
+          in: "body"
+          description: "object to save"
+          required: true
+          schema:
+            ${DOLLAR}ref: "#/definitions/${item.name}\""""
+    }
+
+    /**
+     * prints out tags section
+     */
+    def printTags = { type ->
+        return """      tags:
+        - ${type.name}"""
+    }
+
+    /**
+     * prints out response section for ID-Paths
+     */
+    def printIdResponse = { type ->
+        return """      responses:
+        200:
+          description: "in case of success"
+          schema:
+            ${DOLLAR}ref: "#/definitions/${type.name}Response"
+        default:
+          description: "Unexpected error"
+          schema:
+            ${DOLLAR}ref: "#/definitions/Error\""""
+    }
+
+
+    /**
+     * prints out response section for List-Paths
+     */
+    def printListResponse = { type ->
+        return """      responses:
+        200:
+          description: "in case of success"
+          schema:
+            type: "array"
+            items:
+              ${DOLLAR}ref: "#/definitions/${type.name}Response"
+        default:
+          description: "Unexpected error"
+          schema:
+            ${DOLLAR}ref: "#/definitions/Error\""""
+    }
+
+    /**
+     * prints out response section for List-Paths
+     */
+    def printPostPutDeleteResponse = { type ->
+        return """      responses:
+        200:
+          description: "in case of success"
+          schema:
+            ${DOLLAR}ref: "#/definitions/IdObj"
+        default:
+          description: "Unexpected error"
+          schema:
+            ${DOLLAR}ref: "#/definitions/Error\""""
+    }
+
+
+    // If you declare a closure you can use it inside the template
+    /**
+     * Print path for List URLs
+     */
+    def printIDPath = { List typeList ->
+        def pathStr=''
+        typeList.each {
+                pathStr += '/'
+                pathStr += toLowerCase.call(it.name)
+                pathStr += "/{${toLowerCase.call(it.name)}_id}"
+        }
+        def lastItem = typeList[typeList.size()-1]
+        def summary = lastItem.description ? lastItem.description : '???'
+        def parameterStr = getParameterStr(typeList,true)
+    return """
+  ${pathStr}:
+    get:
+${printTags(lastItem)}
+      summary: ${summary}
+      description: "returns object by id"
+      operationId: "${printOperationId('get',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+${parameterStr}
+${printIdResponse(lastItem)}
+    put:
+${printTags(lastItem)}
+      summary: "update ${lastItem.name}"
+      description: "update existing ${lastItem.name}"
+      operationId: "${printOperationId('upd',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+      consumes:
+        - "application/xml"
+        - "application/json"
+${parameterStr}
+${printAdditionalParametersForPostAndPut(lastItem)}
+${printPostPutDeleteResponse()}
+    delete:
+${printTags(lastItem)}
+      summary: "delete ${lastItem.name}"
+      description: "delete existing ${lastItem.name}"
+      operationId: "${printOperationId('del',pathStr)}"
+${parameterStr}
+${printPostPutDeleteResponse()}
+"""
+    }
+
+    /**
+     * Print path for List URLs
+     */
+    def printListPath = { List typeList ->
+        def pathStr=''
+        def lastElem = typeList[typeList.size()-1]
+        typeList.each {
+                pathStr += '/'
+                pathStr += toLowerCase.call(it.name)
+                if (it!=lastElem) {
+                    pathStr += "/{${toLowerCase.call(it.name)}_id}"
+                }
+        }
+        def lastItem = typeList[typeList.size()-1]
+        def summary = lastItem.description ? lastItem.description : '???'
+        def parameterStr = getParameterStr(typeList,false)
+        def ret = """
+  ${pathStr}:
+    get:
+${printTags(lastItem)}
+      summary: "${summary}"
+      description: "returns object list"
+      operationId: "${printOperationId('get',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+${parameterStr}
+${printListResponse(lastItem)}
+    post:
+${printTags(lastItem)}
+      summary: "add a new ${lastItem.name}"
+      description: ""
+      operationId: "${printOperationId('add',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+      consumes:
+        - "application/xml"
+        - "application/json"
+${printParametersSectionForPost(parameterStr)}
+${printAdditionalParametersForPostAndPut(lastItem)}
+${printPostPutDeleteResponse()}
+"""
+        return ret
+    }
+%>swagger: "2.0"
+info:
+  title: "${model.title}"
+  description: "${model.description}"
+  version: "${model.version}"
+<% if (extraParam.host) { %>
+host: "${extraParam.host}"
+<% } else { %>
+host: "please.change.com"
+<% } %>
+schemes:
+  - "http"
+  - "https"
+<% if (extraParam.basePath) { %>
+    <% if (extraParam.appendVersionToPath) { %>
+basePath: "${extraParam.basePath}/v${model.version}"
+    <% } else { %>
+basePath: "${extraParam.basePath}"
+    <% } %>
+<% } else { %>
+basePath: "/v${model.version}"
+<% } %>
+
+paths:
+<% model.types.findAll { return ! isInnerType.call(it) }.each { type -> %>
+  ${printListPath([type])}
+  ${printIDPath([type])}
+    <% type.refOwner.each { refOwner1 -> %>
+  ${printListPath([type,refOwner1])}
+  ${printIDPath([type,refOwner1])}
+        <% refOwner1.refOwner.each { refOwner2 -> %>
+  ${printListPath([type,refOwner1,refOwner2])}
+  ${printIDPath([type,refOwner1,refOwner2])}
+            <% refOwner2.refOwner.each { refOwner3 -> %>
+  ${printListPath([type,refOwner1,refOwner2,refOwner3])}
+  ${printIDPath([type,refOwner1,refOwner2,refOwner3])}
+            <% } %>
+        <% } %>
+    <% } %>
+<% } %>
+definitions:
+<% model.types.each { type -> %>
+  ${firstUpperCase.call(type.name)}:
+    type: object
+    properties:
+    <% type.properties.each { prop -> %>
+      ${prop.name}:
+        <% if (prop.type.isArray) { %>
+        type: array
+        items:
+            <% if ((prop.isRefTypeOrComplexType())) { %>
+          ${DOLLAR}ref: "#/definitions/${prop.type.type.name}"
+            <% } else { %>
+                <% if (prop.description) { %>
+          description: "${prop.description}"
+                <% } %>
+          type: "${typeToSwagger.call(prop.type)}"
+                <% if (typeFormatToSwagger.call(prop.type)) { %>
+          format: "${typeFormatToSwagger.call(prop.type)}"
+                <% } %>
+            <% } %>
+        <% } else { %>
+            <% if (prop.isRefTypeOrComplexType()) { %>
+        ${DOLLAR}ref: "#/definitions/${prop.type.type.name}"
+            <% } else { %>
+                <% if (prop.description) { %>
+        description: "${prop.description}"
+                <% } %>
+        type: "${typeToSwagger.call(prop.type)}"
+                <% if (typeFormatToSwagger.call(prop.type)) { %>
+        format: "${typeFormatToSwagger.call(prop.type)}"
+                <% } %>
+            <% } %>
+        <% } %>
+    <% } %>
+<% } %>
+<% model.types.findAll { return ! isInnerType.call(it) }.each { type -> %>
+  ${firstUpperCase.call(type.name)}Response:
+    type: object
+    properties:
+      data:
+        description: "retrieved data"
+        type: "array"
+        items:
+          ${DOLLAR}ref: "#/definitions/${firstUpperCase.call(type.name)}"
+      meta:
+          description: "meta information about that resource"
+          ${DOLLAR}ref: "#/definitions/Meta"
+<% } %>
+
+  Error:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      message:
+        type: "string"
+      fields:
+        type: "string"
+  IdObj:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+  Link:
+    type: "object"
+    properties:
+      type:
+        description: "What kind of link is it"
+        type: "string"
+        enum: [add, del, edit, read, self, next, prev]
+      link:
+        description: "the link string"
+        type: "string"
+      caption:
+        description: "caption to show for that link"
+        ${DOLLAR}ref: "#/definitions/CaptionType"
+      icon:
+        description: "icon to use for that link"
+        ${DOLLAR}ref: "#/definitions/IconType"
+  Entry:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      caption:
+        type: "string"
+      type:
+        type: "string"
+        enum: [int,string,boolean,date,datetime]
+  EntryItem:
+    type: "array"
+    items:
+      ${DOLLAR}ref: "#/definitions/Entry"
+  CaptionType:
+    type: "object"
+    properties:
+      text:
+        type: "string"
+      resource:
+        type: "string"
+  IconType:
+    type: "object"
+    properties:
+      url:
+        type: "string"
+      resource:
+        type: "string"
+  Meta:
+    type: "object"
+    properties:
+      count_info:
+        type: "object"
+        properties:
+          start:
+            type: "integer"
+          count:
+            type: "integer"
+          max:
+            type: "integer"
+      links:
+        type: "array"
+        items:
+          ${DOLLAR}ref: "#/definitions/Link"
+      item_descr:
+        type: "array"
+        items:
+            ${DOLLAR}ref: "#/definitions/EntryItem"

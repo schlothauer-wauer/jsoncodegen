@@ -1,0 +1,25 @@
+{
+  "id": "http://schlothauer.de/schemas/shared/geo_point.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Single point geo-type",
+  "type": "object",
+  "properties": {
+    "projection": {
+      "description": "geographic projection used for this point",
+      "type": "string"
+    },
+    "lon": {
+      "description": "longitude of the point",
+      "type": "number"
+    },
+    "lat": {
+      "description": "latitude of the point",
+      "type": "number"
+    }
+  },
+  "required": [
+    "lon",
+    "lat"
+  ],
+  "version": 1
+}

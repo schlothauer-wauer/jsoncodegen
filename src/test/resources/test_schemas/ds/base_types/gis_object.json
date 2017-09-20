@@ -1,0 +1,28 @@
+{
+  "id": "http://schlothauer.de/schemas/gis_object.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "GIS object model",
+  "description": "A GIS object is an application defined type that owns GIS coordinates",
+  "type": "object",
+  "properties": {
+    "gis": {
+      "description": "Definition of an object that owns GIS coordinates. At minimum an object of this type owns one of the props",
+      "type": "object",
+      "properties": {
+        "center": {
+          "$ref": "../shared/geo_point.json"
+        },
+        "area": {
+          "$ref": "../shared/geo_area.json"
+        },
+        "route": {
+          "$ref": "../shared/geo_multiline.json"
+        }
+      }
+    }
+  },
+  "required": [
+    "gis"
+  ],
+  "version": 1
+}

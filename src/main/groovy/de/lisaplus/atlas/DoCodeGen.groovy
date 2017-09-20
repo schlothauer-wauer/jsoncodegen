@@ -9,6 +9,7 @@ import de.lisaplus.atlas.codegen.external.ExtMultiFileGenarator
 import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
 import de.lisaplus.atlas.codegen.meta.PlantUmlGenerator
 import de.lisaplus.atlas.codegen.meta.SwaggerGenerator
+import de.lisaplus.atlas.codegen.meta.SwaggerGeneratorExt
 import de.lisaplus.atlas.interf.IExternalCodeGen
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
@@ -152,6 +153,12 @@ class DoCodeGen {
                 break
             case 'swagger':
                 SwaggerGenerator generator = new SwaggerGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
+            case 'swagger_ext':
+            case 'swagger-ext':
+                SwaggerGenerator generator = new SwaggerGeneratorExt()
                 generator.initTemplate()
                 generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break

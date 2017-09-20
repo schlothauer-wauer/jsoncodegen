@@ -51,6 +51,14 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
   - appendVersionToPath - if true the versions is append to an additional configured basePath 
   - destFileName - name of the generated file (!)
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
+
+* swagger-ext - creates a more rest oriented swagger file from model (with hyperlinks and type descriptions)
+  - host - name for the host entry
+  - basePath - text for the basePath entry
+  - appendVersionToPath - if true the versions is append to an additional configured basePath 
+  - destFileName - name of the generated file (!)
+  - removeEmptyLines - if set, then empty lines will be removed before file is written 
+
   
 ### Base generators
 * multifiles - creates multiple files from model and extra given template

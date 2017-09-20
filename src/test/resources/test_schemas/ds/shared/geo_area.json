@@ -1,0 +1,23 @@
+{
+  "id": "http://schlothauer.de/schemas/shared/geo_area.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Area geo-type",
+  "type": "object",
+  "properties": {
+    "projection": {
+      "description": "geographic projection used for this object",
+      "type": "string"
+    },
+    "points": {
+      "description": "polygon points",
+      "type": "array",
+      "items": {
+        "$ref": "./geo_point.json"
+      }
+    }
+  },
+  "required": [
+    "points"
+  ],
+  "version": 1
+}

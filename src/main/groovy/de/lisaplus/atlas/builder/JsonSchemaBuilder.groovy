@@ -16,6 +16,7 @@ import de.lisaplus.atlas.model.Property
 import de.lisaplus.atlas.model.RefType
 import de.lisaplus.atlas.model.StringType
 import de.lisaplus.atlas.model.Type
+import de.lisaplus.atlas.model.UUIDType
 import de.lisaplus.atlas.model.UnsupportedType
 import de.lisaplus.atlas.model.VoidType
 import groovy.json.JsonSlurper
@@ -184,6 +185,9 @@ class JsonSchemaBuilder implements IModelBuilder {
                         newProp.aggregationType = AggregationType.composition
                 }
             }
+            if (propObj.value.'ref') {
+                newProp.implicitRef = initRefType(propObj.value.'ref',currentSchemaPath)
+            }
             propList.add(newProp)
         }
         return propList
@@ -239,7 +243,7 @@ class JsonSchemaBuilder implements IModelBuilder {
         return refType
     }
     private Type getExternalRefType(def refStr,String currentSchemaPath) {
-        def alreadyLoaded = externalTypes[refStr]
+        def alreadyLoaded = externalTypes[typeFormRefStr(refStr)]
         if (alreadyLoaded) {
             return alreadyLoaded
         }
@@ -282,10 +286,18 @@ class JsonSchemaBuilder implements IModelBuilder {
                 ExternalType extT = new ExternalType()
                 extT.refStr = refStr
                 extT.initFromType(tmpT)
-                externalTypes.put(refStr,extT)
+                externalTypes.put(typeFormRefStr(refStr),extT)
                 return extT
             }
         }
+    }
+
+    private String typeFormRefStr(String refStr) {
+        def lastSlash = refStr.lastIndexOf('/')
+        def tmpStr = lastSlash==-1 ? refStr : refStr.substring(lastSlash+1)
+        def lastDot = tmpStr.lastIndexOf('.')
+        def tmpStr2 = lastDot==-1 ? tmpStr : tmpStr.substring(0,lastDot)
+        return string2Name(tmpStr2)
     }
 
     private Model loadModelFromExternalFile(String fileName, String refStr,String currentSchemaPath) {
@@ -339,7 +351,12 @@ class JsonSchemaBuilder implements IModelBuilder {
     private BaseType getBaseTypeFromString(Model model,String currentSchemaPath,def propObjMap, def innerTypeBaseName, def isArrayAllowed=true) {
         switch (propObjMap.type) {
             case 'string':
-                return new StringType()
+                if (propObjMap.format && propObjMap.format.toLowerCase()=="uuid") {
+                    return new UUIDType()
+                }
+                // TODO - handle other String types
+                else
+                    return new StringType()
             case 'integer':
                 return new IntType()
             case 'number':

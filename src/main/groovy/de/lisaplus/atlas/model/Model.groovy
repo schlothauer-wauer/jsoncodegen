@@ -147,6 +147,10 @@ class Property {
     def format
 
     /**
+     * For entries that points to a global uuid, this flag enable the explizit relation to connected type
+     */
+    BaseType implicitRef
+    /**
      * marks the property how it should implemented, as reference or as object
      */
     AggregationType aggregationType=AggregationType.composition

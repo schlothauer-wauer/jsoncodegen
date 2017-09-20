@@ -62,6 +62,13 @@ class StringType extends BaseType {
     final static NAME='STRING'
 }
 
+class UUIDType extends BaseType {
+    String name () {
+        return NAME
+    }
+    final static NAME='UUID'
+}
+
 class RefType extends BaseType {
     def typeName
     Type type
