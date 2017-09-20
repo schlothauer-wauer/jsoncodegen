@@ -13,6 +13,7 @@ A simple Groovy based program to do generation tasks from a JSON schema.
 * easier version markup in model
 * mark attributes as aggreation types (references) with suffix '_id'
 * additional property attribute 'aggregationType' to set the specific attribute information
+* allOf - to implement inheritance
 
 ```javascript
     // How to mark different aggregation types in the model
