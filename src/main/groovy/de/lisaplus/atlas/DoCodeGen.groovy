@@ -157,6 +157,7 @@ class DoCodeGen {
                 generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break
             case 'swagger_ext':
+            case 'swagger-ext':
                 SwaggerGenerator generator = new SwaggerGeneratorExt()
                 generator.initTemplate()
                 generator.doCodeGen(dataModel,outputBaseDir,extraParameters)

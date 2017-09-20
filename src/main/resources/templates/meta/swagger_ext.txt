@@ -304,16 +304,16 @@ definitions:
       type:
         description: "What kind of link is it"
         type: "string"
-        enum: [add, del, edit, read]
+        enum: [add, del, edit, read, self, next, prev]
       link:
         description: "the link string"
         type: "string"
       caption:
         description: "caption to show for that link"
-        type: "string"
+        ${DOLLAR}ref: "#/definitions/CaptionType"
       icon:
         description: "icon to use for that link"
-        type: "string"
+        ${DOLLAR}ref: "#/definitions/IconType"
   Entry:
     type: "object"
     properties:
@@ -328,6 +328,20 @@ definitions:
     type: "array"
     items:
       ${DOLLAR}ref: "#/definitions/Entry"
+  CaptionType:
+    type: "object"
+    properties:
+      text:
+        type: "string"
+      resource:
+        type: "string"
+  IconType:
+    type: "object"
+    properties:
+      url:
+        type: "string"
+      resource:
+        type: "string"
   Meta:
     type: "object"
     properties:
