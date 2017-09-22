@@ -56,23 +56,27 @@ class JsonSchemaBuilder implements IModelBuilder {
             throw new Exception(errorMsg)
         }
         String currentSchemaPath = getBasePathFromModelFile(modelFile)
+        Model model = initModel(objectModel)
         if (objectModel['definitions']) {
             // multi type schema
-            return modelFromMultiTypeSchema(objectModel,currentSchemaPath)
+            loadSchemaTypes(objectModel,currentSchemaPath,model)
+        }
+        if (objectModel['allOf']) {
+            // single type schema
+            return modelFromSingeTypeSchema(objectModel,modelFile.getName(),currentSchemaPath,model)
         }
         else if (objectModel['properties']) {
             // single type schema
-            return modelFromSingeTypeSchema(objectModel,modelFile.getName(),currentSchemaPath)
+            return modelFromSingeTypeSchema(objectModel,modelFile.getName(),currentSchemaPath,model)
         }
-        else if (objectModel['allOf']) {
-            // single type schema
-            return modelFromSingeTypeSchema(objectModel,modelFile.getName(),currentSchemaPath)
-        }
-        else {
+
+        if (!model.types) {
             def errorMsg='unknown schema structure'
             log.error(errorMsg)
             throw new Exception(errorMsg)
         }
+
+        return model
     }
 
     static String getBasePathFromModelFile(modelFile) {
@@ -82,8 +86,9 @@ class JsonSchemaBuilder implements IModelBuilder {
         return path.substring(0,index)
     }
 
-    private Model modelFromSingeTypeSchema(def objectModel, String modelFileName,String currentSchemaPath) {
-        Model model = initModel(objectModel)
+    private Model modelFromSingeTypeSchema(def objectModel, String modelFileName,String currentSchemaPath,Model model) {
+        if (model==null)
+            model = initModel(objectModel)
         def typeName = strFromMap(objectModel,'title')
         if (!typeName) {
             int lastDot = modelFileName.lastIndexOf('.')
@@ -133,8 +138,11 @@ class JsonSchemaBuilder implements IModelBuilder {
         }
     }
 
-    private Model modelFromMultiTypeSchema(def objectModel,String currentSchemaPath) {
-        Model model = initModel(objectModel)
+//    private Model modelFromMultiTypeSchema(def objectModel,String currentSchemaPath) {
+      private Model loadSchemaTypes(def objectModel,String currentSchemaPath,Model model) {
+//        Model model = initModel(objectModel)
+        if (model==null)
+            model = initModel(objectModel)
         objectModel.definitions.each { typeObj ->
             def typeName = string2Name(typeObj.key)
             Type newType = new Type()
