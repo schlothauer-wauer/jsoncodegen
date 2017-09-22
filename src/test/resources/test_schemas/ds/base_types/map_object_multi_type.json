@@ -1,0 +1,45 @@
+{
+  "id": "http://schlothauer.de/schemas/map_object_multi_type.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Map_object_multi",
+  "description": "A map object is a basic type for objects displayed on maps",
+  "type": "object",
+  "definitions" : {
+    "map_object": {
+      "allOf": [
+        {
+          "$ref": "./gis_object.json"
+        },
+        {
+          "properties": {
+            "display": {
+              "description": "Default properties to display the object on the map",
+              "type": "object",
+              "properties": {
+                "radius": {
+                  "type": "integer"
+                },
+                "fill_color": {
+                  "type": "string"
+                },
+                "stroke_color": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "object",
+                  "$ref": "../shared/icon.json"
+                },
+                "caption": {
+                  "description": "How to handle locale",
+                  "type": "object",
+                  "$ref": "../shared/text_resource.json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "version": 1
+}

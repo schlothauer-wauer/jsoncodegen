@@ -66,4 +66,53 @@ class JsonSchemaBuilder {
         assertNotNull(std)
         assertEquals(AggregationType.composition,phasesProp.aggregationType)
     }
+
+    @Test
+    void testAllOfFeature() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/base_types/map_object.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        def mapObject = model.types.find { it.name=='Map_object' }
+        assertNotNull(mapObject)
+    }
+
+    @Test
+    void testGisObj() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/base_types/gis_object.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        def mapObject = model.types.find { it.name=='GIS_object' }
+        assertNotNull(mapObject)
+        assertEquals(1,mapObject.properties.size())
+        assertEquals('gis',mapObject.properties[0].name)
+    }
+
+    @Test
+    void testMapObjMulti() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/base_types/map_object_multi_type.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        def mapObject = model.types.find { it.name=='Map_object' }
+        assertNotNull(mapObject)
+        assertEquals(2,mapObject.properties.size())
+        assertEquals('gis',mapObject.properties[0].name)
+        assertEquals('display',mapObject.properties[1].name)
+    }
+
+    @Test
+    void testSimpleMapObj() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/base_types/simple_map_object.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        def mapObject = model.types.find { it.name=='Map_object' }
+        assertNotNull(mapObject)
+        assertEquals(2,mapObject.properties.size())
+        assertEquals('gis',mapObject.properties[0].name)
+        assertEquals('display',mapObject.properties[1].name)
+    }
+
 }

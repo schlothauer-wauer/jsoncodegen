@@ -86,6 +86,13 @@ class Type {
     List<String> requiredProps=[];
 
     /**
+     * List of inheritance base types - currently only used for nice plantuml diagramms
+     * Inheritance is not real implemented. attributes of a base Type are simply copied to the
+     * derived Type. But sometime the usage of the term inheritance simplify communication
+     */
+    List<String> baseTypes=[]
+
+    /**
      * since when is the type part of the model
      */
     int sinceVersion
