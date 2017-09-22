@@ -62,6 +62,10 @@ ${firstUpperCase.call(type.name)} *-- <% if(prop.type.isArray) { %>"many"<% } %>
             ${firstUpperCase.call(type.name)} .. <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.implicitRef.type.name) } ${ prop.implicitRef.type.color }
         <% } %>
     <% } %>
+    <% type.baseTypes.each  { baseType -> %>
+        ${firstUpperCase.call(type.name)} --|> ${firstUpperCase.call(baseType)}
+    <% } %>
+
 <% } %>
 footer powered by plantuml, created with jsonCodeGen
 <% if (extraParam.markdown) { %>

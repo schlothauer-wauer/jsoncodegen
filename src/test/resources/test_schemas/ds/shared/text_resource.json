@@ -1,0 +1,17 @@
+{
+  "id": "http://schlothauer.de/schemas/shared/text_resource.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Definition of a text resource",
+  "type": "object",
+  "properties": {
+    "text": {
+      "description": "Text to display",
+      "type": "string"
+    },
+    "res_id": {
+      "description": "resource id of that text",
+      "type": "string"
+    }
+  },
+  "version": 1
+}

@@ -1,5 +1,5 @@
 {
-  "id": "http://schlothauer.de/schemas/gis_object.json",
+  "id": "http://schlothauer.de/schemas/simple_gis_object.json",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "GIS_object",
   "description": "A GIS object is an application defined type that owns GIS coordinates",
@@ -10,13 +10,13 @@
       "type": "object",
       "properties": {
         "center": {
-          "$ref": "../shared/geo_point.json"
+          "type": "string"
         },
         "area": {
-          "$ref": "../shared/geo_area.json"
+          "type": "string"
         },
         "route": {
-          "$ref": "../shared/geo_multiline.json"
+          "type": "string"
         }
       }
     }

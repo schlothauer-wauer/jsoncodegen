@@ -56,19 +56,27 @@ class JsonSchemaBuilder implements IModelBuilder {
             throw new Exception(errorMsg)
         }
         String currentSchemaPath = getBasePathFromModelFile(modelFile)
+        Model model = initModel(objectModel)
         if (objectModel['definitions']) {
             // multi type schema
-            return modelFromMultiTypeSchema(objectModel,currentSchemaPath)
+            loadSchemaTypes(objectModel,currentSchemaPath,model)
+        }
+        if (objectModel['allOf']) {
+            // single type schema
+            return modelFromSingeTypeSchema(objectModel,modelFile.getName(),currentSchemaPath,model)
         }
         else if (objectModel['properties']) {
             // single type schema
-            return modelFromSingeTypeSchema(objectModel,modelFile.getName(),currentSchemaPath)
+            return modelFromSingeTypeSchema(objectModel,modelFile.getName(),currentSchemaPath,model)
         }
-        else {
+
+        if (!model.types) {
             def errorMsg='unknown schema structure'
             log.error(errorMsg)
             throw new Exception(errorMsg)
         }
+
+        return model
     }
 
     static String getBasePathFromModelFile(modelFile) {
@@ -78,8 +86,9 @@ class JsonSchemaBuilder implements IModelBuilder {
         return path.substring(0,index)
     }
 
-    private Model modelFromSingeTypeSchema(def objectModel, String modelFileName,String currentSchemaPath) {
-        Model model = initModel(objectModel)
+    private Model modelFromSingeTypeSchema(def objectModel, String modelFileName,String currentSchemaPath,Model model) {
+        if (model==null)
+            model = initModel(objectModel)
         def typeName = strFromMap(objectModel,'title')
         if (!typeName) {
             int lastDot = modelFileName.lastIndexOf('.')
@@ -94,7 +103,24 @@ class JsonSchemaBuilder implements IModelBuilder {
         Type newType = new Type()
         newType.name = typeName
         newType.description = strFromMap(objectModel,'description')
-        newType.properties = getProperties(model,objectModel,typeName,currentSchemaPath)
+        if (objectModel.allOf) {
+            // TODO - add allof Properties
+            objectModel.allOf.each { allOfElem ->
+                if (allOfElem.properties) {
+                    newType.properties.addAll(getProperties(model,allOfElem,typeName,currentSchemaPath))
+                }
+                else {
+                    if (allOfElem.'$ref') {
+                        RefType tmp = initRefType(allOfElem.'$ref',currentSchemaPath)
+                        newType.properties.addAll(tmp.type.properties)
+                        newType.baseTypes.add(tmp.type.name)
+                    }
+                }
+            }
+        }
+        else {
+            newType.properties = getProperties(model,objectModel,typeName,currentSchemaPath)
+        }
         // TODO initialize extra stuff
         addNewType(newType,model)
         addExternalTypesToModel(model)
@@ -112,14 +138,35 @@ class JsonSchemaBuilder implements IModelBuilder {
         }
     }
 
-    private Model modelFromMultiTypeSchema(def objectModel,String currentSchemaPath) {
-        Model model = initModel(objectModel)
+//    private Model modelFromMultiTypeSchema(def objectModel,String currentSchemaPath) {
+      private Model loadSchemaTypes(def objectModel,String currentSchemaPath,Model model) {
+//        Model model = initModel(objectModel)
+        if (model==null)
+            model = initModel(objectModel)
         objectModel.definitions.each { typeObj ->
             def typeName = string2Name(typeObj.key)
             Type newType = new Type()
             newType.name = typeName
             newType.description = strFromMap(typeObj.value,'description')
-            newType.properties = getProperties(model,typeObj.value,typeName,currentSchemaPath)
+            newType.properties = []
+            if (typeObj.value.allOf) {
+                // TODO - add allof Properties
+                typeObj.value.allOf.each { allOfElem ->
+                    if (allOfElem.properties) {
+                        newType.properties.addAll(getProperties(model,allOfElem,typeName,currentSchemaPath))
+                    }
+                    else {
+                        if (allOfElem.'$ref') {
+                            RefType tmp = initRefType(allOfElem.'$ref',currentSchemaPath)
+                            newType.properties.addAll(tmp.type.properties)
+                            newType.baseTypes.add(tmp.type.name)
+                        }
+                    }
+                }
+            }
+            else {
+                newType.properties = getProperties(model,typeObj.value,typeName,currentSchemaPath)
+            }
             // TODO  initialize extra stuff
             addNewType(newType,model)
         }
@@ -163,34 +210,38 @@ class JsonSchemaBuilder implements IModelBuilder {
     private List<Property> getProperties(Model model,def propertyParent,def parentName,String currentSchemaPath) {
         List<Property> propList = []
         propertyParent.properties.each { propObj ->
-            def newProp = new Property()
-            newProp.name = string2Name(propObj.key,false)
-            newProp.description = propObj.value['description']
-            String key = makeCamelCase(propObj.key)
-            newProp.type = getPropertyType(model,propObj.value,parentName+string2Name(key),currentSchemaPath)
-            if (newProp.type instanceof RefType) {
-                if (propObj.key.toLowerCase().endsWith('_id')) {
-                    newProp.aggregationType = AggregationType.aggregation
-                } else {
-                    /**
-                     * additional extension of JSON schema ... property attribute 'aggregationType'
-                     */
-                    if (propObj.value.'aggregationType') {
-                        if (propObj.value.aggregationType.toLowerCase() == 'aggregation') {
-                            newProp.aggregationType = AggregationType.aggregation
-                        } else {
-                            newProp.aggregationType = AggregationType.composition
-                        }
-                    } else
-                        newProp.aggregationType = AggregationType.composition
-                }
-            }
-            if (propObj.value.'ref') {
-                newProp.implicitRef = initRefType(propObj.value.'ref',currentSchemaPath)
-            }
-            propList.add(newProp)
+            propList.add(creeateSimpleProperty(model, parentName,currentSchemaPath,propObj))
         }
         return propList
+    }
+
+    private Property creeateSimpleProperty (Model model, def parentName,String currentSchemaPath,def propObj) {
+        def newProp = new Property()
+        newProp.name = string2Name(propObj.key, false)
+        newProp.description = propObj.value['description']
+        String key = makeCamelCase(propObj.key)
+        newProp.type = getPropertyType(model, propObj.value, parentName + string2Name(key), currentSchemaPath)
+        if (newProp.type instanceof RefType) {
+            if (propObj.key.toLowerCase().endsWith('_id')) {
+                newProp.aggregationType = AggregationType.aggregation
+            } else {
+                /**
+                 * additional extension of JSON schema ... property attribute 'aggregationType'
+                 */
+                if (propObj.value.'aggregationType') {
+                    if (propObj.value.aggregationType.toLowerCase() == 'aggregation') {
+                        newProp.aggregationType = AggregationType.aggregation
+                    } else {
+                        newProp.aggregationType = AggregationType.composition
+                    }
+                } else
+                    newProp.aggregationType = AggregationType.composition
+            }
+        }
+        if (propObj.value.'ref') {
+            newProp.implicitRef = initRefType(propObj.value.'ref', currentSchemaPath)
+        }
+        return newProp
     }
 
     private BaseType getPropertyType(Model model,def propObjMap,def innerTypeBaseName,String currentSchemaPath) {
@@ -242,6 +293,8 @@ class JsonSchemaBuilder implements IModelBuilder {
         }
         return refType
     }
+
+
     private Type getExternalRefType(def refStr,String currentSchemaPath) {
         def alreadyLoaded = externalTypes[typeFormRefStr(refStr)]
         if (alreadyLoaded) {
@@ -282,7 +335,10 @@ class JsonSchemaBuilder implements IModelBuilder {
                 if ((!tmpModel) || (!tmpModel.types)) {
                     throw new Exception("loaded model doesn't contain types")
                 }
-                Type tmpT = tmpModel.types[0]
+                // because a single type model can contain multiple inner types
+                Type tmpT = tmpModel.types.find {
+                    ! (it instanceof InnerType)
+                }
                 ExternalType extT = new ExternalType()
                 extT.refStr = refStr
                 extT.initFromType(tmpT)

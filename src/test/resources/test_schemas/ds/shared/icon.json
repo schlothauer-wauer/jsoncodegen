@@ -1,0 +1,17 @@
+{
+  "id": "http://schlothauer.de/schemas/shared/icon.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Icon definition",
+  "type": "object",
+  "properties": {
+    "url": {
+      "description": "download url for that icon",
+      "type": "string"
+    },
+    "res_id": {
+      "description": "resource id of that icon",
+      "type": "string"
+    }
+  },
+  "version": 1
+}
