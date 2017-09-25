@@ -1,11 +1,16 @@
 package ${extraParam.packageName}
 
+<% if ( extraParam.interfacePackageName) { %>
+import ${extraParam.interfacePackageName}.I${ firstUpperCase.call(currentType.name) }
+<% } %>
+
+
 <% if ( currentType.description ) { %>
 /**
  * ${currentType.description}
  */
 <% } %>
-public class ${ firstUpperCase.call(currentType.name) } {
+public class ${ firstUpperCase.call(currentType.name) } extends I${ firstUpperCase.call(currentType.name) } {
     <% currentType.properties.each { prop -> %>
     <% if (prop.description) { %>
     /**

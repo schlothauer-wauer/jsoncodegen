@@ -7,6 +7,9 @@ import de.lisaplus.atlas.builder.JsonSchemaBuilder
 import de.lisaplus.atlas.codegen.TemplateType
 import de.lisaplus.atlas.codegen.external.ExtMultiFileGenarator
 import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
+import de.lisaplus.atlas.codegen.java.JavaBeanGenerator
+import de.lisaplus.atlas.codegen.java.JavaInterfaceGenerator
+import de.lisaplus.atlas.codegen.java.JavaInterfacedBeanGenerator
 import de.lisaplus.atlas.codegen.meta.PlantUmlGenerator
 import de.lisaplus.atlas.codegen.meta.SwaggerGenerator
 import de.lisaplus.atlas.codegen.meta.SwaggerGeneratorExt
@@ -147,9 +150,20 @@ class DoCodeGen {
 
     static void useBuiltInGenerator(String generatorName, String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
         switch (generatorName) {
+            case 'java_interfaces':
+                JavaInterfaceGenerator generator = new JavaInterfaceGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
             case 'java_beans':
-                ignoreTemplateMsg(generatorName, templateName)
-                // TODO
+                JavaBeanGenerator generator = new JavaBeanGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
+            case 'java_interfaced_beans':
+                JavaInterfacedBeanGenerator generator = new JavaInterfacedBeanGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break
             case 'swagger':
                 SwaggerGenerator generator = new SwaggerGenerator()

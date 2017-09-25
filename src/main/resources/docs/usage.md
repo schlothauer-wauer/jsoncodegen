@@ -46,13 +46,11 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
   
 * java_interfaces - creates a set of Java interfaces from the model 
   - packageName - what is the package for the generated beans (!)
-  - interfacePrefix - per default no Prefix is used but it's possible to add for instance an 'I' with that option
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
   
 * java_interfaced_beans - creates a set of Java beans from model that implements a given interface
   - packageName - what is the package for the generated beans (!)
   - interfacePackageName - Name of the interface package
-  - interfacePrefix - per default no Prefix is used but it's possible to add for instance an 'I' with that option
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
   
 ### Service related 
