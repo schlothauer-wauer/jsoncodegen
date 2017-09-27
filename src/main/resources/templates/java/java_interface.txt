@@ -1,0 +1,18 @@
+package ${extraParam.packageName}
+
+<% if ( currentType.description ) { %>
+/**
+ * ${currentType.description}
+ */
+<% } %>
+public interface I${ firstUpperCase.call(currentType.name) } {
+    <% currentType.properties.each { prop -> %>
+    <% if (prop.description) { %>
+    /**
+     * ${prop.description}
+     */
+    <% } %>
+    public ${ typeToJava.call(prop.type) } get${ firstUpperCase.call(prop.name) } ();
+    public void set${ firstUpperCase.call(prop.name) } (${ typeToJava.call(prop.type) } ${prop.name});
+    <% } %>
+}
