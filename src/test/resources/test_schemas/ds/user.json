@@ -53,7 +53,7 @@
         },
         "gid": {
           "type": "string",
-          "format": "uuid",
+          "format": "uuid"
         },
         "roles": {
           "type": "array",
@@ -78,7 +78,7 @@
           "description": "what is the related domain",
           "type": "string",
           "format": "uuid",
-          "ref": "./shared/domain.json"
+            "ref": "./shared/domain.json"
         },
         "name": {
           "description": "Name of the role",

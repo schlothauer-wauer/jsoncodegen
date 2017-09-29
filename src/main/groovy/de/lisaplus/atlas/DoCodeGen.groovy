@@ -10,6 +10,8 @@ import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
 import de.lisaplus.atlas.codegen.java.JavaBeanGenerator
 import de.lisaplus.atlas.codegen.java.JavaInterfaceGenerator
 import de.lisaplus.atlas.codegen.java.JavaInterfacedBeanGenerator
+import de.lisaplus.atlas.codegen.meta.HistModelGenerator
+import de.lisaplus.atlas.codegen.meta.JsonSchemaGenerator
 import de.lisaplus.atlas.codegen.meta.PlantUmlGenerator
 import de.lisaplus.atlas.codegen.meta.SwaggerGenerator
 import de.lisaplus.atlas.codegen.meta.SwaggerGeneratorExt
@@ -178,6 +180,16 @@ class DoCodeGen {
                 break
             case 'plantuml':
                 PlantUmlGenerator generator = new PlantUmlGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
+            case 'hist_model':
+                HistModelGenerator generator = new HistModelGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
+            case 'json_schema':
+                JsonSchemaGenerator generator = new JsonSchemaGenerator()
                 generator.initTemplate()
                 generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break

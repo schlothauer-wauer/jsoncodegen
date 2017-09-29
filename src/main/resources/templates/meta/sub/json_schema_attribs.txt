@@ -1,0 +1,71 @@
+"${toLowerCase.call(actObj.name)}": {
+<% if (actObj.description) { %>
+${printIndent.call(indent)}  "description": "${actObj.description}",
+<% } %>
+<% if (actObj.type.isArray) { %>
+${printIndent.call(indent)}  "type": "array",
+${printIndent.call(indent)}  "items": {
+    <% if (actObj.isRefType()) { %>
+${printIndent.call(indent)}    "${DOLLAR}ref": "#/definitions/${toLowerCase.call(actObj.type.type.name)}"
+    <% } else if (actObj.isComplexType() ) { %>
+
+${printIndent.call(indent)}    "type": "object",
+${printIndent.call(indent)}    "properties": {
+        <% boolean firstProp=true; actObj.type.type.properties.each  { prop -> %>
+            <% if (firstProp) { firstProp=false; } else { %>
+${printIndent.call(indent)}      ,
+            <% } %>
+${printIndent.call(indent)}      ${renderInnerTemplate.call('templates/meta/sub/json_schema_attribs.txt',prop,indent+6)}
+        <% } %>
+${printIndent.call(indent)}    }
+
+    <% } else { %>
+        <% if (typeFormatToJson.call(actObj.type)) { %>
+${printIndent.call(indent)}    "type": "${typeToJson.call(actObj.type)}",
+${printIndent.call(indent)}    "format": "${typeFormatToJson.call(actObj.type)}"
+        <% } else { %>
+${printIndent.call(indent)}    "type": "${typeToJson.call(actObj.type)}"
+        <% } %>
+        <% if (actObj.implicitRef) { %>
+            <% if (actObj.implicitRefIsRefType()) { %>
+${printIndent.call(indent)}    ,"ref": "#/definitions/${toLowerCase.call(actObj.implicitRef.type.name)}"
+            <% } else if (actObj.implicitRefIsComplexType() ) { %>
+${printIndent.call(indent)}    ,"ref": "#/definitions/${toLowerCase.call(actObj.implicitRef.name)}"
+            <% }%>
+        <% } %>
+    <% } %>
+${printIndent.call(indent)}  }
+<% } else { %>
+    <% if (actObj.isRefType()) { %>
+${printIndent.call(indent)}  "${DOLLAR}ref": "#/definitions/${toLowerCase.call(actObj.type.type.name)}"
+    <% } else if (actObj.isComplexType() ) { %>
+
+
+${printIndent.call(indent)}  "type": "object",
+${printIndent.call(indent)}  "properties": {
+        <% boolean firstProp=true; actObj.type.type.properties.each  { prop -> %>
+            <% if (firstProp) { firstProp=false; } else { %>
+${printIndent.call(indent)}    ,
+            <% } %>
+${printIndent.call(indent)}    ${renderInnerTemplate.call('templates/meta/sub/json_schema_attribs.txt',prop,indent+2)}
+        <% } %>
+${printIndent.call(indent)}  }
+
+
+    <% } else { %>
+        <% if (typeFormatToJson.call(actObj.type)) { %>
+${printIndent.call(indent)}  "type": "${typeToJson.call(actObj.type)}",
+${printIndent.call(indent)}  "format": "${typeFormatToJson.call(actObj.type)}"
+        <% } else { %>
+${printIndent.call(indent)}  "type": "${typeToJson.call(actObj.type)}"
+        <% } %>
+        <% if (actObj.implicitRef) { %>
+            <% if (actObj.implicitRefIsRefType()) { %>
+${printIndent.call(indent)}  ,"ref": "#/definitions/${toLowerCase.call(actObj.implicitRef.type.name)}"
+            <% } else if (actObj.implicitRefIsComplexType() ) { %>
+${printIndent.call(indent)}  ,"ref": "#/definitions/${toLowerCase.call(actObj.implicitRef.name)}"
+            <% }%>
+        <% } %>
+    <% } %>
+<% } %>
+${printIndent.call(indent)}}

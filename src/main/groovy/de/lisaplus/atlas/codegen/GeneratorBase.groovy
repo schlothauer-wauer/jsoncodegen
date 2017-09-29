@@ -2,6 +2,7 @@ package de.lisaplus.atlas.codegen
 
 import de.lisaplus.atlas.DoCodeGen
 import de.lisaplus.atlas.codegen.helper.java.JavaTypeConvert
+import de.lisaplus.atlas.codegen.helper.java.JsonTypeConvert
 import de.lisaplus.atlas.codegen.helper.java.SwaggerTypeConvert
 import de.lisaplus.atlas.model.InnerType
 import de.lisaplus.atlas.model.Model
@@ -106,7 +107,10 @@ abstract class GeneratorBase {
                 isInnerType: isInnerType,
                 typeToJava: JavaTypeConvert.convert,
                 typeToSwagger: SwaggerTypeConvert.convert,
+                typeToJson: JsonTypeConvert.convert,
                 typeFormatToSwagger: SwaggerTypeConvert.format,
+                typeFormatToJson: JsonTypeConvert.format,
+                renderInnerTemplate: renderInnerTemplate,
                 breakTxt: breakTxt
         ]
     }
@@ -154,6 +158,37 @@ abstract class GeneratorBase {
 
     def toUpperCase = { str ->
         return str==null ? EMPTY : str.toUpperCase()
+    }
+
+    def renderInnerTemplate = { templateResource,actObj,indent ->
+        def test = actObj.toString()
+        def innerTemplate = createTemplateFromResource(templateResource,TemplateType.GString)
+        def data = [
+                actObj: actObj,
+                indent: indent,
+                printIndent: printIndent,
+                DOLLAR:'$',
+                toLowerCase: toLowerCase,
+                toUpperCase: toUpperCase,
+                firstLowerCase: firstLowerCase,
+                firstUpperCase: firstUpperCase,
+                isInnerType: isInnerType,
+                typeToJava: JavaTypeConvert.convert,
+                typeToSwagger: SwaggerTypeConvert.convert,
+                typeToJson: JsonTypeConvert.convert,
+                typeFormatToSwagger: SwaggerTypeConvert.format,
+                typeFormatToJson: JsonTypeConvert.format,
+                renderInnerTemplate: renderInnerTemplate,
+                breakTxt: breakTxt
+        ]
+
+        return innerTemplate.make(data)
+    }
+
+    def printIndent = { indent ->
+        def ret = ''
+        for (def i=0;i<indent;i++) ret+=' '
+        return ret
     }
 
     def firstLowerCase = { str ->

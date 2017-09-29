@@ -1,6 +1,8 @@
 package de.lisaplus.atlas.codegen.java
 
 import de.lisaplus.atlas.codegen.TemplateType
+import de.lisaplus.atlas.model.Model
+import de.lisaplus.atlas.model.Type
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -9,6 +11,12 @@ import org.slf4j.LoggerFactory
  */
 class JavaInterfaceGenerator extends JavaGeneratorBase {
     private static final Logger log=LoggerFactory.getLogger(JavaInterfaceGenerator.class)
+
+    @Override
+    String getDestFileName(Model dataModel, Map<String, String> extraParameters, Type currentType=null) {
+        String fileNameBase = firstUpperCase(currentType.name)
+        return "I${fileNameBase}.java"
+    }
 
     void initTemplate() {
         template = createTemplateFromResource('templates/java/java_interface.txt',TemplateType.GString)

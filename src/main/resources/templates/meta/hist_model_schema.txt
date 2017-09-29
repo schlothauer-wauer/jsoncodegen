@@ -5,10 +5,24 @@
     "description": "${model.description}",
   <% } %>
     "definitions": {
-    <% boolean firstType=true; model.types.each  { type -> %>
-      <% if (firstType) { firstType=false; } else { %>
+      "meta_entry_data": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "string"
+          },
+          "entry_date": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      }
+    <% model.types.each  { type -> %>
+      <% if (! type.isInnerType()) { %>
       ,
-      <% } %>
       "${toLowerCase.call(type.name)}": {
         <% if (type.description) { %>
         "description": "${type.description}",
@@ -21,8 +35,21 @@
             <% } %>
           ${renderInnerTemplate.call('templates/meta/sub/json_schema_attribs.txt',prop,10)}
         <% } %>
+        <% if (!isInnerType.call(type)) { %>
+         ,
+         "meta_history": {
+            "type": "array",
+            "items": {
+              "${DOLLAR}ref": "#/definitions/${toLowerCase.call(type.name)}"
+            }
+          },
+          "meta_entry": {
+             "${DOLLAR}ref": "#/definitions/meta_entry_data"
+          }
+        <% } %>
         }
       }
+      <% } %>
     <% } %>
   },
   "type": "object",

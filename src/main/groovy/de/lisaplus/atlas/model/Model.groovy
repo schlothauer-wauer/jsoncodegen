@@ -118,6 +118,10 @@ class Type {
         if (! b instanceof Type) return false
         return name==b.name
     }
+
+    boolean isInnerType() {
+        return this instanceof InnerType
+    }
 }
 
 /**
@@ -176,6 +180,22 @@ class Property {
 
     boolean isRefTypeOrComplexType() {
         return type && ( type instanceof RefType || type instanceof ComplexType )
+    }
+
+    boolean isRefType() {
+        return type && ( type instanceof RefType)
+    }
+
+    boolean isComplexType() {
+        return type && ( type instanceof ComplexType )
+    }
+
+    boolean implicitRefIsRefType() {
+        return implicitRef && ( implicitRef instanceof RefType)
+    }
+
+    boolean implicitRefIsComplexType() {
+        return implicitRef && ( implicitRef instanceof ComplexType )
     }
 
     boolean isAggregation() {
