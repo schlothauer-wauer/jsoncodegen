@@ -5,6 +5,7 @@
     "description": "${model.description}",
   <% } %>
     "definitions": {
+//// type for the meta data that contains the owner of the entry
       "meta_entry_data": {
         "type": "object",
         "properties": {
@@ -20,8 +21,9 @@
           }
         }
       }
+//// Start of standard type handline
     <% model.types.each  { type -> %>
-      <% if (! type.isInnerType()) { %>
+      <% if (! type.isInnerType()) { %> //// Only not inner types need to be handled
       ,
       "${toLowerCase.call(type.name)}": {
         <% if (type.description) { %>
@@ -33,18 +35,22 @@
             <% if (firstProp) { firstProp=false; } else { %>
           ,
             <% } %>
+          //// call of an inner template to make the code more readable
+          //// this also allow complext nested inner type consturcts
           ${renderInnerTemplate.call('templates/meta/sub/json_schema_attribs.txt',prop,10)}
         <% } %>
         <% if (!isInnerType.call(type)) { %>
          ,
          "meta_history": {
             "type": "array",
+            "description": "array with the historical values of that entry",
             "items": {
               "${DOLLAR}ref": "#/definitions/${toLowerCase.call(type.name)}"
             }
           },
           "meta_entry": {
-             "${DOLLAR}ref": "#/definitions/meta_entry_data"
+            "description": "data about entry creation",
+            "${DOLLAR}ref": "#/definitions/meta_entry_data"
           }
         <% } %>
         }
