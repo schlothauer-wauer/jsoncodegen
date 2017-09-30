@@ -12,6 +12,7 @@ import groovy.text.Template
 import groovy.text.TemplateEngine
 import groovy.text.XmlTemplateEngine
 import groovy.text.markup.MarkupTemplateEngine
+import org.codehaus.groovy.runtime.StringBufferWriter
 import org.slf4j.Logger
 
 /**
@@ -77,7 +78,51 @@ abstract class GeneratorBase {
             throw new Exception(errorMsg)
         }
         BufferedReader reader = new BufferedReader( new InputStreamReader (inputStream))
-        return engine.createTemplate(reader);
+        // start preprocessing of the template
+        StringBuffer strBuffer = new StringBuffer()
+        String s
+        def replaceMap=[:]
+        while ((s = reader.readLine()) != null) {
+            if (!s) {
+                strBuffer.append('\n')
+                continue
+            }
+            if (getDefinedMacro(replaceMap,s)) continue // found macro
+            String processed=s.replaceAll('\\s*////.*$','')
+            processed = replaceMacros(replaceMap,processed)
+            if (!processed) continue
+            strBuffer.append(processed)
+            strBuffer.append('\n')
+        }
+        // end preprocessing of the template
+        StringReader strReader = new StringReader(strBuffer.toString())
+        return engine.createTemplate(strReader);
+    }
+
+    boolean getDefinedMacro(Map replaceMap,String line) {
+        if (!line) return false
+        def s = line.trim()
+        if (s.startsWith('//define')) {
+            s = s.replaceAll('//define\\s*','')
+            def i = s.indexOf('=')
+            def key = s.substring(0,i).trim()
+            def value = s.substring(i+1).trim()
+            replaceMap.put(key,value)
+            return true
+        }
+        else
+            return false
+    }
+
+    static String replaceMacros(Map replaceMap,String line) {
+        if (!line) return line
+        def keys = replaceMap.keySet()
+        def iterator = keys.iterator()
+        while (iterator.hasNext()) {
+            def key = iterator.next()
+            line = line.replace(key,replaceMap[key])
+        }
+        return line
     }
 
     static String removeEmptyLines (String genResult) {
