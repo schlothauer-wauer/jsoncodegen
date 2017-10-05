@@ -67,7 +67,6 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
   - appendVersionToPath - if true the versions is append to an additional configured basePath 
   - destFileName - name of the generated file (!)
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
-
   
 ### Base generators
 * multifiles - creates multiple files from model and extra given template

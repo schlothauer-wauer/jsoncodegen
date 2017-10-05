@@ -138,6 +138,13 @@ task integrationTest(type: Test) {
     outputs.upToDateWhen { false }
 }
 
+task copyReleaseToDockerImage (type: Copy) {
+     into "docker/image/release"
+     from "${buildDir}/release"
+}
+
+copyReleaseToDockerImage.dependsOn buildRelease
+
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
 buildRelease.dependsOn test

@@ -60,6 +60,9 @@ gradle publish
 # before a release is build the tests are executed - skip not possible
 gradle buildRelease
 
+# builds release and copy atifacts to docker image dir as preparation for the image build
+gradle copyReleaseToDockerImage
+
 # run program without any arguments from project
 gradle myRun
 
