@@ -115,4 +115,17 @@ class JsonSchemaBuilder {
         assertEquals('display',mapObject.properties[1].name)
     }
 
+    @Test
+    void testImplicitRef() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/implicit_ref.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        def docObject = model.types.find { it.name=='Document' }
+        assertNotNull(docObject)
+        def tagsProp = docObject.properties.find { it.name=='tags' }
+        assertNotNull(tagsProp)
+        assertNotNull(tagsProp.implicitRef)
+    }
+
 }
