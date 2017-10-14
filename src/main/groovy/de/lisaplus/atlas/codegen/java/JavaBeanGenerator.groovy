@@ -14,7 +14,7 @@ class JavaBeanGenerator extends JavaGeneratorBase {
     private static final Logger log=LoggerFactory.getLogger(JavaBeanGenerator.class)
 
     void initTemplate() {
-        template = createTemplateFromResource('templates/java/java_bean.txt',TemplateType.GString)
+        template = createTemplateFromResource('templates/java/bean.txt',TemplateType.GString)
     }
 
     Logger getLogger() {

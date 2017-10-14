@@ -10,6 +10,7 @@ import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
 import de.lisaplus.atlas.codegen.java.JavaBeanGenerator
 import de.lisaplus.atlas.codegen.java.JavaInterfaceGenerator
 import de.lisaplus.atlas.codegen.java.JavaInterfacedBeanGenerator
+import de.lisaplus.atlas.codegen.java.JavaInterfacedGenericDerivedBeanGenerator
 import de.lisaplus.atlas.codegen.meta.HistModelGenerator
 import de.lisaplus.atlas.codegen.meta.JsonSchemaGenerator
 import de.lisaplus.atlas.codegen.meta.PlantUmlGenerator
@@ -164,6 +165,11 @@ class DoCodeGen {
                 break
             case 'java_interfaced_beans':
                 JavaInterfacedBeanGenerator generator = new JavaInterfacedBeanGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
+            case 'java_interfaced_generic_derived_beans':
+                JavaInterfacedGenericDerivedBeanGenerator generator = new JavaInterfacedGenericDerivedBeanGenerator()
                 generator.initTemplate()
                 generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break

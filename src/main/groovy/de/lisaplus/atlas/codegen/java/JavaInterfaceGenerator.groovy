@@ -19,7 +19,7 @@ class JavaInterfaceGenerator extends JavaGeneratorBase {
     }
 
     void initTemplate() {
-        template = createTemplateFromResource('templates/java/java_interface.txt',TemplateType.GString)
+        template = createTemplateFromResource('templates/java/interface.txt',TemplateType.GString)
     }
 
     Logger getLogger() {
