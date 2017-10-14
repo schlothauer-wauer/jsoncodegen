@@ -1,4 +1,4 @@
-package ${extraParam.packageName}
+package ${extraParam.packageName};
 
 <% if ( currentType.description ) { %>
 /**
@@ -12,7 +12,7 @@ public interface I${ firstUpperCase.call(currentType.name) } {
      * ${prop.description}
      */
     <% } %>
-    public ${ typeToJava.call(prop.type) } get${ firstUpperCase.call(prop.name) } ();
-    public void set${ firstUpperCase.call(prop.name) } (${ typeToJava.call(prop.type) } ${prop.name});
+    public ${ typeToJava.call(prop.type,'I') } get${ firstUpperCase.call(prop.name) } ();
+    public void set${ firstUpperCase.call(prop.name) } (${ typeToJava.call(prop.type,'I') } ${prop.name});
     <% } %>
 }

@@ -19,29 +19,29 @@ import de.lisaplus.atlas.model.UnsupportedType
  * Created by eiko on 11.06.17.
  */
 class JavaTypeConvert {
-    static def convert = { type ->
+    static def convert = { type,prefix = '' ->
         if (! type instanceof BaseType) {
             return BaseType.WRONG_TYPE+type
         }
         switch(type.name()) {
             case IntType.NAME:
-                return type.isArray? 'List<Integer>' : 'Integer'
+                return type.isArray? 'java.util.List<Integer>' : 'Integer'
             case NumberType.NAME:
-                return type.isArray? 'List<Double>' : 'Double'
+                return type.isArray? 'java.util.List<Double>' : 'Double'
             case StringType.NAME:
-                return type.isArray? 'List<String>' : 'String'
+                return type.isArray? 'java.util.List<String>' : 'String'
             case UUIDType.NAME:
-                return type.isArray? 'List<UUID>' : 'UUID'
+                return type.isArray? 'java.util.List<java.util.UUID>' : 'java.util.UUID'
             case BooleanType.NAME:
-                return type.isArray? 'List<Boolean>' : 'Boolean'
+                return type.isArray? 'java.util.List<Boolean>' : 'Boolean'
             case DateType.NAME:
-                return type.isArray? 'List<Date>' : 'Date'
+                return type.isArray? 'java.util.List<Date>' : 'java.util.Date'
             case DateTimeType.NAME:
-                return type.isArray? 'List<Date>' : 'Date'
+                return type.isArray? 'java.util.List<Date>' : 'java.util.Date'
             case RefType.NAME:
-                return type.isArray? "List<${type.type.name}>" : type.type.name
+                return type.isArray? "java.util.List<${prefix}${type.type.name}>" : "${prefix}${type.type.name}"
             case ComplexType.NAME:
-                return type.isArray? "List<${type.type.name}>" : type.type.name
+                return type.isArray? "java.util.List<${prefix}${type.type.name}>" : "${prefix}${type.type.name}"
             case UnsupportedType.NAME:
                 return BaseType.UNSUPPORTED_TYPE+type
             case VoidType.NAME:

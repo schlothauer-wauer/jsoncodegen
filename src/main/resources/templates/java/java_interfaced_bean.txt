@@ -1,7 +1,7 @@
-package ${extraParam.packageName}
+package ${extraParam.packageName};
 
 <% if ( extraParam.interfacePackageName) { %>
-import ${extraParam.interfacePackageName}.I${ firstUpperCase.call(currentType.name) }
+import ${extraParam.interfacePackageName}.*;
 <% } %>
 
 
@@ -10,18 +10,18 @@ import ${extraParam.interfacePackageName}.I${ firstUpperCase.call(currentType.na
  * ${currentType.description}
  */
 <% } %>
-public class ${ firstUpperCase.call(currentType.name) } extends I${ firstUpperCase.call(currentType.name) } {
+public class ${ firstUpperCase.call(currentType.name) } implements I${ firstUpperCase.call(currentType.name) } {
     <% currentType.properties.each { prop -> %>
     <% if (prop.description) { %>
     /**
      * ${prop.description}
      */
     <% } %>
-    private ${ typeToJava.call(prop.type) } ${prop.name};
+    private ${ typeToJava.call(prop.type,'I') } ${prop.name};
 
-    public ${ typeToJava.call(prop.type) } get${ firstUpperCase.call(prop.name) } () { return this.${prop.name} }
+    public ${ typeToJava.call(prop.type,'I') } get${ firstUpperCase.call(prop.name) } () { return this.${prop.name}; }
 
-    public void set${ firstUpperCase.call(prop.name) } (${ typeToJava.call(prop.type) } ${prop.name}) {
+    public void set${ firstUpperCase.call(prop.name) } (${ typeToJava.call(prop.type,'I') } ${prop.name}) {
         this.${prop.name} = ${prop.name};
     }
 
