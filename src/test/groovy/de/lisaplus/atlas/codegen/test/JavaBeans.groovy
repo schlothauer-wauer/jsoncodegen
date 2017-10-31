@@ -61,4 +61,54 @@ class JavaBeans {
         doCodeGen.run()
     }
 
+    @Test
+    void testContainsAttrib() {
+        def destDir = 'tmp/java_beans'
+        FileHelper.removeDirectoryIfExists(destDir)
+        def modelFile = new File('src/test/resources/test_schemas/ds/user.json')
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = modelFile
+        doCodeGen.generators.add('java_beans')
+        doCodeGen.outputBaseDir = destDir
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.generator_parameters.add('containsAttrib=domain_id')
+        doCodeGen.generator_parameters.add('packageName=de.test2.jsoncodegen.impl')
+        doCodeGen.run()
+        assertTrue(new File('tmp/java_beans/de/test2/jsoncodegen/impl/Role.java').exists())
+        assertTrue(new File('tmp/java_beans/de/test2/jsoncodegen/impl/User.java').exists())
+        assertTrue(new File('tmp/java_beans/de/test2/jsoncodegen/impl/User_log.java').exists())
+        new File('tmp/java_beans/de/test2/jsoncodegen/impl').listFiles(new FileFilter() {
+            @Override
+            boolean accept(File file) {
+                return file.isFile()
+            }
+        }).size()==3
+    }
+
+    @Test
+    void testMissingAttrib() {
+        def destDir = 'tmp/java_beans'
+        FileHelper.removeDirectoryIfExists(destDir)
+        def modelFile = new File('src/test/resources/test_schemas/ds/user.json')
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = modelFile
+        doCodeGen.generators.add('java_beans')
+        doCodeGen.outputBaseDir = destDir
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.generator_parameters.add('missingAttrib=domain_id')
+        doCodeGen.generator_parameters.add('packageName=de.test2.jsoncodegen.impl')
+        doCodeGen.run()
+        assertTrue(new File('tmp/java_beans/de/test2/jsoncodegen/impl/Domain.java').exists())
+        assertTrue(new File('tmp/java_beans/de/test2/jsoncodegen/impl/App_module.java').exists())
+        assertTrue(new File('tmp/java_beans/de/test2/jsoncodegen/impl/Application.java').exists())
+        assertTrue(new File('tmp/java_beans/de/test2/jsoncodegen/impl/RoleDataGrantsItem.java').exists())
+        assertTrue(new File('tmp/java_beans/de/test2/jsoncodegen/impl/RoleModuleGrantsItem.java').exists())
+
+        new File('tmp/java_beans/de/test2/jsoncodegen/impl').listFiles(new FileFilter() {
+            @Override
+            boolean accept(File file) {
+                return file.isFile()
+            }
+        }).size()==5
+    }
 }

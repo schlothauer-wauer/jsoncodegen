@@ -32,16 +32,27 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
 
         def shouldRemoveEmptyLines = extraParams['removeEmptyLines']
 
+        def neededAttrib = extraParams['containsAttrib']
+        def missingAttrib = extraParams['missingAttrib']
         model.types*.each { type ->
-            data.put('currentType',type)
-            def ergebnis = template.make(data)
-            def destFileName = getDestFileName(model,extraParams,type)
-            def destDir = getDestDir(model,outputBasePath,extraParams,type)
+            boolean handleNeeded = neededAttrib ? type.properties.find { prop ->
+                return prop.name==neededAttrib
+            } != null : true
+            boolean handleMissing = missingAttrib ? type.properties.find { prop ->
+                return prop.name==missingAttrib
+            } == null : true
 
-            File file=new File("${destDir}/${destFileName}")
-            def resultString = shouldRemoveEmptyLines ? removeEmptyLines (ergebnis.toString()) :
-                    ergebnis.toString()
-            file.write( resultString )
+            if (handleNeeded && handleMissing) {
+                data.put('currentType', type)
+                def ergebnis = template.make(data)
+                def destFileName = getDestFileName(model, extraParams, type)
+                def destDir = getDestDir(model, outputBasePath, extraParams, type)
+
+                File file = new File("${destDir}/${destFileName}")
+                def resultString = shouldRemoveEmptyLines ? removeEmptyLines(ergebnis.toString()) :
+                        ergebnis.toString()
+                file.write(resultString)
+            }
         }
     }
 }

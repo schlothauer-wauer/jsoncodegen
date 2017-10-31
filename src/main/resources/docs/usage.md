@@ -43,21 +43,29 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
 * java_beans - creates a set of Java beans from model
   - packageName - what is the package for the generated beans (!)
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
+  - containsAttrib - name of an attribute that is needed for the generation
+  - missingAttrib - name of an attribute that the type doesn't contain for generation
   
 * java_interfaces - creates a set of Java interfaces from the model 
   - packageName - what is the package for the generated beans (!)
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
+  - containsAttrib - name of an attribute that is needed for the generation
+  - missingAttrib - name of an attribute that the type doesn't contain for generation
   
 * java_interfaced_beans - creates a set of Java beans from model that implements a given interface
   - packageName - what is the package for the generated beans (!)
   - interfacePackageName - Name of the interface package
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
+  - containsAttrib - name of an attribute that is needed for the generation
+  - missingAttrib - name of an attribute that the type doesn't contain for generation
 
 * java_interfaced_generic_derived_beans - creates a set of Java beans from model that implements a given interface
   - packageName - what is the package for the generated beans (!)
   - interfacePackageName - Name of the interface package
   - genericClass - Name of the generic class, inclusive the package name (!)
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
+  - containsAttrib - name of an attribute that is needed for the generation
+  - missingAttrib - name of an attribute that the type doesn't contain for generation
   
 ### Service related 
 * swagger - creates a swagger file from model
@@ -72,8 +80,17 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
   - basePath - text for the basePath entry
   - appendVersionToPath - if true the versions is append to an additional configured basePath 
   - destFileName - name of the generated file (!)
-  - removeEmptyLines - if set, then empty lines will be removed before file is written 
+  - removeEmptyLines - if set, then empty lines will be removed before file is written
   
+### JSON Schema related
+* json_schema - creates a new JSON schema from the existing one - don't make much sense, but good for debugging 
+  - destFileName - name of the generated file
+  - removeEmptyLines - if set, then empty lines will be removed before file is written
+
+* hist_model - extends the current schema with data for entry history
+  - destFileName - name of the generated file
+  - removeEmptyLines - if set, then empty lines will be removed before file is written
+
 ### Base generators
 * multifiles - creates multiple files from model and extra given template
   - includeExtTypes - also use external type to generate files
