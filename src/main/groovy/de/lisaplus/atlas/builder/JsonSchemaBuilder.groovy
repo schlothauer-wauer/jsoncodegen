@@ -6,6 +6,8 @@ import de.lisaplus.atlas.model.AggregationType
 import de.lisaplus.atlas.model.BaseType
 import de.lisaplus.atlas.model.BooleanType
 import de.lisaplus.atlas.model.ComplexType
+import de.lisaplus.atlas.model.DateTimeType
+import de.lisaplus.atlas.model.DateType
 import de.lisaplus.atlas.model.DummyType
 import de.lisaplus.atlas.model.ExternalType
 import de.lisaplus.atlas.model.InnerType
@@ -421,7 +423,12 @@ class JsonSchemaBuilder implements IModelBuilder {
                 if (propObjMap.format && propObjMap.format.toLowerCase()=="uuid") {
                     return new UUIDType()
                 }
-                // TODO - handle other String types
+                else if (propObjMap.format && propObjMap.format.toLowerCase()=="datetime") {
+                    return new DateTimeType()
+                }
+                else if (propObjMap.format && propObjMap.format.toLowerCase()=="date") {
+                    return new DateType()
+                }
                 else
                     return new StringType()
             case 'integer':
