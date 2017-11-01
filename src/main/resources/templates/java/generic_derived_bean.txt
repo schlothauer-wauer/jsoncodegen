@@ -1,0 +1,25 @@
+package ${extraParam.packageName};
+
+
+<% if ( currentType.description ) { %>
+/**
+ * ${currentType.description}
+ */
+<% } %>
+public class ${ firstUpperCase.call(currentType.name) } extends ${extraParam.genericClass} <${ firstUpperCase.call(currentType.name) }> {
+    <% currentType.properties.each { prop -> %>
+    <% if (prop.description) { %>
+    /**
+     * ${prop.description}
+     */
+    <% } %>
+    private ${ typeToJava.call(prop.type) } ${prop.name};
+
+    public ${ typeToJava.call(prop.type) } get${ firstUpperCase.call(prop.name) } () { return this.${prop.name}; }
+
+    public void set${ firstUpperCase.call(prop.name) } (${ typeToJava.call(prop.type) } ${prop.name}) {
+        this.${prop.name} = ${prop.name};
+    }
+
+    <% } %>
+}

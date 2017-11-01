@@ -11,6 +11,7 @@ import de.lisaplus.atlas.codegen.java.JavaBeanGenerator
 import de.lisaplus.atlas.codegen.java.JavaInterfaceGenerator
 import de.lisaplus.atlas.codegen.java.JavaInterfacedBeanGenerator
 import de.lisaplus.atlas.codegen.java.JavaInterfacedGenericDerivedBeanGenerator
+import de.lisaplus.atlas.codegen.java.JavaGenericDerivedBeanGenerator
 import de.lisaplus.atlas.codegen.meta.HistModelGenerator
 import de.lisaplus.atlas.codegen.meta.JsonSchemaGenerator
 import de.lisaplus.atlas.codegen.meta.PlantUmlGenerator
@@ -160,6 +161,11 @@ class DoCodeGen {
                 break
             case 'java_beans':
                 JavaBeanGenerator generator = new JavaBeanGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
+            case 'java_generic_derived_beans':
+                JavaGenericDerivedBeanGenerator generator = new JavaGenericDerivedBeanGenerator()
                 generator.initTemplate()
                 generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break
