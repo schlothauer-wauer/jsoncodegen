@@ -22,4 +22,19 @@ public class ${ firstUpperCase.call(currentType.name) } extends ${extraParam.gen
     }
 
     <% } %>
+    @Override
+    public boolean equals(Object obj) {
+        if (obj==null) return false;
+        if ( ! (obj instanceof ${ firstUpperCase.call(currentType.name) })) return false;
+
+        ${ firstUpperCase.call(currentType.name) } _typeInst = (${ firstUpperCase.call(currentType.name) }) obj;
+    <% currentType.properties.each { prop -> %>
+        ${ typeToJava.call(prop.type) } _${prop.name} = _typeInst.get${ firstUpperCase.call(prop.name) } ();
+        if (this.${prop.name} == null && _${prop.name} != null) return false;
+        if (this.${prop.name} != null) {
+            if (!this.${prop.name}.equals(_${prop.name})) return false;
+        }
+    <% } %>
+        return true;
+    }
 }
