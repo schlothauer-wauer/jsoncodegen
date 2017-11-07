@@ -28,9 +28,11 @@ Additional short version property
 The 'type' attribute has always an integer type
 
 ##Additional attributes for types
-* ??
+* __tags - string array with additional tags/keywords that can be used select/deselect desired types for code generation
 
 ##Additional attributes for properties
-* since - since what version the attribute is uses
-* visKey - this attribute works as an visual communication key - for instance name
-* unique - This attribute contains unique values
+* __since - since what version the attribute is uses
+* __visKey - this attribute works as an visual communication key - for instance name
+* __unique - This attribute contains unique values
+* __ref - implicit reference of an ID type to another type
+* __tags - string array with additional tags/keywords that can be used select/deselect desired types for code generation

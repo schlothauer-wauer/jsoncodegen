@@ -101,7 +101,7 @@
           "items": {
             "type": "string",
             "format": "uuid",
-            "ref": "#/definitions/tag"
+            "__ref": "#/definitions/tag"
           }
         }
       }

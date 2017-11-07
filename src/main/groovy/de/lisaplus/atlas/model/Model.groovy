@@ -102,6 +102,12 @@ class Type {
      */
     List<Type> refOwner=[]
 
+    /**
+     * array of free definable strings to add keywords to types and attributes.
+     * This keywords can be used to select or deselect types or attributes while code generation
+     */
+    List<String> tags=[]
+
     String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
@@ -173,6 +179,13 @@ class Property {
      * since when is the type part of the model
      */
     int sinceVersion
+
+    /**
+     * array of free definable strings to add keywords to types and attributes.
+     * This keywords can be used to select or deselect types or attributes while code generation
+     */
+    List<String> tags=[]
+
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);

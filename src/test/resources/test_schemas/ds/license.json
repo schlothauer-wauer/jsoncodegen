@@ -14,7 +14,7 @@
             "description": "what is the related domain",
             "type": "string",
             "format": "uuid",
-            "ref": "./shared/domain.json"
+            "__ref": "./shared/domain.json"
           },
           "app_modues" : {
             "type": "array",

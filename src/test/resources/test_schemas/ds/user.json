@@ -10,13 +10,13 @@
           "description": "what is the related domain",
           "type": "string",
           "format": "uuid",
-          "ref": "./shared/domain.json"
+          "__ref": "./shared/domain.json"
         },
         "user_id": {
           "description": "What user owns this entry",
           "type": "string",
           "format": "uuid",
-          "ref": "#/definitions/user"
+          "__ref": "#/definitions/user"
         },
         "type": {
           "description": "type of the entry",
@@ -39,7 +39,7 @@
           "description": "what is the related domain",
           "type": "string",
           "format": "uuid",
-          "ref": "./shared/domain.json"
+          "__ref": "./shared/domain.json"
         },
         "name": {
           "description": "login name of the user",
@@ -49,7 +49,7 @@
         "real_name": {
           "description": "used to display the user in applications",
           "type": "string",
-          "visKey": true
+          "__visKey": true
         },
         "gid": {
           "type": "string",
@@ -69,7 +69,12 @@
           "description": "the common field contain all unmodeled stuff",
           "type": "string"
         }
-      }
+      },
+      "__tags": [
+        "five",
+        "six",
+        "seven"
+      ]
     },
     "role": {
       "type": "object",
@@ -78,7 +83,7 @@
           "description": "what is the related domain",
           "type": "string",
           "format": "uuid",
-            "ref": "./shared/domain.json"
+            "__ref": "./shared/domain.json"
         },
         "name": {
           "description": "Name of the role",
@@ -106,8 +111,17 @@
                   "commit"
                 ]
               }
-            }
-          }
+            },
+            "__tags": [
+              "five",
+              "six",
+              "seven"
+            ]
+          },
+          "__tags": [
+            "one",
+            "two"
+          ]
         },
         "data_grants": {
           "type": "array",
@@ -125,6 +139,10 @@
                   "read",
                   "write",
                   "commit"
+                ],
+                "__tags": [
+                  "one",
+                  "two"
                 ]
               }
             }

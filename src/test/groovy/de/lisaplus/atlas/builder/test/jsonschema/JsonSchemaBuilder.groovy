@@ -128,4 +128,30 @@ class JsonSchemaBuilder {
         assertNotNull(tagsProp.implicitRef)
     }
 
+    @Test
+    void testTags() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/user.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        assertEquals(8,model.types.size())
+        def typesWithTags = 0
+        model.types.find{
+            if (it.tags) {
+                assertTrue (it.name.equals('RoleModuleGrantsItem') || it.name.equals('User'))
+                typesWithTags++
+            }
+        }
+        assertEquals(2,typesWithTags)
+        def propsWithTags = 0
+        model.types.each {
+            it.properties.find {
+                if (it.tags) {
+                    propsWithTags++
+                    assertTrue (it.name.equals('grant') || it.name.equals('module_grants'))
+                }
+            }
+        }
+        assertEquals(2,propsWithTags)
+    }
 }

@@ -8,8 +8,8 @@
       "description": "Name of the module",
       "type": "string",
       "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
-      "unique": true,
-      "visKey": true
+      "__unique": true,
+      "__visKey": true
     },
     "description": {
       "description": "some more words to explain",
@@ -24,7 +24,7 @@
       "description": "Which application owns that module",
       "type": "string",
       "format": "uuid",
-      "ref": "./application.json"
+      "__ref": "./application.json"
     },
     "active": {
       "description": "is this entry still active",

@@ -169,6 +169,9 @@ class JsonSchemaBuilder implements IModelBuilder {
             else {
                 newType.properties = getProperties(model,typeObj.value,typeName,currentSchemaPath)
             }
+            if (typeObj.value.'__tags') {
+                newType.tags=typeObj.value.'__tags'
+            }
             // TODO  initialize extra stuff
             addNewType(newType,model)
         }
@@ -242,17 +245,20 @@ class JsonSchemaBuilder implements IModelBuilder {
         }
         // implizit refs for normal types and array types differ
         if (newProp.type.isArray) {
-            if (propObj.value.items.'ref') {
-                newProp.implicitRef = initRefType(propObj.value.items.'ref', currentSchemaPath)
+            if (propObj.value.items.'__ref') {
+                newProp.implicitRef = initRefType(propObj.value.items.'__ref', currentSchemaPath)
             }
         }
         else {
-            if (propObj.value.'ref') {
-                newProp.implicitRef = initRefType(propObj.value.'ref', currentSchemaPath)
+            if (propObj.value.'__ref') {
+                newProp.implicitRef = initRefType(propObj.value.'__ref', currentSchemaPath)
             }
         }
-        if (propObj.value.'ref') {
-            newProp.implicitRef = initRefType(propObj.value.'ref', currentSchemaPath)
+        if (propObj.value.'__ref') {
+            newProp.implicitRef = initRefType(propObj.value.'__ref', currentSchemaPath)
+        }
+        if (propObj.value.'__tags') {
+            newProp.tags=propObj.value.'__tags'
         }
         return newProp
     }
@@ -453,6 +459,9 @@ class JsonSchemaBuilder implements IModelBuilder {
                 if (propObjMap.items.type) {
                     BaseType ret = getBaseTypeFromString(model,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item',false)
                     ret.isArray = true
+                    if (propObjMap.'__tags') {
+                        ret.type.tags=propObjMap.'__tags'
+                    }
                     return ret
                 }
                 else if (propObjMap.items['$ref']) {
