@@ -6,6 +6,7 @@ import de.lisaplus.atlas.codegen.helper.java.JsonTypeConvert
 import de.lisaplus.atlas.codegen.helper.java.SwaggerTypeConvert
 import de.lisaplus.atlas.model.InnerType
 import de.lisaplus.atlas.model.Model
+import de.lisaplus.atlas.model.Property
 import de.lisaplus.atlas.model.Type
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
@@ -156,12 +157,36 @@ abstract class GeneratorBase {
                 typeFormatToSwagger: SwaggerTypeConvert.format,
                 typeFormatToJson: JsonTypeConvert.format,
                 renderInnerTemplate: renderInnerTemplate,
-                breakTxt: breakTxt
+                breakTxt: breakTxt,
+                containsTag: containsTag,
+                missingTag: missingTag
         ]
     }
 
     def isInnerType = { type ->
         return type && (type instanceof InnerType )
+    }
+
+    def containsTag = { obj, tag ->
+        if (! tag ) return false
+        if (! ((obj instanceof Type) || (obj instanceof Property))) {
+            return false
+        }
+        if (!obj.tags) {
+            return false
+        }
+        return obj.tags.contains(tag)
+    }
+
+    def missingTag = { obj, tag ->
+        if (! tag ) return false
+        if (! ((obj instanceof Type) || (obj instanceof Property))) {
+            return false
+        }
+        if (!obj.tags) {
+            return false
+        }
+        return ! obj.tags.contains(tag)
     }
 
     def breakTxt = { String txtToBreak,int charPerLine,String breakText='\n' ->
