@@ -1,3 +1,15 @@
+<%
+def printStereoType = { type ->
+    if ( type instanceof de.lisaplus.atlas.model.InnerType ) {
+        return '<<InnerType>>'
+     }
+     else if (containsPropName.call(type,'gid')) {
+        return '<<GidType>>'
+     }
+     else
+        return ''
+    }
+%>
 <% if (extraParam.markdown) { %>
 ```plantuml
 <% } else { %>
@@ -10,6 +22,8 @@ skinparam class {
 
 	BorderColor<<InnerType>> #777777
 	BackgroundColor<<InnerType>> #EEEEEE
+
+	BackgroundColor<<GidType>> #e4ffd4
 
 	FontName Courier
 	FontSize 12
@@ -28,7 +42,7 @@ skinparam classAttribute {
 }
 
 <% model.types.each  { type -> %>
-class ${firstUpperCase.call(type.name)} <% if ( type instanceof de.lisaplus.atlas.model.InnerType ) { %> <<InnerType>> <% } %> << ( ,${type.color}) >> {
+class ${firstUpperCase.call(type.name)} ${ printStereoType(type) } << ( ,${type.color}) >> {
     <% type.properties.each  { prop -> %>
         <% if (prop.isRefTypeOrComplexType()) { %>
     -<color:${prop.type.type.color} ><b>${prop.name}: ${typeToJava.call(prop.type)}</b></color>

@@ -159,7 +159,9 @@ abstract class GeneratorBase {
                 renderInnerTemplate: renderInnerTemplate,
                 breakTxt: breakTxt,
                 containsTag: containsTag,
-                missingTag: missingTag
+                missingTag: missingTag,
+                containsPropName: containsPropName,
+                missingPropName: missingPropName
         ]
     }
 
@@ -176,6 +178,24 @@ abstract class GeneratorBase {
             return false
         }
         return obj.tags.contains(tag)
+    }
+
+    def containsPropName = { type, propName ->
+        if (! type ) return false
+        if (! propName ) return false
+        if (! (type instanceof Type)) return false
+        return type.properties.findIndexOf{
+            it.name==propName
+        } != -1
+    }
+
+    def missingPropName = { type, propName ->
+        if (! type ) return false
+        if (! propName ) return false
+        if (! (type instanceof Type)) return false
+        return type.properties.findIndexOf{
+            it.name==propName
+        } == -1
     }
 
     def missingTag = { obj, tag ->
