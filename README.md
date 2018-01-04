@@ -33,7 +33,7 @@ A simple Groovy based program to do generation tasks from a JSON schema.
         },
         "green_obj": {
             // aggregation
-            "aggregationType": "aggregation",
+            "__aggregationType": "aggregation",
             "$ref": "#/definitions/GreenType"
         },
         "greens": {

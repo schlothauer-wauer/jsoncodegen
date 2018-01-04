@@ -93,6 +93,25 @@ class GeneratorBase {
 
     }
 
+    @Test
+    void testConvertAllUnderLinesToCamelCase() {
+        def de.lisaplus.atlas.codegen.GeneratorBase generator = new ExtSingleFileGenarator()
+        def s = generator.convertAllUnderLinesToCamelCase ('_')
+        assertEquals('_',s)
+        s = generator.convertAllUnderLinesToCamelCase ('_x')
+        assertEquals('X',s)
+        s = generator.convertAllUnderLinesToCamelCase ('_X')
+        assertEquals('X',s)
+        s = generator.convertAllUnderLinesToCamelCase ('__x')
+        assertEquals('X',s)
+        s = generator.convertAllUnderLinesToCamelCase ('__X')
+        assertEquals('X',s)
+        s = generator.convertAllUnderLinesToCamelCase ('__x_')
+        assertEquals('X_',s)
+        s = generator.convertAllUnderLinesToCamelCase ('i_am_the_test')
+        assertEquals('iAmTheTest',s)
+    }
+
 }
 
 class DummyGenerator extends de.lisaplus.atlas.codegen.GeneratorBase {

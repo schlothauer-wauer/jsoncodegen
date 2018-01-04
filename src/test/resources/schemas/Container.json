@@ -480,7 +480,7 @@
           "type": "integer"
         },
         "std": {
-          "aggregationType": "aggregation",
+          "__aggregationType": "aggregation",
           "$ref": "#/definitions/Std"
         },
         "geo": {

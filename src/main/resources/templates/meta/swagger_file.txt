@@ -217,9 +217,13 @@ basePath: "/v${model.version}"
 <% } %>
 
 paths:
-<% model.types.findAll { return ! isInnerType.call(it) }.each { type -> %>
+<% model.types.findAll { return (!isInnerType.call(it)) && (!containsTag.call(it,'no_entrypoint')) }.each { type -> %>
   ${printListPath([type])}
   ${printIDPath([type])}
+    <% type.properties.find{containsTag.call(it,'change_entry')}.each { prop -> %>
+  ${printListPath([type,prop.type.type])}
+  ${printIDPath([type,prop.type.type])}
+    <% } %>
     <% type.refOwner.each { refOwner1 -> %>
   ${printListPath([type,refOwner1])}
   ${printIDPath([type,refOwner1])}

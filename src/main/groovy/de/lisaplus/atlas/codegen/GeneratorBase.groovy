@@ -58,8 +58,7 @@ abstract class GeneratorBase {
         if (logger.isInfoEnabled())
             logger.info("use file template: ${templateFileName}")
         TemplateEngine engine = getTemplateEngine(templateType)
-        Reader reader = new FileReader(templateFile);
-        return engine.createTemplate(reader);
+        return createTemplatePreprocessing (new FileInputStream(templateFile), engine)
     }
 
     /**
@@ -78,6 +77,10 @@ abstract class GeneratorBase {
             logger.error(errorMsg)
             throw new Exception(errorMsg)
         }
+        return createTemplatePreprocessing (inputStream, engine)
+    }
+
+    Template createTemplatePreprocessing (InputStream inputStream, TemplateEngine engine) {
         BufferedReader reader = new BufferedReader( new InputStreamReader (inputStream))
         // start preprocessing of the template
         StringBuffer strBuffer = new StringBuffer()
@@ -99,6 +102,7 @@ abstract class GeneratorBase {
         StringReader strReader = new StringReader(strBuffer.toString())
         return engine.createTemplate(strReader);
     }
+
 
     boolean getDefinedMacro(Map replaceMap,String line) {
         if (!line) return false
@@ -150,6 +154,8 @@ abstract class GeneratorBase {
                 toUpperCase: toUpperCase,
                 firstLowerCase: firstLowerCase,
                 firstUpperCase: firstUpperCase,
+                lowerCamelCase: firstLowerCamelCase,
+                upperCamelCase: firstUpperCamelCase,
                 isInnerType: isInnerType,
                 typeToJava: JavaTypeConvert.convert,
                 typeToSwagger: SwaggerTypeConvert.convert,
@@ -161,7 +167,8 @@ abstract class GeneratorBase {
                 containsTag: containsTag,
                 missingTag: missingTag,
                 containsPropName: containsPropName,
-                missingPropName: missingPropName
+                missingPropName: missingPropName,
+                propsContainsTag: propsContainsTag
         ]
     }
 
@@ -207,6 +214,21 @@ abstract class GeneratorBase {
             return false
         }
         return ! obj.tags.contains(tag)
+    }
+
+    def propsContainsTag = { type, name ->
+        if (! type ) return false
+        if (! name ) return false
+        if (! (type instanceof Type)) {
+            return false
+        }
+        def result = type.properties.find { it.tags.contains(name) }
+        if (result) {
+            return true
+        }
+        else {
+            return false
+        }
     }
 
     def breakTxt = { String txtToBreak,int charPerLine,String breakText='\n' ->
@@ -262,6 +284,8 @@ abstract class GeneratorBase {
                 toUpperCase: toUpperCase,
                 firstLowerCase: firstLowerCase,
                 firstUpperCase: firstUpperCase,
+                lowerCamelCase: firstLowerCamelCase,
+                upperCamelCase: firstUpperCamelCase,
                 isInnerType: isInnerType,
                 typeToJava: JavaTypeConvert.convert,
                 typeToSwagger: SwaggerTypeConvert.convert,
@@ -307,6 +331,39 @@ abstract class GeneratorBase {
         }
     }
 
+    def firstUpperCamelCase = { str ->
+        if (!str) return EMPTY
+        def firstUpper = firstUpperCase(str)
+        return convertAllUnderLinesToCamelCase(firstUpper)
+    }
+
+    def firstLowerCamelCase = { str ->
+        if (!str) return EMPTY
+        def firstLower = firstLowerCase(str)
+        return convertAllUnderLinesToCamelCase(firstLower)
+    }
+
+    def convertAllUnderLinesToCamelCase = { String str ->
+        if (!str) return EMPTY
+        def i_ = str.indexOf('_')
+        while (i_!=-1) {
+            def stopLen = str.length()-1
+            if (i_<stopLen) {
+                def nextChar = new String(str.charAt(i_+1))
+                if (nextChar=='_') {
+                    str = str.replace('__','_')
+                }
+                else {
+                    def nextCharUpper = nextChar.toUpperCase()
+                    str = str.replace('_'+nextChar,new String(nextCharUpper))
+                }
+            }
+            else
+                break
+            i_ = str.indexOf('_',i_)
+        }
+        return str
+    }
 
     private final static String EMPTY=''
 

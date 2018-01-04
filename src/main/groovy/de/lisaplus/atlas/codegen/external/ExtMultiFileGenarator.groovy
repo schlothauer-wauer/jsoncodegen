@@ -28,11 +28,16 @@ class ExtMultiFileGenarator extends MultiFileGenarator implements IExternalCodeG
     @Override
     String getDestFileName(Model dataModel, Map<String, String> extraParameters,Type currentType=null) {
         def destFileNameExt = extraParameters['destFileNameExt']
-        def destName = firstUpperCase(currentType.name)
-        if (destFileNameExt)
-            return destName + "." + destFileNameExt
-        else
-            return destName
+        def destFileNamePre = extraParameters['destFileNamePre']
+        def destFileCamelCaseName = extraParameters['destFileCamelCaseName']
+        def destName = destFileCamelCaseName ? firstUpperCamelCase(currentType.name) : firstUpperCase(currentType.name)
+        if (destFileNameExt) {
+            destName = destName + "." + destFileNameExt
+        }
+        if (destFileNamePre) {
+            destName = destFileNamePre + destName;
+        }
+        return destName
     }
 
     @Override

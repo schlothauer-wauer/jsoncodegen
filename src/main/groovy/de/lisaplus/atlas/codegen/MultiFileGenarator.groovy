@@ -2,6 +2,7 @@ package de.lisaplus.atlas.codegen
 
 import de.lisaplus.atlas.interf.ICodeGen
 import de.lisaplus.atlas.model.Model
+import de.lisaplus.atlas.model.Type
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -47,11 +48,12 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
                 def ergebnis = template.make(data)
                 def destFileName = getDestFileName(model, extraParams, type)
                 def destDir = getDestDir(model, outputBasePath, extraParams, type)
-
-                File file = new File("${destDir}/${destFileName}")
+                def pathToFile = "${destDir}/${destFileName}"
+                File file = new File(pathToFile)
                 def resultString = shouldRemoveEmptyLines ? removeEmptyLines(ergebnis.toString()) :
                         ergebnis.toString()
                 file.write(resultString)
+                println ("written: $pathToFile")
             }
         }
     }

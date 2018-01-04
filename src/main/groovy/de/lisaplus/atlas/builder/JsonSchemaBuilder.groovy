@@ -233,8 +233,8 @@ class JsonSchemaBuilder implements IModelBuilder {
                 /**
                  * additional extension of JSON schema ... property attribute 'aggregationType'
                  */
-                if (propObj.value.'aggregationType') {
-                    if (propObj.value.aggregationType.toLowerCase() == 'aggregation') {
+                if (propObj.value.'__aggregationType') {
+                    if (propObj.value.__aggregationType.toLowerCase() == 'aggregation') {
                         newProp.aggregationType = AggregationType.aggregation
                     } else {
                         newProp.aggregationType = AggregationType.composition
