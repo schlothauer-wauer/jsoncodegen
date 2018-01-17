@@ -98,6 +98,8 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
   - includeExtTypes - also use external type to generate files
   - outputDirExt - a needed subpath below the given outputBasePath
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
+  - destFileNamePre - standard prefix for the created file names
+  - destFileNameExt - file extension for the generated files
 
 * singlefile - creates single file from model and extra given template
   - outputDirExt - a needed subpath below the given outputBasePath

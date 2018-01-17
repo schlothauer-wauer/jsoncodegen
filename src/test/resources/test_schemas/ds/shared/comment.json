@@ -1,0 +1,36 @@
+{
+  "id": "http://schlothauer.de/schemas/shared/domain.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "A comment for an data entry",
+  "type": "object",
+  "properties": {
+    "text": {
+      "description": "comment text",
+      "type": "string"
+    },
+    "date": {
+      "description": "date of entry",
+      "type": "string",
+      "format": "datetime"
+    },
+    "user": {
+      "description": "who did this comment",
+      "type": "string"
+    },
+    "gid": {
+      "description": "global identifier",
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "tags": [
+    "no_unbound_get",
+    "no_unbound_add"
+  ],
+  "required": [
+    "text",
+    "date",
+    "user"
+  ],
+  "version": 1
+}

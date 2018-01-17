@@ -1,6 +1,7 @@
 package de.lisaplus.atlas.builder.test.jsonschema
 
 import de.lisaplus.atlas.builder.JsonSchemaBuilder
+import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
 import de.lisaplus.atlas.model.AggregationType
 import org.junit.Test
 
@@ -126,6 +127,22 @@ class JsonSchemaBuilder {
         def tagsProp = docObject.properties.find { it.name=='tags' }
         assertNotNull(tagsProp)
         assertNotNull(tagsProp.implicitRef)
+    }
+
+    @Test
+    void testXXXX() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/incident.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        assertNotNull(model)
+        def de.lisaplus.atlas.codegen.GeneratorBase generator = new ExtSingleFileGenarator()
+        model.types.findAll {
+            return (!it.isInnerType()) && (generator.containsPropName(it, 'gid')) &&
+                    it.name != 'Person' && it.name != 'Address' && it.name != 'Comment' && it.name != 'Document' && it.name != 'SelectionEntry'
+        }.each { type ->
+            println(type.name)
+        }
     }
 
     @Test

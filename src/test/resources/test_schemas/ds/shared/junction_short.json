@@ -1,0 +1,26 @@
+{
+  "id": "http://schlothauer.de/schemas/shared/app_module.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "short version of junction data. Used to save redundant in related data sets",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "main name of this junction",
+      "type": "string"
+    },
+    "number": {
+      "description": "all the number (technical names) of this object",
+      "type": "string"
+    },
+    "gid": {
+      "description": "global identifier",
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "required": [
+    "name",
+    "gid"
+  ],
+  "version": 1
+}

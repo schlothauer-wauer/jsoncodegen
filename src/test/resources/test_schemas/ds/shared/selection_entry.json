@@ -1,0 +1,32 @@
+{
+  "id": "http://schlothauer.de/schemas/shared/app_module.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "generic type that descripes the entry of a selection list",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "a describing name",
+      "type": "string",
+      "unique": true,
+      "visKey": true
+    },
+    "description": {
+      "description": "some more words to explain",
+      "type": "string"
+    },
+    "gid": {
+      "description": "global identifier",
+      "type": "string",
+      "format": "uuid"
+    },
+    "active": {
+      "description": "is this entry still active",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "name",
+    "gid"
+  ],
+  "version": 1
+}

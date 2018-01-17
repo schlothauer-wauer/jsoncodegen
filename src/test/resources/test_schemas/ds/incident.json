@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Incident model",
+  "description": "Model describes data that are needed to collect incident states and the task to solve it ",
+  "definitions": {
+    "incident": {
+      "type": "object",
+      "description": "A detected failure state that needs some actions to solve it",
+      "properties": {
+        "stages": {
+          "description": "what are the stages of that event",
+          "type": "object",
+          "properties": {
+            "entered" : {
+              "description": "when has the information entered the system",
+              "type": "object",
+              "properties": {
+                "time": {
+                  "description": "date/time when it was first reported",
+                  "type": "string",
+                  "format": "datetime"
+                },
+                "report_type": {
+                  "description": "on what way comes the information to the system",
+                  "type": "string"
+                },
+                "description": {
+                  "description": "Short the description of the problem",
+                  "type": "string"
+                }
+              }
+            },
+            "reported": {
+              "description": "data about the report of that information to another administration",
+              "type": "object",
+              "properties": {
+                "time": {
+                  "description": "date/time when it was reported",
+                  "type": "string",
+                  "format": "datetime"
+                },
+                "report_type": {
+                  "description": "on what way goes the information to the recipient",
+                  "type": "string"
+                }
+              }
+            },
+            "transferred": {
+              "description": "data about the transfer of the responsibility about that event to another entity",
+              "type": "object",
+              "properties": {
+                "time": {
+                  "description": "date/time when it was transferred",
+                  "type": "string",
+                  "format": "datetime"
+                },
+                "report_type": {
+                  "description": "on what way goes the information to the recipient",
+                  "type": "string"
+                }
+              }
+            },
+            "repair": {
+              "description": "data about the repair stages",
+              "type": "object",
+              "properties": {
+                "start": {
+                  "description": "when started the repair",
+                  "type": "object",
+                  "properties": {
+                    "time": {
+                      "description": "date/time when",
+                      "type": "string",
+                      "format": "datetime"
+                    }
+                  }
+                },
+                "finished": {
+                  "description": "when was the repair finished",
+                  "type": "object",
+                  "properties": {
+                    "time": {
+                      "description": "date/time when",
+                      "type": "string",
+                      "format": "datetime"
+                    },
+                    "problem": {
+                      "description": "what was the problem",
+                      "type": "string"
+                    }
+                  }
+                },
+                "rejected": {
+                  "description": "when was the repair rejected, f.i. as a result of control and the detection of unsolved problems",
+                  "type": "object",
+                  "properties": {
+                    "time": {
+                      "description": "date/time when",
+                      "type": "string",
+                      "format": "datetime"
+                    },
+                    "reason": {
+                      "description": "why was the repair rejected",
+                      "type": "string"
+                    }
+                  }
+                },
+                "accepted": {
+                  "description": "when was the repair finished",
+                  "type": "object",
+                  "properties": {
+                    "time": {
+                      "description": "date/time when",
+                      "type": "string",
+                      "format": "datetime"
+                    }
+                  }
+                }
+              }
+            },
+            "comments": {
+              "type": "array",
+              "items": {
+                "$ref": "./shared/comment.json"
+              }
+            }
+          }
+        },
+        "number": {
+          "description": "all the number (technical names) of this object",
+          "type": "object",
+          "properties": {
+            "internal": {
+              "description": "internal number of that event",
+              "type": "string"
+            },
+            "external": {
+              "description": "number in external systems for that event",
+              "type": "string"
+            }
+          }
+        },
+        "gis": {
+          "type": "object",
+          "properties": {
+            "area": {
+              "description": "geografic area of this object",
+              "$ref": "./shared/geo_area.json"
+            },
+            "center": {
+              "description": "geografic area of this object",
+              "$ref": "./shared/geo_point.json"
+            }
+          }
+        },
+        "type": {
+          "description": "what type has this event",
+          "type": "string",
+          "ref": "#/definitions/incident_type"
+        },
+        "junction": {
+          "description": "what junction is related to this event",
+          "$ref": "./shared/junction_short.json"
+        },
+        "insurance_relavant": {
+          "description": "this event is relevant to insurance contracts",
+          "type": "boolean"
+        },
+        "comments": {
+          "type": "array",
+          "items": {
+            "$ref": "./shared/comment.json"
+          }
+        },
+        "gid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "domain_id": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "ref": "./shared/domain.json"
+        }
+      }
+    },
+    "incident_type": {
+      "description": "types of incidents",
+      "allOf": [
+        {
+          "$ref": "./shared/selection_entry.json"
+        }
+      ]
+    },
+    "report_type": {
+      "description": "how a event is reported",
+      "allOf": [
+        {
+          "$ref": "./shared/selection_entry.json"
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "version": 1
+}
