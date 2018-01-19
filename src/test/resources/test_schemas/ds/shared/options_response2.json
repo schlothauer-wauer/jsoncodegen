@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "License model",
+  "description": "Test license model",
+  "definitions": {
+    "license": {
+      "type": "object",
+      "properties": {
+        "gid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "app_modues" : {
+          "type": "array",
+          "items": {
+            "$ref": "./app_module.json"
+          }
+        },
+        "count": {
+          "description": "how many licenses are given",
+          "type": "integer"
+        },
+        "start_date": {
+          "description": "when goes this licence active",
+          "type": "string",
+          "format": "date"
+        },
+        "end_date": {
+          "description": "when runs this licence out of active state",
+          "type": "string",
+          "format": "date"
+        },
+        "active": {
+          "description": "this is a current license entry",
+          "type": "boolean"
+        },
+        "license": {
+          "description": "test for internal recursion",
+          "$ref": "#/definitions/license"
+        }
+
+      }
+    }
+  },
+  "type": "object",
+  "version": 1
+}

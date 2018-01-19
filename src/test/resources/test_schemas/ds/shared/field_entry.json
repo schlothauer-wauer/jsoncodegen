@@ -1,0 +1,73 @@
+{
+  "id": "http://schlothauer.de/schemas/shared/text_resource.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Definition of a text resource",
+  "type": "object",
+  "properties": {
+    "meta": {
+      "description": "enable more entries",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name of that entry",
+          "type": "string"
+        }
+      }
+    },
+    "type": {
+      "description": "type of that entry",
+      "type": "string"
+    },
+    "childs": {
+      "type": "array",
+      "items": {
+        "$ref": "./field_entry.json"
+      }
+    },
+    "display": {
+      "type": "object",
+      "properties": {
+        "visible": {
+          "description": "type of that entry",
+          "type": "boolean"
+        },
+        "caption": {
+          "description": "What is the caption of that field",
+          "$ref": "./text_resource.json"
+        },
+        "icon": {
+          "description": "What is the caption of that field",
+          "$ref": "./icon.json"
+        }
+      }
+    },
+    "modify": {
+      "type": "object",
+      "properties": {
+        "changeble": {
+          "description": "type of that entry",
+          "type": "boolean"
+        },
+        "needed": {
+          "description": "is this field needed",
+          "type": "boolean"
+        },
+        "possible_values": {
+          "type": "object",
+          "properties": {
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "query_link": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "version": 1
+}

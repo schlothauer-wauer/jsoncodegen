@@ -8,7 +8,7 @@
         "properties": {
           "gid": {
             "type": "string",
-            "format": "uuid",
+            "format": "uuid"
           },
           "domain_id": {
             "description": "what is the related domain",

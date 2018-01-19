@@ -321,6 +321,10 @@ class JsonSchemaBuilder implements IModelBuilder {
         }
         else {
             def indexOfTrenner = refStr.indexOf(EXT_REF_TRENNER)
+            // it's needed to avoid StackOverflows in case of self references  (*1)
+            ExternalType extT = new ExternalType()
+            def tmpTypeName = typeFormRefStr(refStr)
+            externalTypes.put(tmpTypeName,extT)
             if (indexOfTrenner != -1) {
                 // "$ref": "definitions.json#/address"
                 // reference to an external multi type schema
@@ -330,18 +334,20 @@ class JsonSchemaBuilder implements IModelBuilder {
                     throw new Exception("loaded model doesn't contain types")
                 }
                 desiredName = refStr.substring(indexOfTrenner+EXT_REF_TRENNER.length())
-                ExternalType extT = null
+                ExternalType extT2 = null
                 tmpModel.types.each { type ->
                     if (type.name==desiredName) {
-                        extT = new ExternalType()
+                        extT2 = new ExternalType()
                     }
                 }
-                if (extT==null) {
+                if (extT2==null) {
                     throw new Exception("can't fine external type ${desiredName} in model: ${fileName}")
                 }
                 else {
                     extT.refStr = refStr
                     extT.initFromType(type)
+                    // the early declaration is needed to avoid StackOverflow-Errors in case of self references
+                    externamTypes.remove(tmpTypeName) // this is maybe a critical point
                     externalTypes.put(extT.name,extT)
                     return extT
                 }
@@ -358,10 +364,10 @@ class JsonSchemaBuilder implements IModelBuilder {
                 Type tmpT = tmpModel.types.find {
                     ! (it instanceof InnerType)
                 }
-                ExternalType extT = new ExternalType()
                 extT.refStr = refStr
                 extT.initFromType(tmpT)
-                externalTypes.put(typeFormRefStr(refStr),extT)
+                // can be removed, because it's identical to the early init call (*1)
+                //externalTypes.put(typeFormRefStr(refStr),extT)
                 return extT
             }
         }

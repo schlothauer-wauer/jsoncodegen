@@ -146,6 +146,24 @@ class JsonSchemaBuilder {
     }
 
     @Test
+    void testRecursion_1() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/shared/options_response.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        assertNotNull(model)
+    }
+
+    @Test
+    void testRecursion_2() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/shared/options_response2.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        assertNotNull(model)
+    }
+
+    @Test
     void testTags() {
         def modelFile = new File('src/test/resources/test_schemas/ds/user.json')
         assertTrue(modelFile.isFile())

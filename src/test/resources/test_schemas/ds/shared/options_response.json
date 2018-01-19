@@ -1,0 +1,24 @@
+{
+  "id": "http://schlothauer.de/schemas/shared/app_module.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "application specific module",
+  "type": "object",
+  "properties": {
+    "caption": {
+      "$ref": "./text_resource.json"
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "$ref": "./field_entry.json"
+      }
+    },
+    "commands": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "fields"
+  ],
+  "version": 1
+}
