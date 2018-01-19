@@ -139,6 +139,14 @@ class JsonSchemaBuilder implements IModelBuilder {
             }
         }
     }
+    private addModelTypesToExternal(Model modelSrc) {
+        modelSrc.types.each { type ->
+            if (!externalTypes[type.name]) {
+                externalTypes[type.name] = type
+            }
+        }
+    }
+
 
 //    private Model modelFromMultiTypeSchema(def objectModel,String currentSchemaPath) {
       private Model loadSchemaTypes(def objectModel,String currentSchemaPath,Model model) {
@@ -348,7 +356,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                     extT.initFromType(type)
                     // the early declaration is needed to avoid StackOverflow-Errors in case of self references
                     externamTypes.remove(tmpTypeName) // this is maybe a critical point
-                    externalTypes.put(extT.name,extT)
+                    addModelTypesToExternal(tmpModel)
                     return extT
                 }
             }
@@ -368,6 +376,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                 extT.initFromType(tmpT)
                 // can be removed, because it's identical to the early init call (*1)
                 //externalTypes.put(typeFormRefStr(refStr),extT)
+                addModelTypesToExternal(tmpModel)
                 return extT
             }
         }
