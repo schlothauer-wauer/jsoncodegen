@@ -58,4 +58,13 @@ class JsonSchema {
         generatePlantUML("tmp/${histModel}",plantUml)
     }
 
+    @Test
+    void createRecursiveModel() {
+        def model='src/test/resources/test_schemas/ds/shared/options_response.json'
+        def histModel='options_response.json'
+        def plantUml='options_response.puml'
+        generateHistModel(model,histModel)
+        generatePlantUML("tmp/${histModel}",plantUml)
+    }
+
 }

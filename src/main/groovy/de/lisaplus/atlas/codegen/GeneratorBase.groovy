@@ -4,9 +4,11 @@ import de.lisaplus.atlas.DoCodeGen
 import de.lisaplus.atlas.codegen.helper.java.JavaTypeConvert
 import de.lisaplus.atlas.codegen.helper.java.JsonTypeConvert
 import de.lisaplus.atlas.codegen.helper.java.SwaggerTypeConvert
+import de.lisaplus.atlas.model.ComplexType
 import de.lisaplus.atlas.model.InnerType
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Property
+import de.lisaplus.atlas.model.RefType
 import de.lisaplus.atlas.model.Type
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
@@ -157,6 +159,7 @@ abstract class GeneratorBase {
                 lowerCamelCase: firstLowerCamelCase,
                 upperCamelCase: firstUpperCamelCase,
                 isInnerType: isInnerType,
+                isPropComplexType: isPropComplexType,
                 typeToJava: JavaTypeConvert.convert,
                 typeToSwagger: SwaggerTypeConvert.convert,
                 typeToJson: JsonTypeConvert.convert,
@@ -174,6 +177,10 @@ abstract class GeneratorBase {
 
     def isInnerType = { type ->
         return type && (type instanceof InnerType )
+    }
+
+    def isPropComplexType = { prop ->
+        return prop && (prop instanceof ComplexType || prop instanceof RefType)
     }
 
     def containsTag = { obj, tag ->
