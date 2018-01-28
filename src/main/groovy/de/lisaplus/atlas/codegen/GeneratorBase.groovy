@@ -134,8 +134,8 @@ abstract class GeneratorBase {
 
     static String removeEmptyLines (String genResult) {
         String s=genResult.replaceAll(/\n\s*\n\s*\n/,'\n')
-//        return s.replaceAll(/;\s*\n/,';\n\n')
         s = s.replaceAll(/\n\s*\n/,'\n')
+        s = s.replaceAll(/}\s*\n(\s*[a-zA-Z])/,'}\n\n$1')
         /*
         s = s.replaceAll(/:\s*\n\s*\n/,':\n')
         s = s.replaceAll(/;\s*\n\s*\n/,';\n')
@@ -180,7 +180,7 @@ abstract class GeneratorBase {
     }
 
     def isPropComplexType = { prop ->
-        return prop && (prop instanceof ComplexType || prop instanceof RefType)
+        return prop && prop.type && (prop.type instanceof ComplexType || prop.type instanceof RefType)
     }
 
     def containsTag = { obj, tag ->
