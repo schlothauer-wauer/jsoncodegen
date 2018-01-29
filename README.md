@@ -11,7 +11,7 @@ A simple Groovy based program to do generation tasks from a JSON schema.
 
 ## Additional features
 * easier version markup in model
-* mark attributes as aggreation types (references) with suffix '_id'
+* mark attributes as aggregation types (references) with suffix '_id'
 * additional property attribute 'aggregationType' to set the specific attribute information
 * allOf - to implement inheritance
 
@@ -60,7 +60,7 @@ gradle publish
 # before a release is build the tests are executed - skip not possible
 gradle buildRelease
 
-# builds release and copy atifacts to docker image dir as preparation for the image build
+# builds release and copy artifacts to docker image dir as preparation for the image build
 gradle copyReleaseToDockerImage
 
 # run program without any arguments from project
