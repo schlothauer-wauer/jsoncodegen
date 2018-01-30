@@ -3,21 +3,11 @@
   "title": "referenced multi types",
   "description": "Test model with top-level referenced model files",
   "definitions": {
-    "extra_incident": {
-      "type": "object",
-      "allOf": [
-          {
-            "$ref": "./incident.json"
-          }
-        ]
+    "incident": {
+      "$ref": "./incident.json#/incident"
     },
-    "extra_user": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "./user.json"
-        }
-      ]
+    "user": {
+      "$ref": "./user.json#/user"
     }
   },
   "type": "object",

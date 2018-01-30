@@ -174,6 +174,12 @@ class JsonSchemaBuilder implements IModelBuilder {
                     }
                 }
             }
+            else if (typeObj.value.'$ref') {
+                // this type refers to an external definition
+                RefType tmp = initRefType(typeObj.value.'$ref',currentSchemaPath)
+                newType.properties.addAll(tmp.type.properties)
+                newType.baseTypes.add(tmp.type.name)
+            }
             else {
                 newType.properties = getProperties(model,typeObj.value,typeName,currentSchemaPath)
             }
@@ -341,21 +347,21 @@ class JsonSchemaBuilder implements IModelBuilder {
                 if ((!tmpModel) || (!tmpModel.types)) {
                     throw new Exception("loaded model doesn't contain types")
                 }
-                desiredName = refStr.substring(indexOfTrenner+EXT_REF_TRENNER.length())
-                ExternalType extT2 = null
+                def desiredName = refStr.substring(indexOfTrenner+EXT_REF_TRENNER.length()).toLowerCase()
+                Type extT2 = null
                 tmpModel.types.each { type ->
-                    if (type.name==desiredName) {
-                        extT2 = new ExternalType()
+                    if ((type.name!=null) && (type.name.toLowerCase()==desiredName)) {
+                        extT2 = type
                     }
                 }
                 if (extT2==null) {
-                    throw new Exception("can't fine external type ${desiredName} in model: ${fileName}")
+                    throw new Exception("can't find external type ${desiredName} in model: ${fileName}")
                 }
                 else {
                     extT.refStr = refStr
-                    extT.initFromType(type)
+                    extT.initFromType(extT2)
                     // the early declaration is needed to avoid StackOverflow-Errors in case of self references
-                    externamTypes.remove(tmpTypeName) // this is maybe a critical point
+                    externalTypes.remove(tmpTypeName) // this is maybe a critical point
                     addModelTypesToExternal(tmpModel)
                     return extT
                 }
