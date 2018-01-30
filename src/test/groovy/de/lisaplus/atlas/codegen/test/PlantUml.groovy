@@ -60,6 +60,20 @@ class PlantUml {
     }
 
     @Test
+    void testHeavyReferenced() {
+        def destFile='tmp/heavy_referenced.puml'
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model='src/test/resources/test_schemas/ds/referenced_multi_types.json'
+        doCodeGen.generators.add('plantuml')
+        doCodeGen.outputBaseDir='tmp'
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.generator_parameters.add('destFileName=heavy_referenced.puml')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
+
+
+    @Test
     void createUserModel_Markdown() {
         def destFile='tmp/user_puml.md'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
