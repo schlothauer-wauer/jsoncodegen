@@ -11,11 +11,11 @@ import static junit.framework.Assert.assertTrue
 class PlantUml {
     @Test
     void createUserModel() {
-        def destFile='tmp/user.puml'
+        def destFile = 'tmp/user.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model='src/test/resources/test_schemas/ds/user.json'
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/user.json'
         doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
-        doCodeGen.outputBaseDir='tmp'
+        doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('destFileName=user.puml')
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
         doCodeGen.run()
@@ -24,11 +24,11 @@ class PlantUml {
 
     @Test
     void createLicenseModel() {
-        def destFile='tmp/license.puml'
+        def destFile = 'tmp/license.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model='src/test/resources/test_schemas/ds/license.json'
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/license.json'
         doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
-        doCodeGen.outputBaseDir='tmp'
+        doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('destFileName=license.puml')
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
         doCodeGen.run()
@@ -37,11 +37,11 @@ class PlantUml {
 
     @Test
     void createUserModel_BuiltIn() {
-        def destFile='tmp/user_model.puml'
+        def destFile = 'tmp/user_model.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model='src/test/resources/test_schemas/ds/user.json'
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/user.json'
         doCodeGen.generators.add('plantuml')
-        doCodeGen.outputBaseDir='tmp'
+        doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
         doCodeGen.run()
         assertTrue(new File(destFile).exists())
@@ -49,11 +49,11 @@ class PlantUml {
 
     @Test
     void createFlorian_BuiltIn() {
-        def destFile='tmp/device.puml'
+        def destFile = 'tmp/device.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model='src/test/resources/test_schemas/ds/Device.json'
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/Device.json'
         doCodeGen.generators.add('plantuml')
-        doCodeGen.outputBaseDir='tmp'
+        doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
         doCodeGen.run()
         assertTrue(new File(destFile).exists())
@@ -61,11 +61,11 @@ class PlantUml {
 
     @Test
     void testHeavyReferenced() {
-        def destFile='tmp/heavy_referenced.puml'
+        def destFile = 'tmp/heavy_referenced.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model='src/test/resources/test_schemas/ds/referenced_multi_types.json'
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/referenced_multi_types.json'
         doCodeGen.generators.add('plantuml')
-        doCodeGen.outputBaseDir='tmp'
+        doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
         doCodeGen.generator_parameters.add('destFileName=heavy_referenced.puml')
         doCodeGen.run()
@@ -75,11 +75,11 @@ class PlantUml {
 
     @Test
     void createUserModel_Markdown() {
-        def destFile='tmp/user_puml.md'
+        def destFile = 'tmp/user_puml.md'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model='src/test/resources/test_schemas/ds/user.json'
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/user.json'
         doCodeGen.generators.add('plantuml')
-        doCodeGen.outputBaseDir='tmp'
+        doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
         doCodeGen.generator_parameters.add('markdown=true')
         doCodeGen.generator_parameters.add('destFileName=user_puml.md')
@@ -88,11 +88,11 @@ class PlantUml {
     }
 
     static void test_v4_base(def outputFileBase) {
-        def destFile="tmp/${outputFileBase}.puml"
+        def destFile = "tmp/${outputFileBase}.puml"
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model="src/test/resources/schemas/${outputFileBase}.json"
+        doCodeGen.model = "src/test/resources/schemas/${outputFileBase}.json"
         doCodeGen.generators.add('plantuml')
-        doCodeGen.outputBaseDir='tmp'
+        doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
         doCodeGen.generator_parameters.add("destFileName=${outputFileBase}.puml".toString())
         doCodeGen.run()
@@ -115,4 +115,8 @@ class PlantUml {
         test_v4_base("Container")
     }
 
+    @Test
+    void test_v6() {
+        test_v4_base("ramwa.schema")
+    }
 }
