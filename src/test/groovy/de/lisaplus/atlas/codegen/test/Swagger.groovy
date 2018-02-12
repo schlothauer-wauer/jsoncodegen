@@ -51,4 +51,19 @@ class Swagger {
         assertTrue(new File(destFile).exists())
     }
 
+    @Test
+    void createNotifyModel_BuiltIn() {
+        def destFile='tmp/notify_swagger.yaml'
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model='src/test/resources/schemas/notify.json'
+        doCodeGen.generators.add('swagger')
+        doCodeGen.outputBaseDir='tmp'
+        doCodeGen.generator_parameters.add('destFileName=notify_swagger.yaml')
+        doCodeGen.generator_parameters.add('containsAttrib=message')
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.generator_parameters.add('host=notify.swarco.com')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
+
 }

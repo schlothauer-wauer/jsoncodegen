@@ -118,5 +118,6 @@ class PlantUml {
     @Test
     void test_v6() {
         test_v4_base("ramwa.schema")
+        test_v4_base("notify")
     }
 }
