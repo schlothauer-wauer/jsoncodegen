@@ -10,7 +10,7 @@ sourceCompatibility = 1.8
 def mainClass='de.lisaplus.atlas.DoCodeGen'
 
 project.group = 'de.lisaplus.tools'
-project.version = '0.3'
+project.version = '0.4'
 def releaseArchiveName = "jsonCodeGen_${project.version}.zip"
 /*
  * the following attributes need to be declared in $HOME/.gradle/gradle.properties

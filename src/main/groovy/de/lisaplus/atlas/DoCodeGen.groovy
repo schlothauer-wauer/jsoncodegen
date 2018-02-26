@@ -195,6 +195,11 @@ class DoCodeGen {
                 generator.initTemplate()
                 generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break
+            case 'plantuml_java':
+                PlantUmlGenerator generator = new PlantUmlGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
             case 'hist_model':
                 HistModelGenerator generator = new HistModelGenerator()
                 generator.initTemplate()

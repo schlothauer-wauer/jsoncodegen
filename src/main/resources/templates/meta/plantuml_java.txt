@@ -48,9 +48,9 @@ skinparam classAttribute {
 class ${firstUpperCase.call(type.name)} ${ printStereoType(type) } << ( ,${type.color}) >> {
     <% type.properties.each  { prop -> %>
         <% if (prop.isRefTypeOrComplexType()) { %>
-    -<color:${prop.type.type.color} ><b>${prop.name}: ${typeToMeta.call(prop.type)}</b></color>
+    -<color:${prop.type.type.color} ><b>${prop.name}: ${typeToJava.call(prop.type)}</b></color>
         <% } else { %>
-    -${prop.name}: ${typeToMeta.call(prop.type)}
+    -${prop.name}: ${typeToJava.call(prop.type)}
         <% } %>
     <% } %>
 }

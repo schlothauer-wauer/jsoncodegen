@@ -15,7 +15,7 @@
       "description": "some more words to explain",
       "type": "string"
     },
-    "gid": {
+    "guid": {
       "description": "global identifier",
       "type": "string",
       "format": "uuid"

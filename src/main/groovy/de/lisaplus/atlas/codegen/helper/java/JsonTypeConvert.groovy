@@ -37,6 +37,36 @@ class JsonTypeConvert {
         }
     }
 
+    static def meta = { type ->
+        if (! type instanceof BaseType) {
+            return BaseType.WRONG_TYPE+type
+        }
+        switch(type.name()) {
+            case IntType.NAME:
+                return 'integer'
+            case NumberType.NAME:
+                return 'number'
+            case StringType.NAME:
+                return 'string'
+            case UUIDType.NAME:
+                return 'string/uuid'
+            case BooleanType.NAME:
+                return 'boolean'
+            case DateType.NAME:
+                return 'string/date'
+            case DateTimeType.NAME:
+                return 'string/date-time'
+            case RefType.NAME:
+                return type.type.name
+            case ComplexType.NAME: // ?
+                return type.type.name
+            case UnsupportedType.NAME:
+                return "unsupported"
+            default:
+                return "???"
+        }
+    }
+
     static def format = { type ->
         switch(type.name()) {
             case IntType.NAME:
