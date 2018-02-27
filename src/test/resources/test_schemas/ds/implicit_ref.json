@@ -35,7 +35,7 @@
         "date": {
           "description": "date of entry",
           "type": "string",
-          "format": "datetime"
+          "format": "date-time"
         },
         "user": {
           "description": "who did this comment",

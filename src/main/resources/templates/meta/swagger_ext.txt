@@ -323,7 +323,7 @@ definitions:
         type: "string"
       type:
         type: "string"
-        enum: [int,string,boolean,date,datetime]
+        enum: [int,string,boolean,date,date-time]
   EntryItem:
     type: "array"
     items:

@@ -75,17 +75,17 @@
             "to_send": {
               "description": "what time it should be sent",
               "type": "string",
-              "format": "datetime"
+              "format": "date-time"
             },
             "sended": {
               "description": "When was it sent",
               "type": "string",
-              "format": "datetime"
+              "format": "date-time"
             },
             "last_trial": {
               "description": "In case of error when was the last delivery trial",
               "type": "string",
-              "format": "datetime"
+              "format": "date-time"
             }
           }
         },

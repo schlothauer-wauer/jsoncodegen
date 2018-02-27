@@ -18,7 +18,7 @@
                 "time": {
                   "description": "date/time when it was first reported",
                   "type": "string",
-                  "format": "datetime"
+                  "format": "date-time"
                 },
                 "report_type": {
                   "description": "on what way comes the information to the system",
@@ -37,7 +37,7 @@
                 "time": {
                   "description": "date/time when it was reported",
                   "type": "string",
-                  "format": "datetime"
+                  "format": "date-time"
                 },
                 "report_type": {
                   "description": "on what way goes the information to the recipient",
@@ -52,7 +52,7 @@
                 "time": {
                   "description": "date/time when it was transferred",
                   "type": "string",
-                  "format": "datetime"
+                  "format": "date-time"
                 },
                 "report_type": {
                   "description": "on what way goes the information to the recipient",
@@ -71,7 +71,7 @@
                     "time": {
                       "description": "date/time when",
                       "type": "string",
-                      "format": "datetime"
+                      "format": "date-time"
                     }
                   }
                 },
@@ -82,7 +82,7 @@
                     "time": {
                       "description": "date/time when",
                       "type": "string",
-                      "format": "datetime"
+                      "format": "date-time"
                     },
                     "problem": {
                       "description": "what was the problem",
@@ -97,7 +97,7 @@
                     "time": {
                       "description": "date/time when",
                       "type": "string",
-                      "format": "datetime"
+                      "format": "date-time"
                     },
                     "reason": {
                       "description": "why was the repair rejected",
@@ -112,7 +112,7 @@
                     "time": {
                       "description": "date/time when",
                       "type": "string",
-                      "format": "datetime"
+                      "format": "date-time"
                     }
                   }
                 }

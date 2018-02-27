@@ -451,6 +451,10 @@ class JsonSchemaBuilder implements IModelBuilder {
                     return new UUIDType()
                 }
                 else if (propObjMap.format && propObjMap.format.toLowerCase()=="datetime") {
+                    // legacy, still present for legacy reasons
+                    return new DateTimeType()
+                }
+                else if (propObjMap.format && propObjMap.format.toLowerCase()=="date-time") {
                     return new DateTimeType()
                 }
                 else if (propObjMap.format && propObjMap.format.toLowerCase()=="date") {

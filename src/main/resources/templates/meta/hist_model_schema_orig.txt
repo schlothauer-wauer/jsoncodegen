@@ -13,7 +13,7 @@
           },
           "entry_date": {
             "type": "string",
-            "format": "datetime"
+            "format": "date-time"
           },
           "active": {
             "type": "boolean"
