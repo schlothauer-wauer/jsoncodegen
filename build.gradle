@@ -70,6 +70,7 @@ task dependenciesToLibDir(type: Copy) {
 }
 
 task buildRelease (type: Copy) {
+    outputs.upToDateWhen { false }
     into "${buildDir}/release/lib"
     from "${buildDir}/libs"
 
@@ -139,11 +140,36 @@ task integrationTest(type: Test) {
 }
 
 task copyReleaseToDockerImage (type: Copy) {
-     into "docker/image/release"
-     from "${buildDir}/release"
+    outputs.upToDateWhen { false }
+    into "docker/image/release"
+    from "${buildDir}/release"
 }
 
-copyReleaseToDockerImage.dependsOn buildRelease
+task cleanImageSources (type: Delete) {
+    delete 'docker/image/release'
+}
+
+task buildDockerImage {
+    outputs.upToDateWhen { false }
+    def imageName=['bash','docker/bin/image_conf.sh'].execute().text.trim()
+    println "create image: $imageName ..."
+    def cmd = ['docker', 'build', '-t', imageName,'docker/image']
+    def sout = new StringBuilder(), serr = new StringBuilder()
+    def proc = cmd.execute()
+    proc.consumeProcessOutput(sout, serr)
+    proc.waitForOrKill(10000)
+    if (serr.size()>0) {
+        println "err> $serr"
+    }
+    else {
+        println "... created"
+    }
+}
+
+buildRelease.dependsOn build
+cleanImageSources.dependsOn buildRelease
+copyReleaseToDockerImage.dependsOn cleanImageSources
+buildDockerImage.dependsOn copyReleaseToDockerImage
 
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test

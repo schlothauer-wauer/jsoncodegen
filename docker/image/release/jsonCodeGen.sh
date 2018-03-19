@@ -32,5 +32,12 @@ do
   args="$args \"$arg\""
 done
 
-exec_command="exec \"$JAVACMD\" -cp \"$scriptPos/lib/*\" \"-Dlogback.configurationFile=$scriptPos/conf/logback.xml\" de.lisaplus.atlas.DoCodeGen"
-eval $exec_command $args
+if [ -d $scriptPos/lib ]; then
+    JSONCODEGEN_LIB_DIR=$scriptPos/lib
+    LOGDIR=$scriptPos/conf
+else
+    JSONCODEGEN_LIB_DIR="$JSONCODEGEN_HOME/lib"
+    LOGDIR="$JSONCODEGEN_HOME/conf"
+fi
+
+$JAVACMD -cp "$JSONCODEGEN_LIB_DIR/*" "-Dlogback.configurationFile=$scriptPos/conf/logback.xml\" de.lisaplus.atlas.DoCodeGen $args

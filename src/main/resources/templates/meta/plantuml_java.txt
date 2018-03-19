@@ -46,11 +46,12 @@ skinparam classAttribute {
 
 <% model.types.each  { type -> %>
 class ${firstUpperCase.call(type.name)} ${ printStereoType(type) } << ( ,${type.color}) >> {
-    <% type.properties.each  { prop -> %>
+    <% type.properties.each  { prop ->
+        def arrayStr = prop.type.isArray ? '[]' : '' %>
         <% if (prop.isRefTypeOrComplexType()) { %>
-    -<color:${prop.type.type.color} ><b>${prop.name}: ${typeToJava.call(prop.type)}</b></color>
+    -<color:${prop.type.type.color} ><b>${prop.name}: ${typeToJava.call(prop.type)}${arrayStr}</b></color>
         <% } else { %>
-    -${prop.name}: ${typeToJava.call(prop.type)}
+    -${prop.name}: ${typeToJava.call(prop.type)}${arrayStr}
         <% } %>
     <% } %>
 }
