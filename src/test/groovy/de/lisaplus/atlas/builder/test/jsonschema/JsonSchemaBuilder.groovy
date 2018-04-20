@@ -40,7 +40,8 @@ class JsonSchemaBuilder {
         println "name: ${f.getName()}"
         */
         def s = de.lisaplus.atlas.builder.JsonSchemaBuilder.getBasePathFromModelFile(f)
-        assertEquals('src/test/resources/test_schemas/',s)
+        def s2 = s.replaceAll('\\\\','/') // convert windows file separator to linux/unix file separator 
+        assertEquals('src/test/resources/test_schemas/',s2)
     }
 
     @Test
