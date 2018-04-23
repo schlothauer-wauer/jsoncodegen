@@ -70,26 +70,31 @@ task dependenciesToLibDir(type: Copy) {
 }
 
 task buildRelease (type: Copy) {
-    outputs.upToDateWhen { false }
-    into "${buildDir}/release/lib"
-    from "${buildDir}/libs"
+        println 'buildRelease start ...'
+        outputs.upToDateWhen { false }
+        into "${buildDir}/release/lib"
+        from "${buildDir}/libs"
 
-    copy {
-        from "${project.rootDir}/src/main/resources/bin"
-        into "${buildDir}/release"
-    }
-    copy {
-        from "${project.rootDir}/src/main/resources/conf"
-        into "${buildDir}/release/conf"
-    }
+        copy {
+            from "${project.rootDir}/src/main/resources/bin"
+            into "${buildDir}/release"
+        }
+        copy {
+            from "${project.rootDir}/src/main/resources/conf"
+            into "${buildDir}/release/conf"
+        }
+        println 'buildRelease end ...'
 }
 
 task zipRelease (type: Zip) {
-    from "${buildDir}/release"
-    include '*'
-    include '*/*'
-    archiveName "$releaseArchiveName"
-    destinationDir(file("${buildDir}"))
+    doLast {
+        println 'zipRelease'
+        from "${buildDir}/release"
+        include '*'
+        include '*/*'
+        archiveName "$releaseArchiveName"
+        destinationDir(file("${buildDir}"))
+    }
 }
 
 task myRun (type: JavaExec, dependsOn: classes){
@@ -106,7 +111,6 @@ task myRun (type: JavaExec, dependsOn: classes){
 
 dependenciesToLibDir.dependsOn jar
 buildRelease.dependsOn dependenciesToLibDir
-
 
 configurations {
     integrationTestCompile.extendsFrom testCompile
@@ -151,22 +155,24 @@ task cleanImageSources (type: Delete) {
 
 task buildDockerImage {
     outputs.upToDateWhen { false }
-    def imageName=['bash','docker/bin/image_conf.sh'].execute().text.trim()
-    println "create image: $imageName ..."
-    def cmd = ['docker', 'build', '-t', imageName,'docker/image']
-    def sout = new StringBuilder(), serr = new StringBuilder()
-    def proc = cmd.execute()
-    proc.consumeProcessOutput(sout, serr)
-    proc.waitForOrKill(10000)
-    if (serr.size()>0) {
-        println "err> $serr"
-    }
-    else {
-        println "... created"
+    doLast {
+        def imageName=['bash','docker/bin/image_conf.sh'].execute().text.trim()
+        println "create image: $imageName ..."
+        def cmd = ['docker', 'build', '-t', imageName,'docker/image']
+        def sout = new StringBuilder(), serr = new StringBuilder()
+        def proc = cmd.execute()
+        proc.consumeProcessOutput(sout, serr)
+        proc.waitForOrKill(10000)
+        if (serr.size()>0) {
+            println "err> $serr"
+        }
+        else {
+            println "... created"
+        }
     }
 }
 
-buildRelease.dependsOn build
+buildRelease.dependsOn assemble
 cleanImageSources.dependsOn buildRelease
 copyReleaseToDockerImage.dependsOn cleanImageSources
 buildDockerImage.dependsOn copyReleaseToDockerImage
@@ -175,4 +181,3 @@ check.dependsOn integrationTest
 integrationTest.mustRunAfter test
 buildRelease.dependsOn test
 zipRelease.dependsOn buildRelease
-
