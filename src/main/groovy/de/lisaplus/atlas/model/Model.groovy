@@ -128,6 +128,18 @@ class Type {
     boolean isInnerType() {
         return this instanceof InnerType
     }
+
+    boolean hasTag(String tag) {
+        return tags && tags.contains(tag)
+    }
+
+    boolean hasPropertyWithTag(String tag) {
+        if (!tags) return false
+        if (!properties) return false
+        return properties.find { prop ->
+            return prop.tags && prop.tags.contains(tag)
+        } != null
+    }
 }
 
 /**
@@ -213,5 +225,9 @@ class Property {
 
     boolean isAggregation() {
         return aggregationType==AggregationType.aggregation
+    }
+
+    boolean hasTag(String tag) {
+      return tags && tags.contains(tag)
     }
 }

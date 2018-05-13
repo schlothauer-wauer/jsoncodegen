@@ -48,6 +48,18 @@ class PlantUml {
     }
 
     @Test
+    void createJunctionModel_BuiltIn() {
+        def destFile = 'tmp/junction_model.puml'
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/junction2.json'
+        doCodeGen.generators.add('plantuml')
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
+
+    @Test
     void createFlorian_BuiltIn() {
         def destFile = 'tmp/device.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()

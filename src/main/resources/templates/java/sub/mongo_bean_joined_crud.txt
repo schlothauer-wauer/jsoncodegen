@@ -1,0 +1,135 @@
+//// prints the CRUD operations for mongo beans that should be joinded with other collections
+
+    public static ${ firstUpperCase.call(actObj.name) } createFromDocument(Document document) {
+        ${ firstUpperCase.call(actObj.name) } newObj = new ${ firstUpperCase.call(actObj.name) }();
+        // not joined attribs - start
+        // handle base types
+        <% actObj.properties.findAll { prop -> return ! prop.hasTag('join') }.findAll {prop -> return ! prop.isRefTypeOrComplexType() }.each { prop -> %>
+        newObj.${prop.name} = (${ typeToJava.call(prop.type) }) document.get(${toUpperCase.call(prop.name)});
+        <% } %>
+        // handle complex types
+        <% actObj.properties.findAll {prop -> return prop.isRefTypeOrComplexType() }.each { prop -> %>
+            <% if (prop.type.isArray) { %>
+        newObj.${prop.name} = ${ prop.type.type.name }.createArrayFromDocument((java.util.List<Document>)document.get(${toUpperCase.call(prop.name)}));
+            <% } else { %>
+        newObj.${prop.name} = ${ typeToJava.call(prop.type) }.createFromDocument((Document)document.get(${toUpperCase.call(prop.name)}));
+            <% } %>
+        <% } %>
+        // not joined attribs - end
+        // joined attribs - start - joins can't be arrays!
+        <% actObj.properties.findAll { prop -> return prop.hasTag('join') }.each { prop -> %>
+        {
+            java.util.List<Document> tmpList = (java.util.List<Document>)document.get("${lowerCamelCase.call(prop.implicitRef.type.name)}");
+            if (null!=tmpList && (!tmpList.isEmpty())) {
+                newObj.${lowerCamelCase.call(prop.implicitRef.type.name)} = ${ prop.implicitRef.type.name }.createFromDocument((Document)tmpList.get(0));
+                newObj.${lowerCamelCase.call(prop.implicitRef.type.name)}JoinId = newObj.${lowerCamelCase.call(prop.implicitRef.type.name)}.getObjectId();
+                newObj.${lowerCamelCase.call(prop.name)} = newObj.${lowerCamelCase.call(prop.implicitRef.type.name)}.getGuid();
+            }
+        }
+        <% } %>
+        // joined attribs - end
+        return newObj;
+    }
+
+    <% actObj.properties.findAll { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
+
+    private ${ firstUpperCase.call(prop.implicitRef.type.name) } ${ lowerCamelCase.call(prop.implicitRef.type.name) };
+    public ${ firstUpperCase.call(prop.implicitRef.type.name) } get${ firstUpperCase.call(prop.implicitRef.type.name) }() { return ${ lowerCamelCase.call(prop.implicitRef.type.name) }; }
+
+
+    private ObjectId ${ lowerCamelCase.call(prop.implicitRef.type.name) }JoinId;
+    <% } %>
+
+    // byId
+    public static ${ firstUpperCase.call(actObj.name) } byId (String guid) throws SerializationException {
+        MongoCollection collection = getCollection();
+        AggregateIterable iterable = collection.aggregate(
+                Arrays.asList(
+                        <% actObj.properties.find { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
+                        Aggregates.lookup(${ firstUpperCase.call(prop.implicitRef.type.name) }.COLLECTION_NAME,${ toUpperCase.call(prop.implicitRef.type.name) }_JOINID,"_id","${ lowerCamelCase.call(prop.implicitRef.type.name) }"),
+                        Aggregates.match(Filters.eq("${ lowerCamelCase.call(prop.implicitRef.type.name) }.guid", guid)))
+                        <% } %>
+                );
+        Object o = iterable.first();
+        if (o==null) throw new ObjNotFoundException(guid);
+        if (! (o instanceof Document )) {
+            // TODO logging
+            throw new SerializationException(String.format("Wrong result type, expect Document but got: %s",o.getClass().getName()));
+        }
+
+        Document document = (Document) o;
+        ${ firstUpperCase.call(actObj.name) } newObj = createFromDocument(document);
+        newObj.objectId = (ObjectId) document.get("_id");
+        return newObj;
+    }
+
+    // list
+    public static ${ firstUpperCase.call(actObj.name) } list () {
+        return null;
+    }
+
+        <% actObj.properties.findAll { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
+
+    private void insert${ firstUpperCase.call(prop.implicitRef.type.name) } () throws SerializationException {
+        String guid = ${prop.name}!=null ? ${prop.name} : UUID.randomUUID().toString();
+        ${ lowerCamelCase.call(prop.implicitRef.type.name) }.setGuid(guid);
+        ${ lowerCamelCase.call(prop.implicitRef.type.name) }.insert();
+        ${ lowerCamelCase.call(prop.implicitRef.type.name) }JoinId = ${ lowerCamelCase.call(prop.implicitRef.type.name) }.getObjectId();
+        ${ prop.name } = ${ lowerCamelCase.call(prop.implicitRef.type.name) }.getGuid();
+    }
+
+    private void insertAndInit${ firstUpperCase.call(prop.implicitRef.type.name) } () throws SerializationException {
+        String guid = ${ lowerCamelCase.call(prop.implicitRef.type.name) }.getGuid();
+        if (guid==null) {
+            guid = ${ prop.name };
+        }
+        if (guid!=null) {
+            try {
+                ${ firstUpperCase.call(prop.implicitRef.type.name) } x = ${ firstUpperCase.call(prop.implicitRef.type.name) }.byId(guid);
+                ${ lowerCamelCase.call(prop.implicitRef.type.name) }JoinId = ${ lowerCamelCase.call(prop.implicitRef.type.name) }.getObjectId();
+                ${ prop.name } = ${ lowerCamelCase.call(prop.implicitRef.type.name) }.getGuid();
+            }
+            catch (ObjNotFoundException e) {
+                insertJunctionBase ();
+            }
+        }
+        else {
+            insert${ firstUpperCase.call(prop.implicitRef.type.name) } ();
+        }
+    }
+        <% } %>
+
+
+    // insert
+    public void insert () throws SerializationException {
+        <% actObj.properties.findAll { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
+        insertAndInit${ firstUpperCase.call(prop.implicitRef.type.name) }();
+        <% } %>
+
+        MongoCollection collection = getCollection();
+        Document document = new Document();
+        <% actObj.properties.each { prop -> %>
+        document.put(${toUpperCase.call(prop.name)}, ${prop.name});
+        <% } %>
+
+    <% actObj.properties.findAll { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
+        document.put(${ toUpperCase.call(prop.implicitRef.type.name) }_JOINID, ${ lowerCamelCase.call(prop.implicitRef.type.name) }JoinId);
+    <% } %>
+
+        collection.insertOne(document);
+        objectId = (ObjectId)document.get( "_id" );
+    }
+
+    // update
+    public void update () {
+
+    }
+
+    // delete
+    public void delete () {
+
+    }
+
+    <% actObj.properties.findAll { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
+    public final static String ${ toUpperCase.call(prop.implicitRef.type.name) }_JOINID = "${ lowerCamelCase.call(prop.implicitRef.type.name) }JoinId";
+    <% } %>

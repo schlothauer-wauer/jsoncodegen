@@ -1,0 +1,70 @@
+//// prints the CRUD operations for normal mongo beans
+    public static ${ firstUpperCase.call(actObj.name) } createFromDocument(Document document) {
+        ${ firstUpperCase.call(actObj.name) } newObj = new ${ firstUpperCase.call(actObj.name) }();
+        // handle base types
+        <% actObj.properties.findAll {prop -> return ! prop.isRefTypeOrComplexType() }.each { prop -> %>
+        newObj.${prop.name} = (${ typeToJava.call(prop.type) }) document.get(${toUpperCase.call(prop.name)});
+        <% } %>
+        // handle complex types
+        <% actObj.properties.findAll {prop -> return prop.isRefTypeOrComplexType() }.each { prop -> %>
+            <% if (prop.type.isArray) { %>
+        newObj.${prop.name} = ${ typeToJava.call(prop.type) }.createArrayFromDocument((Document)document.get(${toUpperCase.call(prop.name)}));
+            <% } else { %>
+        newObj.${prop.name} = ${ typeToJava.call(prop.type) }.createFromDocument((Document)document.get(${toUpperCase.call(prop.name)}));
+            <% } %>
+        <% } %>
+        newObj.objectId = (ObjectId) document.get("_id");
+        return newObj;
+    }
+
+
+    // byId
+    public static ${ firstUpperCase.call(actObj.name) } byId (String guid) throws SerializationException {
+        MongoCollection collection = getCollection();
+        AggregateIterable iterable = collection.aggregate(
+                Arrays.asList(
+                        Aggregates.match(Filters.eq("guid", guid)))
+                );
+        Object o = iterable.first();
+        if (o==null) throw new ObjNotFoundException(guid);
+        if (! (o instanceof Document )) {
+            // TODO logging
+            throw new SerializationException(String.format("Wrong result type, expect Document but got: %s",o.getClass().getName()));
+        }
+
+        Document document = (Document) o;
+        ${ firstUpperCase.call(actObj.name) } newObj = createFromDocument(document);
+        return newObj;
+    }
+
+    // list
+    public static ${ firstUpperCase.call(actObj.name) } list () {
+        return null;
+    }
+
+    // insert
+    public void insert () throws SerializationException {
+        MongoCollection collection = getCollection();
+        String guid = getGuid();
+        if (guid==null) {
+            guid = UUID.randomUUID().toString();
+            setGuid(guid);
+        }
+        Document document = new Document();
+        <% actObj.properties.each { prop -> %>
+        document.put(${toUpperCase.call(prop.name)}, ${prop.name});
+        <% } %>
+        collection.insertOne(document);
+        objectId = (ObjectId)document.get( "_id" );
+    }
+
+    // update
+    public void update () {
+
+    }
+
+    // delete
+    public void delete () {
+
+    }
+
