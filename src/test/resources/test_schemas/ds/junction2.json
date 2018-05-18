@@ -143,6 +143,38 @@
       },
       "__tags": ["rest", "joined","mongodb"]
     },
+
+    "JunctionShortTest": {
+      "type": "object",
+      "description": "Junction is a anchor point of interest of application level",
+      "properties": {
+        "junctionId": {
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/JunctionBase",
+          "__tags": [
+            "join"
+          ]
+        },
+        "numbers": {
+          "description": "all the number (technical names) of this object",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "__ref": "#/definitions/JunctionNumberType"
+              }
+            }
+          }
+        }
+      },
+      "__tags": ["rest", "joined","mongodb"]
+    },
     "JunctionType": {
       "type": "object",
       "description": "types of junctions",

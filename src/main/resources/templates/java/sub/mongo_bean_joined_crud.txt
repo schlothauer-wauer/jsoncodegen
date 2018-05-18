@@ -18,13 +18,10 @@
         // not joined attribs - end
         // joined attribs - start - joins can't be arrays!
         <% actObj.properties.findAll { prop -> return prop.hasTag('join') }.each { prop -> %>
-        {
-            java.util.List<Document> tmpList = (java.util.List<Document>)document.get("${lowerCamelCase.call(prop.implicitRef.type.name)}");
-            if (null!=tmpList && (!tmpList.isEmpty())) {
-                newObj.${lowerCamelCase.call(prop.implicitRef.type.name)} = ${ prop.implicitRef.type.name }.createFromDocument((Document)tmpList.get(0));
-                newObj.${lowerCamelCase.call(prop.implicitRef.type.name)}JoinId = newObj.${lowerCamelCase.call(prop.implicitRef.type.name)}.getObjectId();
-                newObj.${lowerCamelCase.call(prop.name)} = newObj.${lowerCamelCase.call(prop.implicitRef.type.name)}.getGuid();
-            }
+        newObj.${lowerCamelCase.call(prop.implicitRef.type.name)} = ${ prop.implicitRef.type.name }.createFromDocument((Document)document.get("${lowerCamelCase.call(prop.implicitRef.type.name)}"));
+        if (null!=newObj.${lowerCamelCase.call(prop.implicitRef.type.name)}) {
+            newObj.${lowerCamelCase.call(prop.implicitRef.type.name)}JoinId = newObj.${lowerCamelCase.call(prop.implicitRef.type.name)}.getObjectId();
+            newObj.${lowerCamelCase.call(prop.name)} = newObj.${lowerCamelCase.call(prop.implicitRef.type.name)}.getGuid();
         }
         <% } %>
         // joined attribs - end
@@ -43,13 +40,15 @@
     // byId
     public static ${ firstUpperCase.call(actObj.name) } byId (String guid) throws SerializationException {
         MongoCollection collection = getCollection();
+        java.util.List<Bson> aggregations  = new ArrayList<>();
+        <% actObj.properties.find { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
+        aggregations.add(Aggregates.match(Filters.eq(${ toUpperCase.call(prop.name) }, guid)));
+        aggregations.add(Aggregates.lookup(${ firstUpperCase.call(prop.implicitRef.type.name) }.COLLECTION_NAME,${ toUpperCase.call(prop.implicitRef.type.name) }_JOINID,"_id","${ lowerCamelCase.call(prop.implicitRef.type.name) }"));
+        aggregations.add(Aggregates.unwind("$DOLLAR${ firstLowerCase.call(prop.implicitRef.type.name) }"));
+        <% } %>
         AggregateIterable iterable = collection.aggregate(
-                Arrays.asList(
-                        <% actObj.properties.find { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
-                        Aggregates.lookup(${ firstUpperCase.call(prop.implicitRef.type.name) }.COLLECTION_NAME,${ toUpperCase.call(prop.implicitRef.type.name) }_JOINID,"_id","${ lowerCamelCase.call(prop.implicitRef.type.name) }"),
-                        Aggregates.match(Filters.eq("${ lowerCamelCase.call(prop.implicitRef.type.name) }.guid", guid)))
-                        <% } %>
-                );
+                aggregations
+        );
         Object o = iterable.first();
         if (o==null) throw new ObjNotFoundException(guid);
         if (! (o instanceof Document )) {
@@ -63,9 +62,54 @@
         return newObj;
     }
 
-    // list
-    public static ${ firstUpperCase.call(actObj.name) } list () {
-        return null;
+    /**
+     * return a list of elements
+     * @return
+     * @throws SerializationException
+     */
+    public static java.util.List<${ firstUpperCase.call(actObj.name) }> list () throws SerializationException {
+        return list(-1,-1);
+    }
+
+    /**
+     * return a list of elements
+     * @param skip an offset how many values should be skipped, values <1 cause the ignore the skipping
+     * @param limit how many set shall be returned
+     * @return
+     * @throws SerializationException
+     */
+    public static java.util.List<${ firstUpperCase.call(actObj.name) }> list (int skip, int limit) throws SerializationException {
+        MongoCollection collection = getCollection();
+        java.util.List<Bson> aggregations  = new ArrayList<>();
+
+        <% actObj.properties.find { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
+        aggregations.add(Aggregates.lookup(${ firstUpperCase.call(prop.implicitRef.type.name) }.COLLECTION_NAME,${ toUpperCase.call(prop.implicitRef.type.name) }_JOINID,"_id","${ lowerCamelCase.call(prop.implicitRef.type.name) }"));
+        aggregations.add(Aggregates.unwind("$DOLLAR${ firstLowerCase.call(prop.implicitRef.type.name) }"));
+        <% } %>
+
+        if (skip>0) {
+            aggregations.add(Aggregates.skip(skip));
+        }
+
+        if (limit>0) {
+            aggregations.add(Aggregates.limit(limit));
+        }
+
+// projection example
+//        aggregations.add(Aggregates.project(new BasicDBObject("junctionBase.tags", false)));
+
+        AggregateIterable iterable = collection.aggregate(
+                aggregations
+        );
+        ArrayList<${ firstUpperCase.call(actObj.name) }> list = new ArrayList<>();
+        MongoCursor<Document> iterator = iterable.iterator();
+        while (iterator.hasNext()) {
+            ${ firstUpperCase.call(actObj.name) } newObj = createFromDocument(iterator.next());
+            if (newObj!=null) {
+                list.add(newObj);
+            }
+        }
+        return list;
     }
 
         <% actObj.properties.findAll { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>

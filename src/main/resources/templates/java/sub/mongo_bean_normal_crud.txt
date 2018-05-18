@@ -1,5 +1,6 @@
 //// prints the CRUD operations for normal mongo beans
     public static ${ firstUpperCase.call(actObj.name) } createFromDocument(Document document) {
+        if (document==null) return null;
         ${ firstUpperCase.call(actObj.name) } newObj = new ${ firstUpperCase.call(actObj.name) }();
         // handle base types
         <% actObj.properties.findAll {prop -> return ! prop.isRefTypeOrComplexType() }.each { prop -> %>
@@ -21,10 +22,11 @@
     // byId
     public static ${ firstUpperCase.call(actObj.name) } byId (String guid) throws SerializationException {
         MongoCollection collection = getCollection();
+        java.util.List<Bson> aggregations  = new ArrayList<>();
+        aggregations.add(Aggregates.match(Filters.eq("guid", guid)));
         AggregateIterable iterable = collection.aggregate(
-                Arrays.asList(
-                        Aggregates.match(Filters.eq("guid", guid)))
-                );
+                aggregations
+        );
         Object o = iterable.first();
         if (o==null) throw new ObjNotFoundException(guid);
         if (! (o instanceof Document )) {
@@ -37,9 +39,43 @@
         return newObj;
     }
 
-    // list
-    public static ${ firstUpperCase.call(actObj.name) } list () {
-        return null;
+    /**
+     * return a list of elements
+     * @return
+     * @throws SerializationException
+     */
+    public static java.util.List<${ firstUpperCase.call(actObj.name) }> list () throws SerializationException {
+        return list (-1,-1);
+    }
+
+    /**
+     * return a list of elements
+     * @param skip an offset how many values should be skipped, values <1 cause the ignore the skipping
+     * @param limit how many set shall be returned
+     * @return
+     * @throws SerializationException
+     */
+    public static java.util.List<${ firstUpperCase.call(actObj.name) }> list (int skip, int limit) throws SerializationException {
+        MongoCollection collection = getCollection();
+        java.util.List<Bson> aggregations  = new ArrayList<>();
+        if (skip>0) {
+            aggregations.add(Aggregates.skip(skip));
+        }
+        if (limit>0) {
+            aggregations.add(Aggregates.limit(limit));
+        }
+        AggregateIterable iterable = collection.aggregate(
+                aggregations
+        );
+        ArrayList<${ firstUpperCase.call(actObj.name) }> list = new ArrayList<>();
+        MongoCursor<Document> iterator = iterable.iterator();
+        while (iterator.hasNext()) {
+            ${ firstUpperCase.call(actObj.name) } newObj = createFromDocument(iterator.next());
+            if (newObj!=null) {
+                list.add(newObj);
+            }
+        }
+        return list;
     }
 
     // insert

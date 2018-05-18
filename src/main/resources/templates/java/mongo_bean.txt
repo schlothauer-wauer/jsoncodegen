@@ -8,6 +8,11 @@ import java.util.ArrayList;
 <% if (currentType.tags.contains('mongodb')) { %>
 import de.lisaplus.util.mongodb.SerializationException;
 import de.lisaplus.util.mongodb.ObjNotFoundException;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.MongoCursor;
+import org.bson.conversions.Bson;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.AggregateIterable;
@@ -56,6 +61,7 @@ public class ${ firstUpperCase.call(currentType.name) } {
     
     <% if (!currentType.tags.contains('mongodb')) { %>
     public static ${ firstUpperCase.call(currentType.name) } createFromDocument(Document document) {
+        if (document==null) return null;
         ${ firstUpperCase.call(currentType.name) } newObj = new ${ firstUpperCase.call(currentType.name) }();
         // handle base types
         <% currentType.properties.findAll {prop -> return ! prop.isRefTypeOrComplexType() }.each { prop -> %>
@@ -78,7 +84,9 @@ public class ${ firstUpperCase.call(currentType.name) } {
         ArrayList<${ firstUpperCase.call(currentType.name) }> ret = new ArrayList<>();
         for (Document document: documentList) {
             ${ firstUpperCase.call(currentType.name) } newObj = createFromDocument(document);
-            ret.add(newObj);
+            if (newObj!=null) {
+                ret.add(newObj);
+            }
         }
         return ret;
     }
@@ -103,5 +111,4 @@ public class ${ firstUpperCase.call(currentType.name) } {
     <% currentType.properties.each { prop -> %>
     public final static String ${toUpperCase.call(prop.name)} = "${lowerCamelCase.call(prop.name)}";
     <% } %>
-
 }
