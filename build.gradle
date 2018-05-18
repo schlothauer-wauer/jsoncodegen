@@ -72,8 +72,6 @@ task dependenciesToLibDir(type: Copy) {
 task buildRelease (type: Copy) {
         println 'buildRelease start ...'
         outputs.upToDateWhen { false }
-        into "${buildDir}/release/lib"
-        from "${buildDir}/libs"
 
         copy {
             from "${project.rootDir}/src/main/resources/bin"
@@ -83,6 +81,11 @@ task buildRelease (type: Copy) {
             from "${project.rootDir}/src/main/resources/conf"
             into "${buildDir}/release/conf"
         }
+
+
+        into "${buildDir}/release/lib"
+        from "${buildDir}/libs"
+
         println 'buildRelease end ...'
 }
 

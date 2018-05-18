@@ -21,7 +21,12 @@ if [ -z "$version" ]; then
 fi
 
 pushd "$scriptPos/.." > /dev/null
-if ! gradle clean buildRelease; then
+if ! gradle clean build; then
+    echo 'error while build'
+    exit 1
+fi
+
+if ! gradle buildRelease; then
     echo 'error while build release'
     exit 1
 fi
