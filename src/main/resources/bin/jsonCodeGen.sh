@@ -40,4 +40,4 @@ else
     LOGDIR="$JSONCODEGEN_HOME/conf"
 fi
 
-$JAVACMD -cp "$JSONCODEGEN_LIB_DIR/*" "-Dlogback.configurationFile=$scriptPos/conf/logback.xml\" de.lisaplus.atlas.DoCodeGen $args
+$JAVACMD -cp "$JSONCODEGEN_LIB_DIR/*" "-Dlogback.configurationFile=$scriptPos/conf/logback.xml" de.lisaplus.atlas.DoCodeGen $args
