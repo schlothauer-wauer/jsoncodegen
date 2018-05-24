@@ -1,7 +1,7 @@
 //// prints the CRUD operations for normal mongo beans
-    public static ${ firstUpperCase.call(actObj.name) } createFromDocument(Document document) {
+    public static ${ upperCamelCase.call(actObj.name) } createFromDocument(Document document) {
         if (document==null) return null;
-        ${ firstUpperCase.call(actObj.name) } newObj = new ${ firstUpperCase.call(actObj.name) }();
+        ${ upperCamelCase.call(actObj.name) } newObj = new ${ upperCamelCase.call(actObj.name) }();
         // handle base types
         <% actObj.properties.findAll {prop -> return ! prop.isRefTypeOrComplexType() }.each { prop -> %>
         newObj.${prop.name} = (${ typeToJava.call(prop.type) }) document.get(${toUpperCase.call(prop.name)});
@@ -20,7 +20,7 @@
 
 
     // byId
-    public static ${ firstUpperCase.call(actObj.name) } byId (String guid) throws SerializationException {
+    public static ${ upperCamelCase.call(actObj.name) } byId (String guid) throws SerializationException {
         MongoCollection collection = getCollection();
         java.util.List<Bson> aggregations  = new ArrayList<>();
         aggregations.add(Aggregates.match(Filters.eq("guid", guid)));
@@ -35,7 +35,7 @@
         }
 
         Document document = (Document) o;
-        ${ firstUpperCase.call(actObj.name) } newObj = createFromDocument(document);
+        ${ upperCamelCase.call(actObj.name) } newObj = createFromDocument(document);
         return newObj;
     }
 
@@ -44,7 +44,7 @@
      * @return
      * @throws SerializationException
      */
-    public static java.util.List<${ firstUpperCase.call(actObj.name) }> list () throws SerializationException {
+    public static java.util.List<${ upperCamelCase.call(actObj.name) }> list () throws SerializationException {
         return list (-1,-1);
     }
 
@@ -55,7 +55,7 @@
      * @return
      * @throws SerializationException
      */
-    public static java.util.List<${ firstUpperCase.call(actObj.name) }> list (int skip, int limit) throws SerializationException {
+    public static java.util.List<${ upperCamelCase.call(actObj.name) }> list (int skip, int limit) throws SerializationException {
         MongoCollection collection = getCollection();
         java.util.List<Bson> aggregations  = new ArrayList<>();
         if (skip>0) {
@@ -67,10 +67,10 @@
         AggregateIterable iterable = collection.aggregate(
                 aggregations
         );
-        ArrayList<${ firstUpperCase.call(actObj.name) }> list = new ArrayList<>();
+        ArrayList<${ upperCamelCase.call(actObj.name) }> list = new ArrayList<>();
         MongoCursor<Document> iterator = iterable.iterator();
         while (iterator.hasNext()) {
-            ${ firstUpperCase.call(actObj.name) } newObj = createFromDocument(iterator.next());
+            ${ upperCamelCase.call(actObj.name) } newObj = createFromDocument(iterator.next());
             if (newObj!=null) {
                 list.add(newObj);
             }

@@ -1,7 +1,7 @@
 //// prints the CRUD operations for mongo beans that should be joinded with other collections
 
-    public static ${ firstUpperCase.call(actObj.name) } createFromDocument(Document document) {
-        ${ firstUpperCase.call(actObj.name) } newObj = new ${ firstUpperCase.call(actObj.name) }();
+    public static ${ upperCamelCase.call(actObj.name) } createFromDocument(Document document) {
+        ${ upperCamelCase.call(actObj.name) } newObj = new ${ upperCamelCase.call(actObj.name) }();
         // not joined attribs - start
         // handle base types
         <% actObj.properties.findAll { prop -> return ! prop.hasTag('join') }.findAll {prop -> return ! prop.isRefTypeOrComplexType() }.each { prop -> %>
@@ -30,20 +30,20 @@
 
     <% actObj.properties.findAll { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
 
-    private ${ firstUpperCase.call(prop.implicitRef.type.name) } ${ lowerCamelCase.call(prop.implicitRef.type.name) };
-    public ${ firstUpperCase.call(prop.implicitRef.type.name) } get${ firstUpperCase.call(prop.implicitRef.type.name) }() { return ${ lowerCamelCase.call(prop.implicitRef.type.name) }; }
+    private ${ upperCamelCase.call(prop.implicitRef.type.name) } ${ lowerCamelCase.call(prop.implicitRef.type.name) };
+    public ${ upperCamelCase.call(prop.implicitRef.type.name) } get${ firstUpperCase.call(prop.implicitRef.type.name) }() { return ${ lowerCamelCase.call(prop.implicitRef.type.name) }; }
 
 
     private ObjectId ${ lowerCamelCase.call(prop.implicitRef.type.name) }JoinId;
     <% } %>
 
     // byId
-    public static ${ firstUpperCase.call(actObj.name) } byId (String guid) throws SerializationException {
+    public static ${ upperCamelCase.call(actObj.name) } byId (String guid) throws SerializationException {
         MongoCollection collection = getCollection();
         java.util.List<Bson> aggregations  = new ArrayList<>();
         <% actObj.properties.find { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
         aggregations.add(Aggregates.match(Filters.eq(${ toUpperCase.call(prop.name) }, guid)));
-        aggregations.add(Aggregates.lookup(${ firstUpperCase.call(prop.implicitRef.type.name) }.COLLECTION_NAME,${ toUpperCase.call(prop.implicitRef.type.name) }_JOINID,"_id","${ lowerCamelCase.call(prop.implicitRef.type.name) }"));
+        aggregations.add(Aggregates.lookup(${ upperCamelCase.call(prop.implicitRef.type.name) }.COLLECTION_NAME,${ toUpperCase.call(prop.implicitRef.type.name) }_JOINID,"_id","${ lowerCamelCase.call(prop.implicitRef.type.name) }"));
         aggregations.add(Aggregates.unwind("$DOLLAR${ firstLowerCase.call(prop.implicitRef.type.name) }"));
         <% } %>
         AggregateIterable iterable = collection.aggregate(
@@ -57,7 +57,7 @@
         }
 
         Document document = (Document) o;
-        ${ firstUpperCase.call(actObj.name) } newObj = createFromDocument(document);
+        ${ upperCamelCase.call(actObj.name) } newObj = createFromDocument(document);
         newObj.objectId = (ObjectId) document.get("_id");
         return newObj;
     }
@@ -67,7 +67,7 @@
      * @return
      * @throws SerializationException
      */
-    public static java.util.List<${ firstUpperCase.call(actObj.name) }> list () throws SerializationException {
+    public static java.util.List<${ upperCamelCase.call(actObj.name) }> list () throws SerializationException {
         return list(-1,-1);
     }
 
@@ -78,12 +78,12 @@
      * @return
      * @throws SerializationException
      */
-    public static java.util.List<${ firstUpperCase.call(actObj.name) }> list (int skip, int limit) throws SerializationException {
+    public static java.util.List<${ upperCamelCase.call(actObj.name) }> list (int skip, int limit) throws SerializationException {
         MongoCollection collection = getCollection();
         java.util.List<Bson> aggregations  = new ArrayList<>();
 
         <% actObj.properties.find { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
-        aggregations.add(Aggregates.lookup(${ firstUpperCase.call(prop.implicitRef.type.name) }.COLLECTION_NAME,${ toUpperCase.call(prop.implicitRef.type.name) }_JOINID,"_id","${ lowerCamelCase.call(prop.implicitRef.type.name) }"));
+        aggregations.add(Aggregates.lookup(${ upperCamelCase.call(prop.implicitRef.type.name) }.COLLECTION_NAME,${ toUpperCase.call(prop.implicitRef.type.name) }_JOINID,"_id","${ lowerCamelCase.call(prop.implicitRef.type.name) }"));
         aggregations.add(Aggregates.unwind("$DOLLAR${ firstLowerCase.call(prop.implicitRef.type.name) }"));
         <% } %>
 
@@ -101,10 +101,10 @@
         AggregateIterable iterable = collection.aggregate(
                 aggregations
         );
-        ArrayList<${ firstUpperCase.call(actObj.name) }> list = new ArrayList<>();
+        ArrayList<${ upperCamelCase.call(actObj.name) }> list = new ArrayList<>();
         MongoCursor<Document> iterator = iterable.iterator();
         while (iterator.hasNext()) {
-            ${ firstUpperCase.call(actObj.name) } newObj = createFromDocument(iterator.next());
+            ${ upperCamelCase.call(actObj.name) } newObj = createFromDocument(iterator.next());
             if (newObj!=null) {
                 list.add(newObj);
             }
@@ -129,7 +129,7 @@
         }
         if (guid!=null) {
             try {
-                ${ firstUpperCase.call(prop.implicitRef.type.name) } x = ${ firstUpperCase.call(prop.implicitRef.type.name) }.byId(guid);
+                ${ upperCamelCase.call(prop.implicitRef.type.name) } x = ${ upperCamelCase.call(prop.implicitRef.type.name) }.byId(guid);
                 ${ lowerCamelCase.call(prop.implicitRef.type.name) }JoinId = ${ lowerCamelCase.call(prop.implicitRef.type.name) }.getObjectId();
                 ${ prop.name } = ${ lowerCamelCase.call(prop.implicitRef.type.name) }.getGuid();
             }
