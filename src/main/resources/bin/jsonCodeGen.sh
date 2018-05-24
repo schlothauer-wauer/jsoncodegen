@@ -50,9 +50,9 @@ else
 fi
 
 if [ -z "$ADDITIONAL_TEMPLATE_DIR" ]; then
-    $JAVACMD -cp "$JSONCODEGEN_LIB_DIR/*" "-Dlogback.configurationFile=$scriptPos/conf/logback.xml" de.lisaplus.atlas.DoCodeGen $args
+    "$JAVACMD" -cp "$JSONCODEGEN_LIB_DIR/*" "-Dlogback.configurationFile=$scriptPos/conf/logback.xml" de.lisaplus.atlas.DoCodeGen $args
 else
     # an additional direcotry with custom templates is give - needed for sub templates
-    $JAVACMD -cp "$JSONCODEGEN_LIB_DIR/*$pathSep$ADDITIONAL_TEMPLATE_DIR" "-Dlogback.configurationFile=$scriptPos/conf/logback.xml" de.lisaplus.atlas.DoCodeGen $args
+    "$JAVACMD" -cp "$JSONCODEGEN_LIB_DIR/*$pathSep$ADDITIONAL_TEMPLATE_DIR" "-Dlogback.configurationFile=$scriptPos/conf/logback.xml" de.lisaplus.atlas.DoCodeGen $args
 fi
 
