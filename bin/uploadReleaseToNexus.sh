@@ -13,7 +13,7 @@ if [ -z "$NEXUS_RAW_ARCHIVE" ]; then
 fi
 
 version=""
-read -r -s -p "desired release version: " version
+read -r -p "desired release version: " version
 
 if [ -z "$version" ]; then
     echo "need a version number, but nothing was given - cancel"

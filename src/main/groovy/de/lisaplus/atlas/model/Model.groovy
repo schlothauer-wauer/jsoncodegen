@@ -114,6 +114,7 @@ class Type {
 
     void initFromType (Type t) {
         this.name = t.name
+        this.tags = t.tags
         this.properties = t.properties
         this.description = t.description
         this.requiredProps = t.requiredProps
