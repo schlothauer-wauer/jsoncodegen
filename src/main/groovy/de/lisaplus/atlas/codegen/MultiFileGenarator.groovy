@@ -35,6 +35,7 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
 
         def neededAttrib = extraParams['containsAttrib']
         def missingAttrib = extraParams['missingAttrib']
+        def neededTag = extraParams['neededTag']
         model.types*.each { type ->
             boolean handleNeeded = neededAttrib ? type.properties.find { prop ->
                 return prop.name==neededAttrib
@@ -43,7 +44,11 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
                 return prop.name==missingAttrib
             } == null : true
 
-            if (handleNeeded && handleMissing) {
+            boolean handleTag = neededTag ? type.tags.find { tag ->
+                return tag==neededTag
+            } != null : true
+
+            if (handleNeeded && handleMissing && handleTag) {
                 data.put('currentType', type)
                 def ergebnis = template.make(data)
                 def destFileName = getDestFileName(model, extraParams, type)

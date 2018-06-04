@@ -114,6 +114,7 @@ class Type {
 
     void initFromType (Type t) {
         this.name = t.name
+        this.tags = t.tags
         this.properties = t.properties
         this.description = t.description
         this.requiredProps = t.requiredProps
@@ -127,6 +128,18 @@ class Type {
 
     boolean isInnerType() {
         return this instanceof InnerType
+    }
+
+    boolean hasTag(String tag) {
+        return tags && tags.contains(tag)
+    }
+
+    boolean hasPropertyWithTag(String tag) {
+        if (!tags) return false
+        if (!properties) return false
+        return properties.find { prop ->
+            return prop.tags && prop.tags.contains(tag)
+        } != null
     }
 }
 
@@ -213,5 +226,9 @@ class Property {
 
     boolean isAggregation() {
         return aggregationType==AggregationType.aggregation
+    }
+
+    boolean hasTag(String tag) {
+      return tags && tags.contains(tag)
     }
 }

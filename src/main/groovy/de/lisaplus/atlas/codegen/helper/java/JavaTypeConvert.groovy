@@ -39,9 +39,9 @@ class JavaTypeConvert {
             case DateTimeType.NAME:
                 return type.isArray? 'java.util.List<Date>' : 'java.util.Date'
             case RefType.NAME:
-                return type.isArray? "java.util.List<${prefix}${type.type.name}>" : "${prefix}${type.type.name}"
+                return type.isArray? "java.util.List<${prefix}${firstUpperCamelCase(type.type.name)}>" : "${prefix}${firstUpperCamelCase(type.type.name)}"
             case ComplexType.NAME:
-                return type.isArray? "java.util.List<${prefix}${type.type.name}>" : "${prefix}${type.type.name}"
+                return type.isArray? "java.util.List<${prefix}${firstUpperCamelCase(type.type.name)}>" : "${prefix}${firstUpperCamelCase(type.type.name)}"
             case UnsupportedType.NAME:
                 return BaseType.UNSUPPORTED_TYPE+type
             case VoidType.NAME:
@@ -50,4 +50,45 @@ class JavaTypeConvert {
             return "${BaseType.UNKNOWN_TYPE}\n$type\n${type.name()}"
         }
     }
+
+    private static firstUpperCase (String str) {
+        if (!str) return ''
+        def first = str.substring(0,1)
+        first = first.toUpperCase()
+        if (str.length()>1) {
+            def rest = str.substring(1)
+            return first + rest
+        }
+        else {
+            return first
+        }
+    }
+    private static String firstUpperCamelCase(String str) {
+        if (!str) return ''
+        def firstUpper = firstUpperCase(str)
+        return convertAllUnderLinesToCamelCase(firstUpper)
+    }
+
+    private static String convertAllUnderLinesToCamelCase(String str) {
+        if (!str) return ''
+        def i_ = str.indexOf('_')
+        while (i_!=-1) {
+            def stopLen = str.length()-1
+            if (i_<stopLen) {
+                def nextChar = new String(str.charAt(i_+1))
+                if (nextChar=='_') {
+                    str = str.replace('__','_')
+                }
+                else {
+                    def nextCharUpper = nextChar.toUpperCase()
+                    str = str.replace('_'+nextChar,new String(nextCharUpper))
+                }
+            }
+            else
+                break
+            i_ = str.indexOf('_',i_)
+        }
+        return str
+    }
+
 }

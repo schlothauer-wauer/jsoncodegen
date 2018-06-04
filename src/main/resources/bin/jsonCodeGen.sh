@@ -26,6 +26,15 @@ if [ ! -x "$JAVACMD" ] ; then
   exit 1
 fi
 
+case $OSTYPE in
+  "cygwin"|"msys"|"win32")
+    pathSep=";"
+    ;;
+  *)
+    pathSep=":"
+    ;;
+esac
+
 args=
 for arg in "$@";
 do
@@ -40,4 +49,9 @@ else
     LOGDIR="$JSONCODEGEN_HOME/conf"
 fi
 
-$JAVACMD -cp "$JSONCODEGEN_LIB_DIR/*" "-Dlogback.configurationFile=$scriptPos/conf/logback.xml" de.lisaplus.atlas.DoCodeGen $args
+if [ -z "$ADDITIONAL_TEMPLATE_DIR" ]; then
+    "$JAVACMD" -cp "$JSONCODEGEN_LIB_DIR/*" "-Dlogback.configurationFile=$scriptPos/conf/logback.xml" de.lisaplus.atlas.DoCodeGen $args
+else
+    # an additional direcotry with custom templates is give - needed for sub templates
+    "$JAVACMD" -cp "$JSONCODEGEN_LIB_DIR/*$pathSep$ADDITIONAL_TEMPLATE_DIR" "-Dlogback.configurationFile=$scriptPos/conf/logback.xml" de.lisaplus.atlas.DoCodeGen $args
+fi

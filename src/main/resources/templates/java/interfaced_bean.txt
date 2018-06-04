@@ -10,7 +10,7 @@ import ${extraParam.interfacePackageName}.*;
  * ${currentType.description}
  */
 <% } %>
-public class ${ firstUpperCase.call(currentType.name) } implements I${ firstUpperCase.call(currentType.name) } {
+public class ${ upperCamelCase.call(currentType.name) } implements I${ firstUpperCase.call(currentType.name) } {
     <% currentType.properties.each { prop -> %>
     <% if (prop.description) { %>
     /**

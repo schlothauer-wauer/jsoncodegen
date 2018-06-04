@@ -23,7 +23,7 @@ class JsonSchemaBuilder {
     }
 
     @Test
-    void testExternalReferences_2() {
+    void testExt() {
         def modelFile = new File('src/test/resources/test_schemas/ds/user.json')
         assertTrue(modelFile.isFile())
         def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
@@ -190,4 +190,37 @@ class JsonSchemaBuilder {
         }
         assertEquals(2,propsWithTags)
     }
+
+    @Test
+    void testTags2() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/junction.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        assertNotNull(model)
+        def tagCount=0;
+        model.types.find{
+            if (it.name == 'Junction') {
+                return true
+            }
+            return false
+        }.each { type ->
+            tagCount = type.tags.size();
+        }
+        // junction has 3 tags
+        assertEquals(3,tagCount)
+        tagCount=0
+        model.types.find{
+            if (it.name == 'JunctionBase') {
+                return true
+            }
+            return false
+        }.each { type ->
+            tagCount = type.tags.size();
+        }
+        // junction has 3 tags
+        assertEquals(2,tagCount)
+
+    }
+
 }

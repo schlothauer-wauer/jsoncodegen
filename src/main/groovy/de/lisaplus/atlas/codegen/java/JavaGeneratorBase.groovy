@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
 abstract class JavaGeneratorBase extends MultiFileGenarator {
     @Override
     String getDestFileName(Model dataModel, Map<String, String> extraParameters, Type currentType=null) {
-        String fileNameBase = firstUpperCase(currentType.name)
+        String fileNameBase = firstUpperCamelCase(currentType.name)
         return "${fileNameBase}.java"
     }
 

@@ -1,0 +1,285 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Junction model",
+  "description": "Junction is a anchor point of interest of application level",
+  "definitions": {
+    "JunctionBase": {
+      "type": "object",
+      "description": "Junction is a anchor point of interest of application level, that's the minimal information about that",
+      "properties": {
+        "guid": {
+          "type": "string",
+          "format": "uuid",
+          "__tags": ["internal"]
+        },
+        "domainId": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/domain.json",
+          "__tags": ["internal"]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "__ref": "./shared/tag.json"
+          }
+        },
+        "name": {
+          "description": "main name of the junction",
+          "type": "string"
+        },
+        "number": {
+          "description": "main number of the junction",
+          "type": "string"
+        },
+        "gis": {
+          "description": "location of that junciton",
+          "type": "object",
+          "properties": {
+            "area": {
+              "description": "geografic area of this object",
+              "$ref": "./shared/geo_area.json"
+            },
+            "center": {
+              "description": "geografic area of this object",
+              "$ref": "./shared/geo_point.json"
+            }
+          }
+        }
+      },
+      "__tags": ["rest","mongodb"]
+    },
+    "Junction": {
+      "type": "object",
+      "description": "Junction is a anchor point of interest of application level",
+      "properties": {
+        "junctionId": {
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/JunctionBase",
+          "__tags": ["join"]
+        },
+        "numbers": {
+          "description": "all the number (technical names) of this object",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "__ref": "#/definitions/JunctionNumberType"
+              }
+            }
+          }
+        },
+        "state": {
+          "description": "what is the current state of that object",
+          "type": "string",
+          "__ref": "#/definitions/JunctionState"
+        },
+        "type": {
+          "description": "what type has this object",
+          "type": "string",
+          "__ref": "#/definitions/JunctionType"
+        },
+        "location": {
+          "description": "where is this object located",
+          "type": "object",
+          "properties": {
+            "country": {
+              "type": "string"
+            },
+            "county": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "district": {
+              "type": "string"
+            },
+            "streets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "name of the street",
+                    "type": "string"
+                  },
+                  "position": {
+                    "description": "on what position is the object, for instance km",
+                    "type": "number"
+                  },
+                  "classification": {
+                    "description": "for instance B86",
+                    "type": "string"
+                  },
+                  "main": {
+                    "description": "is that the main street reference",
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "comments": {
+          "type": "array",
+          "items": {
+            "$ref": "./shared/comment.json"
+          }
+        },
+        "startup_date": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "__tags": ["rest", "joined","mongodb"]
+    },
+
+    "JunctionShortTest": {
+      "type": "object",
+      "description": "Junction is a anchor point of interest of application level",
+      "properties": {
+        "junctionId": {
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/JunctionBase",
+          "__tags": [
+            "join"
+          ]
+        },
+        "numbers": {
+          "description": "all the number (technical names) of this object",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "__ref": "#/definitions/JunctionNumberType"
+              }
+            }
+          }
+        }
+      },
+      "__tags": ["rest", "joined","mongodb"]
+    },
+    "JunctionType": {
+      "type": "object",
+      "description": "types of junctions",
+      "properties": {
+        "name": {
+          "description": "Name of the type",
+          "type": "string"
+        },
+        "comment": {
+          "description": "the common field contain all unmodeled stuff",
+          "type": "string"
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean"
+        },
+        "locked": {
+          "description": "entry is needed and should not be deleted",
+          "type": "boolean"
+        },
+        "guid": {
+          "description": "global identifier",
+          "type": "string",
+          "format": "uuid"
+        },
+        "domainId": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/domain.json"
+        }
+      },
+      "__tags": ["rest","mongodb"]
+    },
+    "JunctionState": {
+      "type": "object",
+      "description": "state of junction",
+      "properties": {
+        "name": {
+          "description": "Name of the state",
+          "type": "string"
+        },
+        "comment": {
+          "description": "the common field contain all unmodeled stuff",
+          "type": "string"
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean"
+        },
+        "locked": {
+          "description": "entry is needed and should not be deleted",
+          "type": "boolean"
+        },
+        "guid": {
+          "description": "global identifier",
+          "type": "string",
+          "format": "uuid",
+          "__tags": ["internal"]
+        },
+        "domainId": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/domain.json",
+          "__tags": ["internal"]
+        }
+      },
+      "__tags": ["rest","mongodb"]
+    },
+    "JunctionNumberType": {
+      "type": "object",
+      "description": "Technical identifier for that junction",
+      "properties": {
+        "name": {
+          "description": "Name of the state",
+          "type": "string"
+        },
+        "comment": {
+          "description": "the common field contain all unmodeled stuff",
+          "type": "string"
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean"
+        },
+        "locked": {
+          "description": "entry is needed and should not be deleted",
+          "type": "boolean"
+        },
+        "guid": {
+          "description": "global identifier",
+          "type": "string",
+          "format": "uuid"
+        },
+        "domainId": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/domain.json",
+          "__tags": ["internal"]
+        }
+      }
+    }
+  },
+  "type": "object",
+  "version": 1
+}
