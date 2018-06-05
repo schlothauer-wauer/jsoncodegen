@@ -84,6 +84,19 @@ class PlantUml {
         assertTrue(new File(destFile).exists())
     }
 
+    @Test
+    void testHeavyReferencedWithoutBaseTypes() {
+        def destFile = 'tmp/heavy_referenced2.puml'
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/referenced_multi_types.json'
+        doCodeGen.generators.add('plantuml')
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.generator_parameters.add('destFileName=heavy_referenced2.puml')
+        doCodeGen.generator_parameters.add('ignoreBaseTypes=true')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
 
     @Test
     void createUserModel_Markdown() {

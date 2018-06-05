@@ -77,7 +77,8 @@ class JsonSchemaBuilder implements IModelBuilder {
             log.error(errorMsg)
             throw new Exception(errorMsg)
         }
-
+        // test all existing models if they are used only as base types
+        model.markOnlyBaseTypes()
         return model
     }
 

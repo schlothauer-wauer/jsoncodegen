@@ -58,6 +58,37 @@ class Model {
         // TODO
     }
 
+    void markOnlyBaseTypes() {
+        def baseTypeNames = []
+        // collect baseType names
+        types.findAll { type -> return type.baseTypes }.each { type ->
+            type.baseTypes.each { baseTypeName ->
+                if (!baseTypeNames.contains(baseTypeName)) {
+                    baseTypeNames.add(baseTypeName)
+                }
+            }
+        }
+        // collect all baseType-names that are also property types
+        def foundBaseTypeNames=[]
+        types.findAll { type -> return ! baseTypeNames.contains(type.name) }.each { type ->
+            // all types their name is no base type name
+            type.properties.findAll { prop -> return prop.isRefType() }.each { prop ->
+                if (baseTypeNames.contains(prop.type.type.name)) {
+                    foundBaseTypeNames.add(prop.type.type.name)
+                }
+            }
+        }
+
+        // mark all types that are not additional property types
+        types.findAll { type -> return baseTypeNames.contains(type.name) }.each { type ->
+            if (!foundBaseTypeNames.contains(type.name)) {
+//                type.onlyBaseType = true
+                types.remove(type)
+            }
+        }
+    }
+
+
 }
 
 class Type {
@@ -101,6 +132,11 @@ class Type {
      * types that reference this type
      */
     List<Type> refOwner=[]
+
+    /**
+     * true if the current type is only used as base type
+     */
+    boolean onlyBaseType=false
 
     /**
      * array of free definable strings to add keywords to types and attributes.
