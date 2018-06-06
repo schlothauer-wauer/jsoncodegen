@@ -124,6 +124,10 @@ class JsonSchemaBuilder implements IModelBuilder {
         else {
             newType.properties = getProperties(model,objectModel,typeName,currentSchemaPath)
         }
+        if (objectModel.'__tags') {
+            newType.tags=objectModel.'__tags'
+        }
+
         // TODO initialize extra stuff
         addNewType(newType,model)
         addExternalTypesToModel(model)

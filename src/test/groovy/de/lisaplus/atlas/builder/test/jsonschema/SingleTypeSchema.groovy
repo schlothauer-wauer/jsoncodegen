@@ -34,5 +34,29 @@ class SingleTypeSchema {
                 type: new StringType(isArray: true),
         ),model,typeName)
 
+        // test that the type has no tags
+        def singleType = null
+        model.types.find { type -> return type.name==typeName}.each { type ->
+            singleType = type;
+        }
+
+        assertEquals(0, singleType.tags.size())
     }
+
+    @Test
+    void test_tags() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/shared/icon.json')
+        assertTrue(modelFile.isFile())
+        def builder = new JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        def typeName = 'Icon'
+        // test that the type has no tags
+        def singleType = null
+        model.types.find { type -> return type.name==typeName}.each { type ->
+            singleType = type;
+        }
+
+        assertEquals(3, singleType.tags.size())
+    }
+
 }
