@@ -12,6 +12,15 @@ def printStereoType = { type ->
      else
         return ''
     }
+
+def printPropTags = { prop ->
+    if (extraParam.printTags && prop.tags) {
+        return "<color:#888888 ><&tag> <size:10><i>${prop.tags}</i>"
+    }
+    else
+        return ''
+    }
+
 %>
 <% if (extraParam.markdown) { %>
 ```plantuml
@@ -46,9 +55,13 @@ skinparam classAttribute {
 
 <% model.types.each  { type -> %>
 class ${firstUpperCase.call(type.name)} ${ printStereoType(type) } << ( ,${type.color}) >> {
-    <% type.properties.each  { prop ->
+    <% def i=0; type.properties.each  { prop ->
         def arrayStr = prop.type.isArray ? '[]' : ''
-    %>
+        i++
+    if (i>1) { %>
+    ..
+    <% } %>
+    ${printPropTags.call(prop)}
         <% if (prop.isRefTypeOrComplexType()) { %>
     -<color:${prop.type.type.color} ><b>${prop.name}: ${typeToMeta.call(prop.type)}${arrayStr}</b></color>
         <% } else { %>
@@ -56,9 +69,13 @@ class ${firstUpperCase.call(type.name)} ${ printStereoType(type) } << ( ,${typ
         <% } %>
     <% } %>
 }
-    <% if (type.description) { %>
+    <% if (type.description || type.tags) { %>
 note top of ${firstUpperCase.call(type.name)}
 ${breakTxt.call(type.description,10)}
+        <% if (extraParam.printTags && type.tags) { %>
+..
+<&tag> //${type.tags}//
+        <% } %>
 end note
     <% } %>
 <% } %>

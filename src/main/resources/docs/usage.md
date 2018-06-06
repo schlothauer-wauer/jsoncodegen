@@ -93,6 +93,9 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
   - destFileName - name of the generated file
   - removeEmptyLines - if set, then empty lines will be removed before file is written
 
+### PlantUML
+  - printTags - if set to true then plantuml prints also tags to the diagrams
+  
 ### Base generators
 * multifiles - creates multiple files from model and extra given template
   - includeExtTypes - also use external type to generate files
