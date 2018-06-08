@@ -177,6 +177,13 @@ class Type {
             return prop.tags && prop.tags.contains(tag)
         } != null
     }
+
+    boolean hasPropertyWithName(String name) {
+        if (!properties) return false
+        return properties.find { prop ->
+            return name == prop.name
+        } != null
+    }
 }
 
 /**
