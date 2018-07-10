@@ -35,9 +35,9 @@ class JavaTypeConvert {
             case BooleanType.NAME:
                 return type.isArray? 'java.util.List<Boolean>' : 'Boolean'
             case DateType.NAME:
-                return type.isArray? 'java.util.List<Date>' : 'java.util.Date'
+                return type.isArray? 'java.util.List<java.time.LocalDate>' : 'java.time.LocalDate'
             case DateTimeType.NAME:
-                return type.isArray? 'java.util.List<Date>' : 'java.util.Date'
+                return type.isArray? 'java.util.List<java.time.ZonedDateTime>' : 'java.time.ZonedDateTime'
             case RefType.NAME:
                 return type.isArray? "java.util.List<${prefix}${firstUpperCamelCase(type.type.name)}>" : "${prefix}${firstUpperCamelCase(type.type.name)}"
             case ComplexType.NAME:

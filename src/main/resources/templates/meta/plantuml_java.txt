@@ -14,7 +14,7 @@ def printStereoType = { type ->
     }
 
 def printPropTags = { prop ->
-    if (extraParam.printTags && prop.tags) {
+    if (extraParam.printTags==true && prop.tags) {
         return "<color:#888888 ><&tag> <size:10><i>${prop.tags}</i>"
     }
     else
@@ -67,10 +67,10 @@ class ${firstUpperCase.call(type.name)} ${ printStereoType(type) } << ( ,${typ
         <% } %>
     <% } %>
 }
-    <% if (type.description || type.tags) { %>
+    <% if (type.description || (extraParam.printTags==true && type.tags)) { %>
 note top of ${firstUpperCase.call(type.name)}
 ${breakTxt.call(type.description,10)}
-        <% if (extraParam.printTags && type.tags) { %>
+        <% if (extraParam.printTags==true && type.tags) { %>
 ..
 <&tag> //${type.tags}//
         <% } %>
