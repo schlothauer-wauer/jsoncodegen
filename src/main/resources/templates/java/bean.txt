@@ -1,4 +1,6 @@
-package ${extraParam.packageName};
+<%
+def memberVisibility = extraParam.memberVisibility && extraParam.memberVisibility.toLowerCase()=='protected' ? 'protected' : 'private'
+%>package ${extraParam.packageName};
 
 <% if ( currentType.description ) { %>
 /**
@@ -12,7 +14,7 @@ public class ${ upperCamelCase.call(currentType.name) } {
      * ${prop.description}
      */
     <% } %>
-    private ${ typeToJava.call(prop.type) } ${prop.name};
+    ${memberVisibility} ${ typeToJava.call(prop.type) } ${prop.name};
 
     public ${ typeToJava.call(prop.type) } get${ firstUpperCase.call(prop.name) } () { return this.${prop.name}; }
 
