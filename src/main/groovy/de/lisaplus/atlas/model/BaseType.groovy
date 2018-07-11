@@ -19,13 +19,6 @@ class VoidType extends BaseType {
     final static NAME='VOID'
 }
 
-abstract class MinMaxType extends BaseType {
-    def max
-    def exclusiveMax
-    def min
-    def exclusiveMin
-}
-
 /**
  * this type is choosen in too complex schemas
  * for instance: use of patternPoperties
@@ -35,20 +28,6 @@ class UnsupportedType extends BaseType {
         return NAME
     }
     final static NAME='UNSUPPORTED'
-}
-
-class IntType extends MinMaxType {
-    String name () {
-        return NAME
-    }
-    final static NAME='INT'
-}
-
-class NumberType extends MinMaxType {
-    String name () {
-        return NAME
-    }
-    final static NAME='NUMBER'
 }
 
 class StringType extends BaseType {
@@ -69,41 +48,9 @@ class UUIDType extends BaseType {
     final static NAME='UUID'
 }
 
-class RefType extends BaseType {
-    def typeName
-    Type type
-
-    String name () {
-        return NAME
-    }
-    final static NAME='REF'
-}
-
 class BooleanType extends BaseType {
     String name () {
         return NAME
     }
     final static NAME='BOOLEAN'
-}
-
-class DateType extends MinMaxType {
-    String name () {
-        return NAME
-    }
-    final static NAME='DATE'
-}
-
-class DateTimeType extends MinMaxType {
-    String name () {
-        return NAME
-    }
-    final static NAME='DATETIME'
-}
-
-class ComplexType extends BaseType {
-    Type type
-    String name () {
-        return NAME
-    }
-    final static NAME='COMPLEX'
 }
