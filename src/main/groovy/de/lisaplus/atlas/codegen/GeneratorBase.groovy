@@ -18,13 +18,6 @@ import groovy.text.markup.MarkupTemplateEngine
 import org.codehaus.groovy.runtime.StringBufferWriter
 import org.slf4j.Logger
 
-/**
- * it ignores the XML template engine because there is no XML input
- */
-enum TemplateType {
-    GString,
-    Markup
-}
 
 /**
  * Created by eiko on 05.06.17.

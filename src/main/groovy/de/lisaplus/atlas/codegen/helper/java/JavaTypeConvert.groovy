@@ -1,24 +1,44 @@
 package de.lisaplus.atlas.codegen.helper.java
 
 import de.lisaplus.atlas.codegen.GeneratorBase
-import de.lisaplus.atlas.model.BaseType
-import de.lisaplus.atlas.model.BooleanType
-import de.lisaplus.atlas.model.ComplexType
-import de.lisaplus.atlas.model.DateTimeType
-import de.lisaplus.atlas.model.DateType
-import de.lisaplus.atlas.model.IntType
-import de.lisaplus.atlas.model.NumberType
-import de.lisaplus.atlas.model.RefType
-import de.lisaplus.atlas.model.StringType
-import de.lisaplus.atlas.model.UUIDType
-import de.lisaplus.atlas.model.VoidType
-import de.lisaplus.atlas.model.UnsupportedType
+import de.lisaplus.atlas.model.*
 
 /**
  * Converts meta model types to Java types
  * Created by eiko on 11.06.17.
  */
 class JavaTypeConvert {
+
+    enum DateTypePreset {
+        /** No JSR-310 Date and Time classes, just plain old java.util.Date  */
+        LEGACY('java.util.Date', 'java.util.Date'),
+        /** Format natural to java-mongo-driver 3.7.1 or later */
+        JSR_310_LOCAL('java.time.LocalDate', 'java.time.LocalDateTime'),
+        /** Format that preserves the time offset, natural to Jackson */
+        JSR_310_OFFSET('java.time.LocalDate', 'java.time.OffsetDateTime'),
+        /** Format that preserved the time zone and preferres ZoneId */
+        JSR_310_ZONED('java.time.LocalDate', 'java.time.ZonedDateTime');
+        
+        final String dateClass
+        final String dateTimeClass;
+        
+        private DateTypePreset(dateClass, dateTimeClass) {
+            this.dateClass = dateClass
+            this.dateTimeClass = dateTimeClass
+        }
+    }
+
+    static DateTypePreset preset = DateTypePreset.LEGACY;
+
+    static {
+        switch (System.getProperty('date.type.preset', 'legacy').toLowerCase()) {
+            case 'legacy': preset = DateTypePreset.LEGACY; break
+            case '310.local': preset = DateTypePreset.JSR_310_LOCAL; break
+            case '310.offset': preset = DateTypePreset.JSR_310_OFFSET; break
+            case '310.zoned': preset = DateTypePreset.JSR_310_ZONED; break
+        }
+    }
+
     static def convert = { type,prefix = '' ->
         if (! type instanceof BaseType) {
             return BaseType.WRONG_TYPE+type
@@ -35,9 +55,9 @@ class JavaTypeConvert {
             case BooleanType.NAME:
                 return type.isArray? 'java.util.List<Boolean>' : 'Boolean'
             case DateType.NAME:
-                return type.isArray? 'java.util.List<java.time.LocalDate>' : 'java.time.LocalDate'
+                return type.isArray? "java.util.List<${preset.dateClass}>" : "${preset.dateClass}"
             case DateTimeType.NAME:
-                return type.isArray? 'java.util.List<java.time.ZonedDateTime>' : 'java.time.ZonedDateTime'
+                return type.isArray? "java.util.List<${preset.dateTimeClass}>" : "${preset.dateTimeClass}"
             case RefType.NAME:
                 return type.isArray? "java.util.List<${prefix}${firstUpperCamelCase(type.type.name)}>" : "${prefix}${firstUpperCamelCase(type.type.name)}"
             case ComplexType.NAME:
@@ -63,6 +83,7 @@ class JavaTypeConvert {
             return first
         }
     }
+
     private static String firstUpperCamelCase(String str) {
         if (!str) return ''
         def firstUpper = firstUpperCase(str)
