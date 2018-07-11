@@ -1,18 +1,7 @@
 package de.lisaplus.atlas.codegen.helper.java
 
 import de.lisaplus.atlas.codegen.GeneratorBase
-import de.lisaplus.atlas.model.BaseType
-import de.lisaplus.atlas.model.BooleanType
-import de.lisaplus.atlas.model.ComplexType
-import de.lisaplus.atlas.model.DateTimeType
-import de.lisaplus.atlas.model.DateType
-import de.lisaplus.atlas.model.IntType
-import de.lisaplus.atlas.model.NumberType
-import de.lisaplus.atlas.model.RefType
-import de.lisaplus.atlas.model.StringType
-import de.lisaplus.atlas.model.UUIDType
-import de.lisaplus.atlas.model.VoidType
-import de.lisaplus.atlas.model.UnsupportedType
+import de.lisaplus.atlas.model.*
 
 /**
  * Converts meta model types to Java types
