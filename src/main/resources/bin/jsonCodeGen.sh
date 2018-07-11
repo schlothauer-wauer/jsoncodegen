@@ -49,6 +49,10 @@ else
     LOGDIR="$JSONCODEGEN_HOME/conf"
 fi
 
+# preset for defining Java classes for DateType and DateTimeType, see JavaTypeConvert.groovy
+# Possible values are legacy,310.local,310.offset and 310.zoned
+preset=310.local
+
 if [ -z "$ADDITIONAL_TEMPLATE_DIR" ]; then
     "$JAVACMD" -cp "$JSONCODEGEN_LIB_DIR/*" "-Dlogback.configurationFile=$scriptPos/conf/logback.xml" de.lisaplus.atlas.DoCodeGen $args
 else
