@@ -8,7 +8,7 @@ class Property {
     def format
 
     /**
-     * For entries that points to a global uuid, this flag enable the explizit relation to connected type
+     * For entries that points to a global uuid, this flag enable the explicit relation to connected type
      */
     BaseType implicitRef
     /**

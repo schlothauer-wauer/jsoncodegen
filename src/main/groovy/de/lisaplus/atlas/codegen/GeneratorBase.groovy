@@ -165,8 +165,120 @@ abstract class GeneratorBase {
                 missingTag: missingTag,
                 containsPropName: containsPropName,
                 missingPropName: missingPropName,
-                propsContainsTag: propsContainsTag
+                propsContainsTag: propsContainsTag,
+                filterProps: filterProps,
+                filterProps2: filterProps2,
+                filterPropsPerform: filterPropsPerform,
+                filterPropsPerform2: filterPropsPerform2,
+                printLines: printLines,
+                printLines2: printLines2,
+                printLines3: printLines3,
+                printLines4: printLines4
         ]
+    }
+
+    Closure<List<Property>> filterProps = { Type type, Map params ->
+    // def filterProps = { type, params ->
+        List props = type.properties
+        if (params.filterCls!= null) props = props.findAll { params.get('filterCls') }
+        if (params.name != null) props = props.findAll { prop -> prop.name == params.name }
+        if (params.namePattern != null) props = props.findAll { prop -> prop.name =~ params.namePattern }
+        if (params.complex != null) props = props.findAll { prop -> prop.isComplexType() == params.complex }
+        if (params.refComplex != null) props = props.findAll { prop ->
+            // println "refComplex: param=${params.refComplex} propName=${prop.name} propValue=${prop.isRefTypeOrComplexType()}"
+            prop.isRefTypeOrComplexType() == params.refComplex }
+        if (params.array != null) props = props.findAll { prop -> prop.type.isArray == params.array }
+        if (params.join != null) props = props.findAll { prop ->
+            // println "join: param=${params.join} propName=${prop.name} propValue=${prop.hasTag('join')}"
+            prop.hasTag('join') == params.join }
+        if (params.aggregation != null) props = props.findAll { prop -> prop.isAggregation() == params.aggregation }
+        if (params.implRefIsRef != null) props = props.findAll { prop -> prop.implicitRefIsRefType() == params.implRefIsRef }
+        if (params.implRefIsComp != null) props = props.findAll { prop -> prop.implicitRefIsComplexType() == params.implRefIsComp }
+        if (params.typeName!= null) props = props.findAll { prop -> prop.type.NAME == params.typeName }
+        if (params.typeNameNot!= null) props = props.findAll { prop -> prop.type.NAME != params.typeNameNot }
+        if (params.typeNamePattern!= null) props = props.findAll { prop -> prop.type.NAME =~ params.typeNamePattern }
+        return props
+    }
+
+    Closure<List<Property>> filterProps2 = {Map params, Type type ->
+    // def filterProps = {params, type ->
+        List props = type.properties
+        if (params.filterCls!= null) props = props.findAll { params.get('filterCls') }
+        if (params.name != null) props = props.findAll { prop -> prop.name == params.name }
+        if (params.namePattern != null) props = props.findAll { prop -> prop.name =~ params.namePattern }
+        if (params.complex != null) props = props.findAll { prop -> prop.isComplexType() == params.complex }
+        if (params.refComplex != null) props = props.findAll { prop ->
+            // println "refComplex: param=${params.refComplex} propName=${prop.name} propValue=${prop.isRefTypeOrComplexType()}"
+            prop.isRefTypeOrComplexType() == params.refComplex }
+        if (params.array != null) props = props.findAll { prop -> prop.type.isArray == params.array }
+        if (params.join != null) props = props.findAll { prop ->
+            // println "join: param=${params.join} propName=${prop.name} propValue=${prop.hasTag('join')}"
+            prop.hasTag('join') == params.join }
+        if (params.aggregation != null) props = props.findAll { prop -> prop.isAggregation() == params.aggregation }
+        if (params.implRefIsRef != null) props = props.findAll { prop -> prop.implicitRefIsRefType() == params.implRefIsRef }
+        if (params.implRefIsComp != null) props = props.findAll { prop -> prop.implicitRefIsComplexType() == params.implRefIsComp }
+        if (params.typeName!= null) props = props.findAll { prop -> prop.type.NAME == params.typeName }
+        if (params.typeNameNot!= null) props = props.findAll { prop -> prop.type.NAME != params.typeNameNot }
+        if (params.typeNamePattern!= null) props = props.findAll { prop -> prop.type.NAME =~ params.typeNamePattern }
+        return props
+    }
+
+    // Closure<List<String>> filterPropsPerform = {Map params, Type type, Closure<Property> cls ->
+    static def filterPropsPerform = { type, params, toLines ->
+        def props = filterProps.call(type, params)
+        def lines = []
+        // props.each { prop -> lines = lines + toLines.call(prop) }
+        props.each { prop -> lines += toLines.call(prop) }
+        return lines
+    }
+
+    // Closure<List<String>> filterPropsPerform2 = { Type type, Map params ->
+    def filterPropsPerform2 = { type, params ->
+        def props = filterProps.call(type, params)
+        def lines = []
+        if (!props.isEmpty() && params.comment != null) {
+            lines += params.comment
+        }
+        def closure= params.toLines
+        if ( closure != null ) {
+            // props.each { prop -> lines = lines + closure.call(prop) }
+            props.each { prop -> lines += closure.call(prop) }
+        }
+        return lines
+    }
+
+    // Closure printLines = { int indentLevel, List... lists ->
+    def printLines = { indentLevel, lists ->
+        def prefix = ''
+        indentLevel.times { prefix += '    ' }
+        lists.flatten().each { println prefix + it }
+    }
+
+    // Closure<Void> printLines2 = { Writer out, int indentLevel, List... lists ->
+    def printLines2 = { out, indentLevel, lists ->
+        def prefix = ''
+        indentLevel.times { prefix += '    '}
+        lists.flatten().each { out << "$prefix$it\n" }
+    }
+
+    // Closure<Void> printLines3 = { Map params,  Writer out, List... lists ->
+    // Vararg definition is mandatory, call example: printLines3.call( [level:2, by: '.-'], new StringWriter(), list, list2 )
+    def printLines3 = { params, out, List... lists ->
+        def level = params.level?:0
+        def by = params.by?:'    '
+        def prefix = ''
+        level.times { prefix += by}
+        lists.flatten().each { out << "$prefix$it\n" }
+    }
+
+    // Closure<Void> printLines4 = { Map params, List... lists ->
+    // Vararg definition is mandatory, call example: printLines4.call( [level:2, by: '.-', out: lout], list, list2 )
+    def printLines4 = { params, List... lists ->
+        def level = params.level?:0
+        def by = params.by?:'    '
+        def prefix = ''
+        level.times { prefix += by}
+        lists.flatten().each { params.out << "$prefix$it\n" }
     }
 
     def isInnerType = { type ->
@@ -295,7 +407,15 @@ abstract class GeneratorBase {
                 typeFormatToSwagger: SwaggerTypeConvert.format,
                 typeFormatToJson: JsonTypeConvert.format,
                 renderInnerTemplate: renderInnerTemplate,
-                breakTxt: breakTxt
+                breakTxt: breakTxt,
+                filterProps: filterProps,
+                filterProps2: filterProps2,
+                filterPropsPerform: filterPropsPerform,
+                filterPropsPerform2: filterPropsPerform2,
+                printLines: printLines,
+                printLines2: printLines2,
+                printLines3: printLines3,
+                printLines4: printLines4
         ]
 
         return innerTemplate.make(data)
@@ -372,5 +492,5 @@ abstract class GeneratorBase {
     abstract String getDestFileName(Model dataModel, Map<String,String> extraParameters,Type currentType=null)
     abstract String getDestDir(Model dataModel, String outputBasePath, Map<String,String> extraParameters,Type currentType=null)
 
-    abstract Logger getLogger();
+    abstract Logger getLogger()
 }
