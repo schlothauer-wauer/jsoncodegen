@@ -196,6 +196,7 @@ abstract class GeneratorBase {
         if (params.implRefIsComp != null) props = props.findAll { prop -> prop.implicitRefIsComplexType() == params.implRefIsComp }
         if (params.typeName!= null) props = props.findAll { prop -> prop.type.NAME == params.typeName }
         if (params.typeNameNot!= null) props = props.findAll { prop -> prop.type.NAME != params.typeNameNot }
+        // Alternative: use pattern, e.g. typeNamePattern:'^(?!DATE$)' to get all types with names other than 'DATE'
         if (params.typeNamePattern!= null) props = props.findAll { prop -> prop.type.NAME =~ params.typeNamePattern }
         return props
     }
@@ -219,6 +220,7 @@ abstract class GeneratorBase {
         if (params.implRefIsComp != null) props = props.findAll { prop -> prop.implicitRefIsComplexType() == params.implRefIsComp }
         if (params.typeName!= null) props = props.findAll { prop -> prop.type.NAME == params.typeName }
         if (params.typeNameNot!= null) props = props.findAll { prop -> prop.type.NAME != params.typeNameNot }
+        // Alternative: use pattern, e.g. typeNamePattern:'^(?!DATE$)' to get all types with names other than 'DATE'
         if (params.typeNamePattern!= null) props = props.findAll { prop -> prop.type.NAME =~ params.typeNamePattern }
         return props
     }
