@@ -5,3 +5,6 @@ tmp
 classes
 out
 *.swp
+pushLatest.bat
+src/main/groovy/de/lisaplus/atlas/DummyGenerator.groovy
+src/main/groovy/de/lisaplus/atlas/TestStarter.groovy
