@@ -2,6 +2,17 @@
 
 scriptPos=${0%/*}
 
+# retrieve the version from project file
+version=`cat "$scriptPos/../build.gradle" | grep project.version | grep = | sed -e "s-.* '--" -e "s-'--"`
+echo "version: $version"
+
+pushd "$scriptPos/.." > /dev/null
+if ! gradle publish; then
+    echo "error while publish jars to nexus"
+    popd > /dev/null
+fi
+popd > /dev/null
+
 if [ -z "$NEXUS_USER" ]; then
     echo "NEXUS_USER not defined"
     exit 1
@@ -9,14 +20,6 @@ fi
 
 if [ -z "$NEXUS_RAW_ARCHIVE" ]; then
     echo "NEXUS_RAW_ARCHIVE not defined"
-    exit 1
-fi
-
-version=""
-read -r -p "desired release version: " version
-
-if [ -z "$version" ]; then
-    echo "need a version number, but nothing was given - cancel"
     exit 1
 fi
 
@@ -42,8 +45,13 @@ fi
 
 tar -czf "$releaseFile" *
 
-curl -v --user "$NEXUS_USER" --upload-file "$releaseFile" \
+if ! curl -v --user "$NEXUS_USER" --upload-file "$releaseFile" \
     "$NEXUS_RAW_ARCHIVE/$releaseFile"
+then
+    echo "error while upload release to nexus raw repo"
+fi
+
+git tag "$version"
 
 popd > /dev/null
 
