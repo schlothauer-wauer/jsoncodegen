@@ -1,8 +1,6 @@
 apply plugin: 'groovy'
 apply plugin: 'java'
-/*
 apply plugin: 'maven'
-*/
 apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
@@ -10,8 +8,8 @@ sourceCompatibility = 1.8
 def mainClass='de.lisaplus.atlas.DoCodeGen'
 
 project.group = 'de.lisaplus.tools'
-project.version = '0.6.3'
-def releaseArchiveName = "jsonCodeGen_${project.version}.zip"
+project.version = '0.6.4'
+
 /*
  * the following attributes need to be declared in $HOME/.gradle/gradle.properties
     mavenReleaseRepo=http://localhost:8081/content/repositories/releases
@@ -20,11 +18,13 @@ def releaseArchiveName = "jsonCodeGen_${project.version}.zip"
     mavenUserPwd=admin123
     mavenBaseRepo=http://localhost:8081/content/groups/public
  **/
+
 publishing {
     publications {
-        libraryJar(MavenPublication) {
+        jars(MavenPublication) {
             from components.java
-            artifact zipRelease
+            artifact sourcesJar
+            artifact javadocJar
         }
     }
     repositories {
@@ -48,7 +48,6 @@ repositories {
 
 artifacts {
     archives jar
-    archives file: new File("$releaseArchiveName"), name: 'jsonCodeGen', type: 'zip'
 }
 
 dependencies {
@@ -63,6 +62,17 @@ dependencies {
 clean {
     delete "${buildDir}/release"
 }
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
 
 task dependenciesToLibDir(type: Copy) {
     into "$buildDir/release/lib"
