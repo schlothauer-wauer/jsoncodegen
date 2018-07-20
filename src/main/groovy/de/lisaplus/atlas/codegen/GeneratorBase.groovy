@@ -165,8 +165,61 @@ abstract class GeneratorBase {
                 missingTag: missingTag,
                 containsPropName: containsPropName,
                 missingPropName: missingPropName,
-                propsContainsTag: propsContainsTag
+                propsContainsTag: propsContainsTag,
+                filterProps: filterProps,
+                filterPropsPerform: filterPropsPerform,
+                printLines: printLines
         ]
+    }
+
+    Closure<List<Property>> filterProps = { Type type, Map params ->
+    // def filterProps = { type, params ->
+        List props = type.properties
+        if (params.filterCls!= null) props = props.findAll { params.get('filterCls') }
+        if (params.name != null) props = props.findAll { prop -> prop.name == params.name }
+        if (params.namePattern != null) props = props.findAll { prop -> prop.name =~ params.namePattern }
+        if (params.complex != null) props = props.findAll { prop -> prop.isComplexType() == params.complex }
+        if (params.refComplex != null) props = props.findAll { prop ->
+            // println "refComplex: param=${params.refComplex} propName=${prop.name} propValue=${prop.isRefTypeOrComplexType()}"
+            prop.isRefTypeOrComplexType() == params.refComplex }
+        if (params.array != null) props = props.findAll { prop -> prop.type.isArray == params.array }
+        if (params.join != null) props = props.findAll { prop ->
+            // println "join: param=${params.join} propName=${prop.name} propValue=${prop.hasTag('join')}"
+            prop.hasTag('join') == params.join }
+        if (params.aggregation != null) props = props.findAll { prop -> prop.isAggregation() == params.aggregation }
+        if (params.implRefIsRef != null) props = props.findAll { prop -> prop.implicitRefIsRefType() == params.implRefIsRef }
+        if (params.implRefIsComp != null) props = props.findAll { prop -> prop.implicitRefIsComplexType() == params.implRefIsComp }
+        if (params.typeName!= null) props = props.findAll { prop -> prop.type.NAME == params.typeName }
+        if (params.typeNameNot!= null) props = props.findAll { prop -> prop.type.NAME != params.typeNameNot }
+        // Alternative: use pattern, e.g. typeNamePattern:'^(?!DATE$)' to get all types with names other than 'DATE'
+        if (params.typeNamePattern!= null) props = props.findAll { prop -> prop.type.NAME =~ params.typeNamePattern }
+        return props
+    }
+
+    // Closure<List<String>> filterPropsPerform = {Type type,  Map params, Closure<Property> toLines ->
+    def filterPropsPerform = { type, params, toLines ->
+        def props = filterProps.call(type, params)
+        def lines = []
+        if (props.size() > 0 && params.comment != null) {
+            lines += params.comment
+        }
+        // props.each { prop -> lines = lines + toLines.call(prop) }
+        props.each { prop -> lines += toLines.call(prop) }
+        if (props.size() > 0 && true == params.newLine) {
+            lines += ''
+        }
+        return lines
+    }
+
+
+    // Closure<Void> printLines3 = { Writer out, Map params,  List... lists ->
+    // Vararg definition is mandatory, call example: printLines3.call( [level:2, by: '.-'], new StringWriter(), list, list2 )
+    def printLines = { out, params,List... lists ->
+        def level = params.level?:0
+        def by = params.by?:'    '
+        def prefix = ''
+        level.times { prefix += by}
+        lists.flatten().each { out << "$prefix$it\n" }
     }
 
     def isInnerType = { type ->
@@ -295,7 +348,10 @@ abstract class GeneratorBase {
                 typeFormatToSwagger: SwaggerTypeConvert.format,
                 typeFormatToJson: JsonTypeConvert.format,
                 renderInnerTemplate: renderInnerTemplate,
-                breakTxt: breakTxt
+                breakTxt: breakTxt,
+                filterProps: filterProps,
+                filterPropsPerform: filterPropsPerform,
+                printLines: printLines
         ]
 
         return innerTemplate.make(data)
@@ -372,5 +428,5 @@ abstract class GeneratorBase {
     abstract String getDestFileName(Model dataModel, Map<String,String> extraParameters,Type currentType=null)
     abstract String getDestDir(Model dataModel, String outputBasePath, Map<String,String> extraParameters,Type currentType=null)
 
-    abstract Logger getLogger();
+    abstract Logger getLogger()
 }
