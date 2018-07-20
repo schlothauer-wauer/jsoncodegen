@@ -1,4 +1,5 @@
 <%
+def printJoins = extraParam.printJoins
 def printStereoType = { type ->
     if ( type instanceof de.lisaplus.atlas.model.InnerType ) {
         return '<<InnerType>>'

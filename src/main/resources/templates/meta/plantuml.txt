@@ -1,4 +1,5 @@
 <%
+def printJoins = extraParam.printJoins
 def printStereoType = { type ->
     if ( type instanceof de.lisaplus.atlas.model.InnerType ) {
         return '<<InnerType>>'
@@ -94,7 +95,7 @@ ${firstUpperCase.call(type.name)} *-- <% if(prop.type.isArray) { %>"many"<% } %>
                 <% } %>
                 <% linkedTypes.add(testStr) %>
             <% } %>
-        <% } else if (prop.implicitRef && prop.hasTag('join')) { %>
+        <% } else if (printJoins && prop.implicitRef && prop.hasTag('join')) { %>
             ${firstUpperCase.call(type.name)} -- ${ firstUpperCase.call(prop.implicitRef.type.name) } ${ prop.implicitRef.type.color }: join
         <% } else if (prop.implicitRef) { %>
             ${firstUpperCase.call(type.name)} .. <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.implicitRef.type.name) } ${ prop.implicitRef.type.color }
