@@ -184,7 +184,8 @@ abstract class GeneratorBase {
             prop.isRefTypeOrComplexType() == params.refComplex }
         if (params.array != null) props = props.findAll { prop -> prop.type.isArray == params.array }
         if (params.join != null) props = props.findAll { prop ->
-            // println "join: param=${params.join} propName=${prop.name} propValue=${prop.hasTag('join')}"
+            // def evaled = prop.hasTag('join') == params.join
+            // println "join: param=${params.join} propName=${prop.name} propValue=${prop.hasTag('join')} evaled=${evaled}"
             prop.hasTag('join') == params.join }
         if (params.aggregation != null) props = props.findAll { prop -> prop.isAggregation() == params.aggregation }
         if (params.implRefIsRef != null) props = props.findAll { prop -> prop.implicitRefIsRefType() == params.implRefIsRef }
@@ -193,6 +194,7 @@ abstract class GeneratorBase {
         if (params.typeNameNot!= null) props = props.findAll { prop -> prop.type.NAME != params.typeNameNot }
         // Alternative: use pattern, e.g. typeNamePattern:'^(?!DATE$)' to get all types with names other than 'DATE'
         if (params.typeNamePattern!= null) props = props.findAll { prop -> prop.type.NAME =~ params.typeNamePattern }
+        if (params.hasTag != null) props = props.findAll { prop -> prop.hasTag(params.hasTag) }
         return props
     }
 
