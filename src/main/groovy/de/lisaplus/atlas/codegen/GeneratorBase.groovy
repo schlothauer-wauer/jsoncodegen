@@ -195,6 +195,7 @@ abstract class GeneratorBase {
         // Alternative: use pattern, e.g. typeNamePattern:'^(?!DATE$)' to get all types with names other than 'DATE'
         if (params.typeNamePattern!= null) props = props.findAll { prop -> prop.type.NAME =~ params.typeNamePattern }
         if (params.hasTag != null) props = props.findAll { prop -> prop.hasTag(params.hasTag) }
+        if (params.withoutTag != null) props = props.findAll { prop -> !prop.hasTag(params.withoutTag) }
         return props
     }
 
