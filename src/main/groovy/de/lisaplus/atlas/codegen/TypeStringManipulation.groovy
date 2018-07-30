@@ -1,4 +1,4 @@
-package de.lisaplus.atlas.codegen.meta;
+package de.lisaplus.atlas.codegen
 
 import de.lisaplus.atlas.codegen.helper.java.JavaTypeConvert
 import de.lisaplus.atlas.codegen.helper.java.JsonTypeConvert
@@ -26,6 +26,8 @@ class TypeStringManipulation {
             firstUpperCase: firstUpperCase,
             lowerCamelCase: firstLowerCamelCase,
             upperCamelCase: firstUpperCamelCase,
+            firstUpperCamelCase: firstUpperCamelCase,
+            firstLowerCamelCase: firstLowerCamelCase,
             isInnerType: isInnerType,
             isPropComplexType: isPropComplexType,
             typeToJava: JavaTypeConvert.convert,
@@ -118,7 +120,7 @@ class TypeStringManipulation {
             if ((aktPos + charPerLine) >= txtLen) {
                 // The rest of the word is smaller than the desired char count per line
                 sb.append(txtToBreak.substring(aktPos))
-                break;
+                break
             } else {
                 sb.append(txtToBreak.substring(aktPos, aktPos + charPerLine))
                 aktPos += charPerLine
