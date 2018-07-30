@@ -1,22 +1,19 @@
 package de.lisaplus.atlas.codegen
 
 import de.lisaplus.atlas.DoCodeGen
-import de.lisaplus.atlas.codegen.meta.TypeStringManipulation
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Type
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
 import groovy.text.TemplateEngine
-import groovy.text.XmlTemplateEngine
 import groovy.text.markup.MarkupTemplateEngine
-import org.codehaus.groovy.runtime.StringBufferWriter
 import org.slf4j.Logger
 
 
 /**
  * Created by eiko on 05.06.17.
  */
-abstract class GeneratorBase {
+abstract class GeneratorBase extends TypeStringManipulation {
     Template template
 
     static void createDir(String dirName) {
@@ -131,13 +128,15 @@ abstract class GeneratorBase {
     }
 
     /**
-     * methon create a map object and initialize it with some basic string manipulation stuff
+     * method create a map object and initialize it with some basic string manipulation stuff
      * needed for working with the types and their properties in the templates.
      * @return
      */
+    /*
     Map getClosures() {
         return new TypeStringManipulation().getClosures()
     }
+    */
 
     /**
      * methon create a map object and initialize it with some basic stuff
