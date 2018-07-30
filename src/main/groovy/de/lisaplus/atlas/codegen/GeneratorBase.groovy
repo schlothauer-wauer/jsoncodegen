@@ -4,6 +4,7 @@ import de.lisaplus.atlas.DoCodeGen
 import de.lisaplus.atlas.codegen.helper.java.JavaTypeConvert
 import de.lisaplus.atlas.codegen.helper.java.JsonTypeConvert
 import de.lisaplus.atlas.codegen.helper.java.SwaggerTypeConvert
+import de.lisaplus.atlas.codegen.meta.TypeStringManipulation
 import de.lisaplus.atlas.model.ComplexType
 import de.lisaplus.atlas.model.InnerType
 import de.lisaplus.atlas.model.Model
@@ -137,13 +138,14 @@ abstract class GeneratorBase {
     }
 
     /**
-     * methon create a map object and initialize it with some basic stuff
-     * @param model
+     * methon create a map object and initialize it with some basic string manipulation stuff
+     * needed for working with the types and their properties in the templates.
      * @return
      */
-    Map createTemplateDataMap(Model model) {
+    Map getClosures() {
+        return new TypeStringManipulation().getClosures()
+        /*
         return [
-                model:model,
                 DOLLAR:'$',
                 toLowerCase: toLowerCase,
                 toUpperCase: toUpperCase,
@@ -159,7 +161,6 @@ abstract class GeneratorBase {
                 typeToMeta: JsonTypeConvert.meta,
                 typeFormatToSwagger: SwaggerTypeConvert.format,
                 typeFormatToJson: JsonTypeConvert.format,
-                renderInnerTemplate: renderInnerTemplate,
                 breakTxt: breakTxt,
                 containsTag: containsTag,
                 missingTag: missingTag,
@@ -170,8 +171,22 @@ abstract class GeneratorBase {
                 filterPropsPerform: filterPropsPerform,
                 printLines: printLines
         ]
+        */
     }
 
+    /**
+     * methon create a map object and initialize it with some basic stuff
+     * @param model
+     * @return
+     */
+    Map createTemplateDataMap(Model model) {
+        Map map = getClosures()
+        map.model = model
+        map.renderInnerTemplate = renderInnerTemplate
+        return map
+    }
+
+    /*
     Closure<List<Property>> filterProps = { Type type, Map params ->
     // def filterProps = { type, params ->
         List props = type.properties
@@ -328,10 +343,14 @@ abstract class GeneratorBase {
     def toUpperCase = { str ->
         return str==null ? EMPTY : str.toUpperCase()
     }
-
+*/
     def renderInnerTemplate = { templateResource,actObj,indent ->
         def test = actObj.toString()
         def innerTemplate = createTemplateFromResource(templateResource,TemplateType.GString)
+        def data = getClosures()
+        data.actObj = actObj
+        data.renderInnerTemplate = renderInnerTemplate
+        /*
         def data = [
                 actObj: actObj,
                 indent: indent,
@@ -356,7 +375,7 @@ abstract class GeneratorBase {
                 filterPropsPerform: filterPropsPerform,
                 printLines: printLines
         ]
-
+        */
         return innerTemplate.make(data)
     }
 
