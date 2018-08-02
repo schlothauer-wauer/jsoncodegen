@@ -245,7 +245,7 @@ class TypeStringManipulation {
         return props
     }
 
-    // Closure<List<String>> filterPropsPerform = {Type type,  Map params, Closure<Property> toLines ->
+    // Closure<List<String>> filterPropsPerform = {Type type,  Map params, Closure<List<String>> toLines ->
     def filterPropsPerform = { type, params, toLines ->
         def props = filterProps.call(type, params)
         def lines = []
@@ -261,13 +261,13 @@ class TypeStringManipulation {
     }
 
     // Vararg definition is mandatory, call example: printLines3.call( [level:2, by: '.-'], new StringWriter(), list, list2 )
-    // Closure<Void> printLines3 = { Writer out, Map params,  List... lists ->
+    // Closure<Void> printLines = { Writer out, Map params,  List... lists ->
     def printLines = { out, params,List... lists ->
         def level = params.level?:0
         def by = params.by?:'    '
         def prefix = ''
         level.times { prefix += by}
-        lists.flatten().each { out << "$prefix$it\n" }
+        lists.flatten().each { line -> out << "${prefix}${line}\n" }
     }
 
     private final static String EMPTY=''
