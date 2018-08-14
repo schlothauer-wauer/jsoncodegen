@@ -139,7 +139,7 @@ abstract class GeneratorBase extends TypeStringManipulation {
     */
 
     /**
-     * methon create a map object and initialize it with some basic stuff
+     * method create a map object and initialize it with some basic stuff
      * @param model
      * @return
      */
@@ -155,6 +155,7 @@ abstract class GeneratorBase extends TypeStringManipulation {
         def innerTemplate = createTemplateFromResource(templateResource,TemplateType.GString)
         def data = getClosures()
         data.actObj = actObj
+        data.indent = indent
         data.renderInnerTemplate = renderInnerTemplate
         return innerTemplate.make(data)
     }
