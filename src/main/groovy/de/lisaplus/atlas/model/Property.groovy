@@ -62,4 +62,16 @@ class Property {
     boolean hasTag(String tag) {
       return tags && tags.contains(tag)
     }
+
+    /**
+     * The default value defined in the tags, or <i>null</i>, if none was defined.
+     * The default value tag <i>defaultTrue</i> is returned as <i>True</i>!
+     */
+    String getDefaultValue() {
+        def value = null
+        if (tags) {
+            value = tags.find {it =~ 'default.*'}?.drop(7)
+        }
+        return value
+    }
 }

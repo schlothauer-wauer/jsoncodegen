@@ -234,6 +234,22 @@ class JsonSchemaBuilder implements IModelBuilder {
         propertyParent.properties.each { propObj ->
             propList.add(creeateSimpleProperty(model, parentName,currentSchemaPath,propObj))
         }
+        // Dirty hack for enabling the usage of mongoDB Index2d:
+        // For performing filtering on geo coordinates in Documents of the mongoDB (e.g. operation geoWithin), the Json
+        // document containing the coordinates must have the longitude/X coordinate as first property and the latitude/Y
+        // coordinate as second property (property names are irrelevant!).
+        // But as JsonSlurper reorders the properties in alphabetic sequence, we can not force the necessary
+        // longitude / latitude sequence by defining it in the model json.
+        // Therefore this code tests for the existence of the properties lon and lat. If both are present,
+        // then the properties are reordered so that lon and lat come first!
+        Property lonProp = propList.find {prop -> prop.name == 'lon'}
+        Property latProp = propList.find {prop -> prop.name == 'lat'}
+        if (lonProp && latProp) {
+            propList.remove(lonProp)
+            propList.remove(latProp)
+            propList.add(0, latProp)
+            propList.add(0, lonProp)
+        }
         return propList
     }
 
