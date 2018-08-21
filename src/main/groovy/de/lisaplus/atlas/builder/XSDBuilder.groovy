@@ -2,6 +2,7 @@ package de.lisaplus.atlas.builder
 
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
+import de.lisaplus.atlas.model.Type
 import org.apache.xmlbeans.SchemaProperty
 import org.apache.xmlbeans.SchemaType
 import org.apache.xmlbeans.SchemaTypeSystem
@@ -19,8 +20,20 @@ class XSDBuilder implements IModelBuilder {
         objectList.add(object)
         SchemaTypeSystem sts = XmlBeans.compileXsd((XmlObject[])objectList.toArray(), XmlBeans.getBuiltinTypeSystem(), null);
         def globalTypes = sts.globalTypes()
+        Model model = new Model()
+        model.title = 'dummy'
+        model.description = 'not implemented, yet'
         for (SchemaType type: globalTypes) {
+            Type newType = new Type()
+            newType.name = type.getName().localPart
+            if (model.types.contains(newType)) {
+                continue;
+            }
+            newType.description = getDescription(type)
+            newType.baseTypes.add (type.baseType.getName().localPart)
+
             // local name of the type
+            /*
             def localGlobalName =  type.getName().localPart
             def baseType = type.getBaseType().getName().localPart
             if (baseType) {
@@ -37,10 +50,29 @@ class XSDBuilder implements IModelBuilder {
                 def propType = prop.getType()
                 println "    $propName: $propType"
             }
+            */
+            model.types.add(newType)
         }
-        Model model = new Model()
-        model.title = 'dummy'
-        model.description = 'not implemented, yet'
         return model
+    }
+
+    private String getDescription(elem) {
+        def docuTxt = null
+        def annotation = elem.getAnnotation()
+        if (annotation!=null) {
+            def userInfos = annotation.userInformation
+            for (XmlObject userInfo: userInfos ) {
+                if (userInfo.getDomNode().localName=='documentation') {
+                    if (docuTxt!=null) {
+                        docuTxt+=' '
+                    }
+                    else {
+                        docuTxt=''
+                    }
+                    docuTxt += userInfo.getDomNode().getFirstChild().getNodeValue().replaceAll('\\W+',' ').trim()
+                }
+            }
+        }
+        return docuTxt
     }
 }

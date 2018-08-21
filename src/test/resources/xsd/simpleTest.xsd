@@ -4,6 +4,9 @@
         targetNamespace="http://openuri.org/easypo"
         elementFormDefault="qualified">
     <xs:element name="purchase-order">
+        <xs:annotation>
+            <xs:documentation>This is a simple test</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="customer" type="po:customer"/>
@@ -14,6 +17,12 @@
         </xs:complexType>
     </xs:element>
     <xs:complexType name="customer">
+        <xs:annotation>
+            <xs:documentation>
+                This is a simple test2
+                over more than one line
+            </xs:documentation>
+        </xs:annotation>
         <xs:sequence>
             <xs:element name="name" type="xs:string"/>
             <xs:element name="address" type="xs:string"/>
