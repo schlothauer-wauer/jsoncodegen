@@ -34,6 +34,9 @@ class XSDBuilder implements IModelBuilder {
                     case 'string':
                         // TODO
                         break
+                    case 'boolean':
+                        // TODO
+                        break
                     case 'long':
                         // TODO
                         break
