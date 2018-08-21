@@ -24,34 +24,78 @@ class XSDBuilder implements IModelBuilder {
         model.title = 'dummy'
         model.description = 'not implemented, yet'
         for (SchemaType type: globalTypes) {
-            Type newType = new Type()
-            newType.name = type.getName().localPart
-            if (model.types.contains(newType)) {
-                continue;
-            }
-            newType.description = getDescription(type)
-            newType.baseTypes.add (type.baseType.getName().localPart)
-
-            // local name of the type
-            /*
-            def localGlobalName =  type.getName().localPart
-            def baseType = type.getBaseType().getName().localPart
-            if (baseType) {
-                println "type: $localGlobalName extends $baseType"
+            if (type.contentType==SchemaType.DT_NOT_DERIVED) {
+//                println "ignored type: ${type.getName().localPart}, baseType: ${type.getBaseType().name.localPart}"
+                def baseName = type.getBaseType().name.localPart
+                switch(baseName) {
+                    case 'token':
+                        // TODO is basically a string
+                        break;
+                    case 'string':
+                        // TODO
+                        break
+                    case 'long':
+                        // TODO
+                        break
+                    case 'int':
+                        // TODO
+                        break
+                    case 'integer':
+                        // TODO
+                        break
+                    case 'decimal':
+                        // TODO
+                        break
+                    case 'float':
+                        // TODO
+                        break
+                    case 'double':
+                        // TODO
+                        break
+                    case 'dateTime':
+                        // TODO
+                        break
+                    case 'date':
+                        // TODO
+                        break
+                    case 'time':
+                        // TODO
+                        break
+                    default:
+                        println "unknown restriction type: $baseName"
+                }
             }
             else {
-                println "type: $localGlobalName"
-            }
-            def properties = type.getProperties()
-            for (SchemaProperty prop: properties) {
-                // how will we define type attributes as element or as XML attribute
+                Type newType = new Type()
+                newType.name = type.getName().localPart
+                if (model.types.contains(newType)) {
+                    continue;
+                }
+                newType.description = getDescription(type)
+                newType.baseTypes.add (type.baseType.getName().localPart)
 
-                def propName = prop.getName().localPart
-                def propType = prop.getType()
-                println "    $propName: $propType"
+                // local name of the type
+                /*
+                def localGlobalName =  type.getName().localPart
+                def baseType = type.getBaseType().getName().localPart
+                if (baseType) {
+                    println "type: $localGlobalName extends $baseType"
+                }
+                else {
+                    println "type: $localGlobalName"
+                }
+                def properties = type.getProperties()
+                for (SchemaProperty prop: properties) {
+                    // how will we define type attributes as element or as XML attribute
+
+                    def propName = prop.getName().localPart
+                    def propType = prop.getType()
+                    println "    $propName: $propType"
+                }
+                */
+                model.types.add(newType)
+                //println "added type: ${newType.name}, contentType: ${type.contentType}"
             }
-            */
-            model.types.add(newType)
         }
         return model
     }
