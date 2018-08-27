@@ -4,6 +4,7 @@ import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.ParameterException
 import de.lisaplus.atlas.builder.JsonSchemaBuilder
+import de.lisaplus.atlas.builder.XSDBuilder
 import de.lisaplus.atlas.codegen.TemplateType
 import de.lisaplus.atlas.codegen.external.ExtMultiFileGenarator
 import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
@@ -79,7 +80,12 @@ class DoCodeGen {
 
         prepareOutputBaseDir(outputBaseDir)
 
-        IModelBuilder builder = new JsonSchemaBuilder()
+        IModelBuilder builder = model.toLowerCase().endsWith('.json') ? new JsonSchemaBuilder() :
+                model.toLowerCase().endsWith('.xsd') ? new XSDBuilder() : null
+        if (builder==null) {
+            log.error("unknown file type, currently only jscon schema and xsd are supported: ${model}")
+            System.exit(1)
+        }
         Model dataModel = builder.buildModel(modelFile)
         // convert extra generator parameter to a map
         Map<String,String> extraParameters = getMapFromGeneratorParams(generator_parameters)

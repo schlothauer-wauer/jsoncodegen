@@ -244,7 +244,7 @@ class JsonSchemaBuilder implements IModelBuilder {
         String key = makeCamelCase(propObj.key)
         newProp.type = getPropertyType(model, propObj.value, parentName + string2Name(key), currentSchemaPath)
         if (newProp.type instanceof RefType) {
-            if (propObj.key.toLowerCase().endsWith('_id')) {
+            if (propObj.key.toLowerCase().endsWith('_id') || propObj.key.toLowerCase().endsWith('Id')) { // per convention
                 newProp.aggregationType = AggregationType.aggregation
             } else {
                 /**
