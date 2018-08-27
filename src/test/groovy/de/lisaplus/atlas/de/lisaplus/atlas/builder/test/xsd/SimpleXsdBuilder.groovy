@@ -38,10 +38,12 @@ class SimpleXsdBuilder {
 
     @Test
     void plantuml_1() {
-        def destFile = 'tmp/dummy.puml'
+        def fileName = 'plantuml_from_xsd1.puml'
+        def destFile = "tmp/$fileName"
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
         doCodeGen.model = 'src/test/resources/xsd/simpleTest.xsd'
         doCodeGen.generators.add('plantuml')
+        doCodeGen.generator_parameters.add("destFileName=$fileName")
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
         doCodeGen.run()
@@ -50,10 +52,12 @@ class SimpleXsdBuilder {
 
     @Test
     void plantuml_2() {
-        def destFile = 'tmp/dummy.puml'
+        def fileName = 'plantuml_from_xsd2.puml'
+        def destFile = "tmp/$fileName"
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
         doCodeGen.model = 'src/test/resources/xsd/complex/DSRC.xsd'
         doCodeGen.generators.add('plantuml')
+        doCodeGen.generator_parameters.add("destFileName=$fileName")
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
         doCodeGen.run()
@@ -62,10 +66,12 @@ class SimpleXsdBuilder {
 
     @Test
     void plantuml_3() {
-        def destFile = 'tmp/dummy.puml'
+        def fileName = 'plantuml_from_xsd3.puml'
+        def destFile = "tmp/$fileName"
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
         doCodeGen.model = 'src/test/resources/xsd/arrayTest.xsd'
         doCodeGen.generators.add('plantuml')
+        doCodeGen.generator_parameters.add("destFileName=$fileName")
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
         doCodeGen.run()

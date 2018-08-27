@@ -45,8 +45,6 @@ class XSDBuilder implements IModelBuilder {
         SchemaTypeSystem sts = XmlBeans.compileXsd((XmlObject[])objectList.toArray(), XmlBeans.getBuiltinTypeSystem(), null);
         def globalTypes = sts.globalTypes()
         Model model = new Model()
-        model.title = 'dummy'
-        model.description = 'not implemented, yet'
         // two interations needed because to replace pure restriction types they must be known
         collectPureRestrictionTypes(model,globalTypes)
         collectNormalTypes(model,globalTypes)

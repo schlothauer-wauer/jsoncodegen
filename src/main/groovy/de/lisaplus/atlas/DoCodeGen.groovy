@@ -19,6 +19,7 @@ import de.lisaplus.atlas.codegen.meta.JsonSchemaGenerator
 import de.lisaplus.atlas.codegen.meta.PlantUmlGenerator
 import de.lisaplus.atlas.codegen.meta.SwaggerGenerator
 import de.lisaplus.atlas.codegen.meta.SwaggerGeneratorExt
+import de.lisaplus.atlas.codegen.meta.XsdGenerator
 import de.lisaplus.atlas.interf.IExternalCodeGen
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
@@ -219,6 +220,11 @@ class DoCodeGen {
                 break
             case 'json_schema':
                 JsonSchemaGenerator generator = new JsonSchemaGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
+            case 'xsd':
+                XsdGenerator generator = new XsdGenerator()
                 generator.initTemplate()
                 generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break
