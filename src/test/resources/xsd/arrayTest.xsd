@@ -1,0 +1,160 @@
+<xs:schema
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:po="http://openuri.org/easypo"
+        targetNamespace="http://openuri.org/easypo"
+        elementFormDefault="qualified">
+    <xs:complexType name="line-item-list">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="value" type="po:line-item"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="line-item-list-inline">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="value">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="test" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="line-item-list2">
+        <xs:sequence>
+            <xs:element name="listx" type="po:line-item"  minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="line-item-list2-inline">
+        <xs:sequence>
+            <xs:element name="value" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="test" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="element-array">
+        <xs:annotation>
+            <xs:documentation>type with element defined array</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!--
+                "line-item": [ {...},{...} ]
+            -->
+            <xs:element name="line-item" type="po:line-item" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="inline-element-array">
+        <xs:annotation>
+            <xs:documentation>type with an inner type array</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!--
+            "line-item": [ {"item": {...}},{"item": {...}} ] }
+            -->
+            <xs:element name="restr-line-item">
+                <xs:complexType>
+                    <xs:sequence minOccurs="0" maxOccurs="5">
+                        <xs:element name="item" type="po:line-item"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="inline-element-array2">
+        <xs:annotation>
+            <xs:documentation>type with an inner type array - make no sense</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!--
+            "line-item": { "item": [ {...}, {...}, {...}] }
+            -->
+            <xs:element name="line-item">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="item" type="po:line-item" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="array-from-extern-list">
+        <xs:annotation>
+            <xs:documentation>identical to inline-element-array</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!--
+            "line-item": [ { "value": {...}}, { "value": {...}}]
+            -->
+            <xs:element name="line-item" type="po:line-item-list"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="array-from-extern-list2">
+        <xs:annotation>
+            <xs:documentation>identical to ...</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!--
+            "line-item": [ { "value": {...}}, { "value": {...}}]
+            -->
+            <xs:element name="line-item" type="po:line-item-list2"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="array-from-extern-list3">
+        <xs:annotation>
+            <xs:documentation>identical to ...</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!--
+            "line-item": [ { "value": {...}}, { "value": {...}}]
+            -->
+            <xs:element name="line-item" type="po:line-item-list-inline"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="array-from-extern-list4">
+        <xs:annotation>
+            <xs:documentation>identical to ...</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!--
+            "line-item": [ { "value": {...}}, { "value": {...}}]
+            -->
+            <xs:element name="line-item" type="po:line-item-list2-inline"/>
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <xs:complexType name="line-item">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="per-unit-ounces" type="xs:decimal"/>
+            <xs:element name="price" type="xs:decimal"/>
+            <xs:element name="quantity">
+                <xs:complexType>
+                    <xs:annotation>
+                        <xs:documentation>
+                            This is a simple test2
+                            over more than one line
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:sequence>
+                        <xs:element name="name" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation>That's a name</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="address" type="xs:string"/>
+                    </xs:sequence>
+                    <xs:attribute name="age" type="xs:int"/>
+                    <xs:attribute name="moo" type="xs:int" default="100"/>
+                    <xs:attribute name="poo" type="xs:int" fixed="200"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

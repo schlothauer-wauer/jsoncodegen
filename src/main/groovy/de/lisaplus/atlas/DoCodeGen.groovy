@@ -4,6 +4,7 @@ import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.ParameterException
 import de.lisaplus.atlas.builder.JsonSchemaBuilder
+import de.lisaplus.atlas.builder.XSDBuilder
 import de.lisaplus.atlas.codegen.TemplateType
 import de.lisaplus.atlas.codegen.external.ExtMultiFileGenarator
 import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
@@ -18,6 +19,7 @@ import de.lisaplus.atlas.codegen.meta.JsonSchemaGenerator
 import de.lisaplus.atlas.codegen.meta.PlantUmlGenerator
 import de.lisaplus.atlas.codegen.meta.SwaggerGenerator
 import de.lisaplus.atlas.codegen.meta.SwaggerGeneratorExt
+import de.lisaplus.atlas.codegen.meta.XsdGenerator
 import de.lisaplus.atlas.interf.IExternalCodeGen
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
@@ -79,7 +81,12 @@ class DoCodeGen {
 
         prepareOutputBaseDir(outputBaseDir)
 
-        IModelBuilder builder = new JsonSchemaBuilder()
+        IModelBuilder builder = model.toLowerCase().endsWith('.json') ? new JsonSchemaBuilder() :
+                model.toLowerCase().endsWith('.xsd') ? new XSDBuilder() : null
+        if (builder==null) {
+            log.error("unknown file type, currently only jscon schema and xsd are supported: ${model}")
+            System.exit(1)
+        }
         Model dataModel = builder.buildModel(modelFile)
         // convert extra generator parameter to a map
         Map<String,String> extraParameters = getMapFromGeneratorParams(generator_parameters)
@@ -213,6 +220,11 @@ class DoCodeGen {
                 break
             case 'json_schema':
                 JsonSchemaGenerator generator = new JsonSchemaGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
+            case 'xsd':
+                XsdGenerator generator = new XsdGenerator()
                 generator.initTemplate()
                 generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break

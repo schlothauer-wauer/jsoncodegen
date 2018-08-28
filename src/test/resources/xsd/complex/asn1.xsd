@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+   ASN.1 base types to XML schema mappings.
+   Conforms to W3C http://www.w3.org/2001/XMLSchema
+   Copyright (C) 1997-2004 by Objective Systems, Inc. (http://www.obj-sys.com)
+   All rights reserved. 
+-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+            targetNamespace="http://www.obj-sys.com/v1.0/XMLSchema"
+            xmlns="http://www.obj-sys.com/v1.0/XMLSchema" 
+            elementFormDefault="unqualified">
+   
+   <!-- ASN.1 definitions -->
+   <xsd:simpleType name="INTEGER">
+      <xsd:restriction base="xsd:integer" />
+   </xsd:simpleType>
+   
+   <xsd:complexType name="BOOLEAN">
+      <xsd:group ref="BooleanGroup" />
+   </xsd:complexType>
+
+   <xsd:group name="BooleanGroup">
+      <xsd:choice>
+         <xsd:element name="true"><xsd:complexType/></xsd:element>
+         <xsd:element name="false"><xsd:complexType/></xsd:element>
+      </xsd:choice>
+   </xsd:group>
+   
+   <!--RealType ::= SEQUENCE {
+      mantissa INTEGER,
+      base INTEGER (2|10),
+      exponent INTEGER
+   }-->
+   <xsd:complexType name="RealAssociatedType">
+      <xsd:sequence>
+         <xsd:element name="mantissa" type="xsd:integer" />
+         <xsd:element name="base" type="xsd:integer" />
+         <xsd:element name="exponent" type="xsd:integer" />
+      </xsd:sequence>
+   </xsd:complexType>
+
+   <xsd:complexType name="REAL" mixed="true">
+      <xsd:sequence>
+         <xsd:element name="PLUS-INFINITY" minOccurs="0">
+            <xsd:complexType/>
+         </xsd:element>
+         <xsd:element name="MINUS-INFINITY" minOccurs="0">
+            <xsd:complexType/>
+         </xsd:element>
+      </xsd:sequence>
+   </xsd:complexType>
+
+   <xsd:simpleType name="BitString">
+      <xsd:restriction base="xsd:string">
+         <xsd:pattern value="[0-1]{0,}" />
+      </xsd:restriction>
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="OctetString">
+      <xsd:restriction base="xsd:string">
+         <xsd:pattern value="[0-9a-fA-F]{0,}" />
+      </xsd:restriction>
+   </xsd:simpleType>
+   
+   <xsd:complexType name="NULL" final="#all" />
+   
+   <xsd:simpleType name="ObjectIdentifier">
+      <xsd:restriction base="xsd:token">
+         <xsd:pattern value="[0-2](\.[1-3]?[0-9](\.\d+)*)?" />
+      </xsd:restriction>
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="ObjectDescriptor">
+      <xsd:restriction base="xsd:string" />
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="RelativeOID">
+      <xsd:restriction base="xsd:token">
+         <xsd:pattern value="\d+(\.\d+)*" />
+      </xsd:restriction>
+   </xsd:simpleType>
+
+   <xsd:simpleType name="NumericString">
+      <xsd:restriction base="xsd:token">
+         <xsd:pattern value="[0-9 ]{0,}" />
+      </xsd:restriction>
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="PrintableString">
+      <xsd:restriction base="xsd:token">
+         <xsd:pattern value="[A-Za-z0-9 '\(\)\+\-\.\?,:=]{0,}" />
+      </xsd:restriction>
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="ISO646String">
+      <xsd:restriction base="xsd:token">
+         <xsd:pattern value="[A-Za-z0-9 !&quot;#$%&amp;'\(\)\*\+,\-\./:;&lt;=&gt;\?@\[\\\]\^_`]{0,}" />
+      </xsd:restriction>
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="VisibleString">
+      <xsd:restriction base="ISO646String" />
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="TeletexString">
+      <xsd:restriction base="T61String" />
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="T61String">
+      <xsd:restriction base="xsd:token">
+         <xsd:pattern value="[A-Za-z0-9 !&quot;%&amp;'\(\)\*\+,\-\./:;&lt;=&gt;\?@\[\]_]*" />
+      </xsd:restriction>
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="BMPString">
+      <xsd:restriction base="xsd:token" />
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="GeneralString">
+      <xsd:restriction base="xsd:token" />
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="GraphicString">
+      <xsd:restriction base="xsd:token" />
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="IA5String">
+      <xsd:restriction base="xsd:token" />
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="UniversalString">
+      <xsd:restriction base="xsd:token" />
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="UTF8String">
+      <xsd:restriction base="xsd:token" />
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="VideotexString">
+      <xsd:restriction base="xsd:token" />
+   </xsd:simpleType>
+   
+   <xsd:complexType name="OpenType">
+      <xsd:sequence>
+         <xsd:any processContents="lax" minOccurs="1" />
+      </xsd:sequence>
+   </xsd:complexType>
+
+   <xsd:simpleType name="OIDIRI">
+      <xsd:restriction base="xsd:token" />
+   </xsd:simpleType>
+   
+   <xsd:simpleType name="RelativeOIDIRI">
+      <xsd:restriction base="xsd:token" />
+   </xsd:simpleType>
+   
+   <!-- Useful ASN.1 definitions -->
+   <xsd:complexType name="EmbeddedPDV">
+      <xsd:sequence>
+         <xsd:element name="identification">
+            <xsd:complexType>
+               <xsd:choice>
+                  <xsd:element name="syntaxes">
+                     <xsd:complexType>
+                        <xsd:sequence>
+                           <xsd:element name="abstract" type="ObjectIdentifier" />
+                           <xsd:element name="transfer" type="ObjectIdentifier" />
+                        </xsd:sequence>
+                     </xsd:complexType>
+                  </xsd:element>
+                  <xsd:element name="syntax" type="ObjectIdentifier" />
+                  <xsd:element name="presentation-context-id" type="INTEGER" />
+                  <xsd:element name="context-negotiation">
+                     <xsd:complexType>
+                        <xsd:sequence>
+                           <xsd:element name="presentation-context-id" type="INTEGER" />
+                           <xsd:element name="transfer-syntax" type="ObjectIdentifier" />
+                        </xsd:sequence>
+                     </xsd:complexType>
+                  </xsd:element>
+                  <xsd:element name="transfer-syntax" type="ObjectIdentifier" />
+                  <xsd:element name="fixed" type="NULL" />
+               </xsd:choice>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="data-value" type="xsd:hexBinary" />
+      </xsd:sequence>
+   </xsd:complexType>
+   
+   <xsd:complexType name="EXTERNAL">
+      <xsd:sequence>
+         <xsd:element name="direct-reference" type="ObjectIdentifier" minOccurs="0" />
+         <xsd:element name="indirect-reference" type="ObjectIdentifier" minOccurs="0" />
+         <xsd:element name="data-value-descriptor" type="ObjectDescriptor"  minOccurs="0" />
+         <xsd:element name="encoding">
+            <xsd:complexType>
+               <xsd:choice>
+                  <xsd:element name="single-ASN1-type" type="ObjectIdentifier" />
+                  <xsd:element name="octet-aligned" type="xsd:hexBinary" />
+                  <xsd:element name="arbitrary" type="BitString" />
+               </xsd:choice>
+            </xsd:complexType>
+         </xsd:element>
+      </xsd:sequence>
+   </xsd:complexType>
+   
+   
+   <!-- Documenation purpose definitions -->
+   
+   <!-- Definition to describe named bits in a bit string -->
+   <xsd:complexType name="NamedBitInfo">
+      <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+         <xsd:element name="NamedBit">
+            <xsd:complexType>
+               <xsd:attribute name="name" type="xsd:string" />
+               <xsd:attribute name="value" type="xsd:integer" />
+            </xsd:complexType>
+         </xsd:element>
+      </xsd:sequence>
+   </xsd:complexType>
+   
+   <!-- Definition to describe enumeration items in an ENUMERATED type -->
+   <xsd:complexType name="EnumInfo">
+      <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+         <xsd:element name="EnumItem">
+            <xsd:complexType>
+               <xsd:attribute name="name" type="xsd:string" />
+               <xsd:attribute name="value" type="xsd:integer" />
+            </xsd:complexType>
+         </xsd:element>
+      </xsd:sequence>
+   </xsd:complexType>
+   
+   <!-- Definition to provide additional information regarding element code -->
+   <xsd:attribute name="description" type="xsd:string" />
+   <xsd:attribute name="tag" type="xsd:string" />
+   <xsd:attribute name="tagging" type="xsd:string" />
+   <xsd:attribute name="value" type="xsd:string" />
+   <xsd:attribute name="bitno" type="xsd:string" />
+  
+</xsd:schema>
