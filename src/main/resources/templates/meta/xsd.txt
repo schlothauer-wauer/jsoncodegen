@@ -73,9 +73,20 @@ def hasGuidType = model.types.find { type ->
 
     <% model.types.each  { type ->
     %><xsd:complexType name="${type.name}">
+        <% if (type.description) {
+        %><xsd:annotation>
+            <xsd:documentation>${type.description}</xsd:documentation>
+        </xsd:annotation>
+        <% } %>
         <xsd:sequence>
             <% type.properties.each { prop ->
-            %><xsd:element name="${prop.name}" type="${ typeConvert.call(prop.type) }"${printOccurs(prop.type)}/>
+            %><xsd:element name="${prop.name}" type="${ typeConvert.call(prop.type) }"${printOccurs(prop.type)}>
+                <% if (prop.description) {
+                %><xsd:annotation>
+                    <xsd:documentation>${prop.description}</xsd:documentation>
+                </xsd:annotation>
+                <% } %>
+            </xsd:element>
             <% } %>
         </xsd:sequence>
     </xsd:complexType>
