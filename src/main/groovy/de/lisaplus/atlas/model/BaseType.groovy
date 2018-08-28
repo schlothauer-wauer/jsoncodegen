@@ -9,6 +9,11 @@ abstract class BaseType {
     final static String UNKNOWN_TYPE = 'CODEGEN-ERROR: Unknown type: '
     final static String UNSUPPORTED_TYPE = 'CODEGEN-ERROR: Unsupported type: '
 
+    /**
+     * This attribute is only used in case of XSD imports to avoid the loose of additional type information, f.e. double, float
+     */
+    String originalType=null
+
     abstract String name()
 }
 
