@@ -15,6 +15,7 @@ import org.slf4j.Logger
  */
 abstract class GeneratorBase extends TypeStringManipulation {
     Template template
+    Map<String,String> extraParams
 
     static void createDir(String dirName) {
         DoCodeGen.prepareOutputBaseDir(dirName)
@@ -157,6 +158,12 @@ abstract class GeneratorBase extends TypeStringManipulation {
         data.actObj = actObj
         data.indent = indent
         data.renderInnerTemplate = renderInnerTemplate
+        if (this.extraParams) {
+            data.extraParam = this.extraParams
+        }
+        else {
+            data.extraParam = [:]
+        }
         return innerTemplate.make(data)
     }
 

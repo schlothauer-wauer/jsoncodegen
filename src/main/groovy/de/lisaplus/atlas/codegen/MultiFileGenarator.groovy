@@ -24,6 +24,7 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
             throw new Exception(errorMsg)
         }
         def data = createTemplateDataMap(model)
+        this.extraParams = extraParams
         if (extraParams) {
             data.extraParam = extraParams
         }

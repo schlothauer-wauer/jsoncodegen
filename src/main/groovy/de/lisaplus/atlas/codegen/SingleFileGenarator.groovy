@@ -24,6 +24,7 @@ abstract class SingleFileGenarator extends GeneratorBase implements ICodeGen {
         }
 
         def data = createTemplateDataMap(model)
+        this.extraParams = extraParams
         if (extraParams) {
             data.extraParam = extraParams
         }
