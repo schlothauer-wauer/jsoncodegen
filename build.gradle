@@ -8,7 +8,7 @@ sourceCompatibility = 1.8
 def mainClass='de.lisaplus.atlas.DoCodeGen'
 
 project.group = 'de.lisaplus.tools'
-project.version = '0.7.1'
+project.version = '0.7.2'
 
 /*
  * the following attributes need to be declared in $HOME/.gradle/gradle.properties
