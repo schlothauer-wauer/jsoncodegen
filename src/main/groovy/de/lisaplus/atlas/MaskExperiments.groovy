@@ -99,6 +99,8 @@ class MaskExperiments {
                 target.set${data.upperCamelCase.call(prop.name)}(null);
                 break;/
         } else {
+            // FIXME use methods getXXX() where necessary.
+            // Either examine propIsArrayChain or fill and evaluate propAnyParentIsArrayChain!
             def checkMethodPart = propChain.collect{ data.upperCamelCase.call(it) }.join('')       // e.g. AddressPersonsContact
             def getChain = propChain.collect{ "get${data.upperCamelCase.call(it)}" } .join('().')  // e.g. getObjectBase().getGis().getArea
             propChain.add(prop.name)
@@ -223,6 +225,8 @@ class MaskExperiments {
      * @param type The type to process
      */
     void printGetForType(Type type) {
+        // FIXME generate methods getXXX() only when actually necessary.
+        // Either examine propIsArrayChain or fill and evaluate propAnyParentIsArrayChain!
         if (!propChain.isEmpty()) {
             // Example for key address.persons.contact where persons is the only array type
             // In case of multiple array types use .flatMap() for 2. to last array type!
