@@ -228,9 +228,9 @@ class MaskExperiments {
             // In case of multiple array types use .flatMap() for 2. to last array type!
             /*
                 private static List<ContactData> getContactData(JunctionContactJoined target) {
-                    if (checkAddressPersonsExists(target)) {
+                    if (checkAddressPersonsContactExists(target)) {
                         return target.getAddress().getPersons().stream()
-                                                               .map(AddressPerson::getContact)
+                                                               .map(p -> p.getContact())
                                                                .collect(Collectors.toList());
                     } else {
                         return Collections.emptyList();
@@ -238,16 +238,35 @@ class MaskExperiments {
                 }
              */
             def checkMethodPart = propChain.subList(0, propChain.size()).collect { data.upperCamelCase.call(it) }.join('') // e.g. AddressPersonsContact
-//            // create longest getter call chain and then process it from one to all elements.
-//            List lines = []
-//            List getCalls = propChain.collect { "get${data.upperCamelCase.call(it)}()" }
-//            for (int i = 0; i < getCalls.size(); i++) {
-//                def cond = getCalls.subList(0, i + 1).join('.')
-//                lines.add("target.${cond} != null")
-//            }
-//            def conditions = lines.join('\n                && ')
+
+            // iterate through propChain and propIsArrayChain
+            // Before first array type is encountered, add getter calls
+            // When first array type is encountered, add .stream() and switch mode to .map(...)
+            // Whenever another array type is encountered, use .flatMap(...) instead of .map(...)
+            List parts = []
+            boolean useGetter = true;
+            for (int i = 0; i < propChain.size(); i++) {
+                def currUpper = data.upperCamelCase.call(propChain[i])
+                if (useGetter) {
+                    // getXXX()
+                    parts.add("get${currUpper}()")
+                } else {
+                    def parentProp = propChain[i-1].take(1)
+                    if (propIsArrayChain[i]) {
+                        // flatMap(), e.g. flatMap(contact -> contact.getEmail().stream())
+                        parts.add("flatMap(${parentProp} -> ${parentProp}.get${currUpper}().stream())")
+                    } else {
+                        // map(), e.g. map(person -> person.getContact())
+                        parts.add("map(${parentProp} -> ${parentProp}.get${currUpper}()")
+                    }
+                }
+                if (useGetter && propIsArrayChain[i]) {
+                    parts.add("stream()")
+                    useGetter = false
+                }
+            }
             def retType = data.upperCamelCase.call(type.name)
-            def stream = 'ABC'
+            def stream = parts[0] + parts.subList(1,parts.size()).collect {"\n                    .$it"}.join('')
                     println """
     private static List<${retType}> get${retType}(${targetType} target) {
         if (check${checkMethodPart}Exists(target) {
@@ -256,8 +275,7 @@ class MaskExperiments {
         } else {
             return Collections.emptyList();
         }
-    }
-"""
+    }"""
         }
 
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
