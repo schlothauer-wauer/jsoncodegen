@@ -232,9 +232,8 @@ class MaskExperiments {
                         return target.getAddress().getPersons().stream()
                                                                .map(p -> p.getContact())
                                                                .collect(Collectors.toList());
-                    } else {
-                        return Collections.emptyList();
                     }
+                    return Collections.emptyList();
                 }
              */
             def checkMethodPart = propChain.subList(0, propChain.size()).collect { data.upperCamelCase.call(it) }.join('') // e.g. AddressPersonsContact
@@ -272,9 +271,8 @@ class MaskExperiments {
         if (check${checkMethodPart}Exists(target) {
             return target.${stream}
                     .collect(Collectors.toList());
-        } else {
-            return Collections.emptyList();
         }
+        return Collections.emptyList();
     }"""
         }
 
