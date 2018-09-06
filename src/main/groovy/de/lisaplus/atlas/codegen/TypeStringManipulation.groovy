@@ -242,6 +242,8 @@ class TypeStringManipulation {
         if (params.typeNamePattern!= null) props = props.findAll { prop -> prop.type.NAME =~ params.typeNamePattern }
         if (params.hasTag != null) props = props.findAll { prop -> prop.hasTag(params.hasTag) }
         if (params.withoutTag != null) props = props.findAll { prop -> !prop.hasTag(params.withoutTag) }
+        if (params.prepLookup) props = props.findAll { prop ->
+            prop.hasTag('prepLookup') == params.prepLookup }
         return props
     }
 
