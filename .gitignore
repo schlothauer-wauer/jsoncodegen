@@ -1,5 +1,7 @@
 .idea
 .gradle
+.settings
+.nb-gradle
 build
 tmp
 classes
