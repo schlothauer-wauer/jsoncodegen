@@ -9,94 +9,8 @@ import de.lisaplus.atlas.model.Property
 
 class MaskExperiments {
 
-    String type = 'JunctionContact'
-
-    String[] filters = [
-    'address',
-    'type',
-    'domainId',
-    'guid',
-    'objectBaseId',
-    'objectBase',
-    'address.city',
-    'address.country',
-    'address.department',
-    'address.extra',
-    'address.name',
-    'address.postalCode',
-    'address.street',
-    'address.type',
-    'address.web',
-    'address.contact.email',
-    'address.contact.fax',
-    'address.contact.phone',
-    'address.persons.active',
-    'address.persons.addressId',
-    'address.persons.firstName',
-    'address.persons.name',
-    'address.persons.title',
-    'address.persons.entryId',
-    'address.persons.contact.email',
-    'address.persons.contact.fax',
-    'address.persons.contact.phone'
-    ]
-
-    String[] filtersJoined = [
-            'address',
-            'type',
-            'domainId',
-            'guid',
-            'objectBaseId',
-            'objectBase',
-            'address.city',
-            'address.country',
-            'address.department',
-            'address.extra',
-            'address.name',
-            'address.postalCode',
-            'address.street',
-            'address.type',
-            'address.web',
-            'address.contact.email',
-            'address.contact.fax',
-            'address.contact.phone',
-            'address.persons.active',
-            'address.persons.addressId',
-            'address.persons.firstName',
-            'address.persons.name',
-            'address.persons.title',
-            'address.persons.entryId',
-            'address.persons.contact.email',
-            'address.persons.contact.fax',
-            'address.persons.contact.phone',
-            'objectBase.domainId',
-            'objectBase.guid',
-            'objectBase.name',
-            'objectBase.number',
-            'objectBase.objectGroupId',
-            'objectBase.tags',
-            'objectBase.gis.area.projection',
-            'objectBase.gis.area.points.lon',
-            'objectBase.gis.area.points.lat',
-            'objectBase.gis.area.points.projection',
-            'objectBase.gis.center.lon',
-            'objectBase.gis.center.lat',
-            'objectBase.gis.center.projection',
-            'objectBase.gis.route.projection',
-            'objectBase.gis.route.points.lon',
-            'objectBase.gis.route.points.lat',
-            'objectBase.gis.route.points.projection'
-    ]
-
     // TODO read model
     // TODO extract type
-    // Version 1
-    // TODO generate Lists filters and filtersJoined from type
-    // TODO generate all methods chechXXXExists(JunctionContact target)
-    // TODO generate all methods chechXXXExists(JunctionContactJoined target)
-    // TODO generate all method List<XXX> getXXX(JunctionContactJoined target) where at least one of the inner entris of the propChain is an array
-    // TODO generate three lists propChain
-    // Version 2
     // TODO traversal the model and
     // TODO        generate all methods chechXXXExists(JunctionContact target) OR
     // TODO        generate all methods chechXXXExists(JunctionContactJoined target)
@@ -149,7 +63,6 @@ class MaskExperiments {
     boolean joined
     String targetType
 
-
     void execute(boolean joined) {
         this.joined = joined;
         GeneratorBase generator = new DummyGenerator()
@@ -169,9 +82,12 @@ class MaskExperiments {
         println '''            }
         }
     }'''
-        // Second loop: methods checkXXXExists() and getXXX()
+        // Second loop: method checkXXXExists()
         propChain = []; propIsArrayChain = []; propAnyParentIsArrayChain = []
         printCheckExistsForType(type)
+
+        // Third loop: method getXXX()
+        printGetForType(type)
 
     }
 
@@ -252,7 +168,7 @@ class MaskExperiments {
     }
 
     /**
-     * Prints the case statements for a certain type, calls itself recursively for reference and complex types!
+     * Prints the methods checkXXX(target) for a certain type, calls itself recursively for reference and complex types!
      * @param type The type to process
      */
     void printCheckExistsForType(Type type) {
@@ -273,7 +189,7 @@ class MaskExperiments {
                 lines.add("target.${cond} != null")
             }
             def conditions = lines.join('\n                && ')
-            println "\n    private boolean check${checkMethodPart}Exists(${targetType} target) {\n        return ${conditions};\n    }"
+            println "\n    private static boolean check${checkMethodPart}Exists(${targetType} target) {\n        return ${conditions};\n    }"
         }
 
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
@@ -295,6 +211,74 @@ class MaskExperiments {
                 propIsArrayChain.add(prop.type.isArray)
                 propAnyParentIsArrayChain.add('TODO2')
                 printCheckExistsForType(prop.implicitRef.type)
+                propChain.pop()
+                propIsArrayChain.pop()
+                propAnyParentIsArrayChain.pop()
+            }
+        }
+    }
+
+    /**
+     * Prints the methods checkXXX(target) for a certain type, calls itself recursively for reference and complex types!
+     * @param type The type to process
+     */
+    void printGetForType(Type type) {
+        if (!propChain.isEmpty()) {
+            // Example for key address.persons.contact where persons is the only array type
+            // In case of multiple array types use .flatMap() for 2. to last array type!
+            /*
+                private static List<ContactData> getContactData(JunctionContactJoined target) {
+                    if (checkAddressPersonsExists(target)) {
+                        return target.getAddress().getPersons().stream()
+                                                               .map(AddressPerson::getContact)
+                                                               .collect(Collectors.toList());
+                    } else {
+                        return Collections.emptyList();
+                    }
+                }
+             */
+            def checkMethodPart = propChain.subList(0, propChain.size()).collect { data.upperCamelCase.call(it) }.join('') // e.g. AddressPersonsContact
+//            // create longest getter call chain and then process it from one to all elements.
+//            List lines = []
+//            List getCalls = propChain.collect { "get${data.upperCamelCase.call(it)}()" }
+//            for (int i = 0; i < getCalls.size(); i++) {
+//                def cond = getCalls.subList(0, i + 1).join('.')
+//                lines.add("target.${cond} != null")
+//            }
+//            def conditions = lines.join('\n                && ')
+            def retType = data.upperCamelCase.call(type.name)
+            def stream = 'ABC'
+                    println """
+    private static List<${retType}> get${retType}(${targetType} target) {
+        if (check${checkMethodPart}Exists(target) {
+            return target.${stream}
+                    .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+"""
+        }
+
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+//        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
+            // recursive call!
+            propChain.add(prop.name)
+            propIsArrayChain.add(prop.type.isArray)
+            propAnyParentIsArrayChain.add('TODO3')
+            printGetForType(prop.type.type)
+            propChain.pop()
+            propIsArrayChain.pop()
+            propAnyParentIsArrayChain.pop()
+        }
+
+        if (joined) {
+            data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
+                // recursive call!
+                propChain.add(prop.name)
+                propIsArrayChain.add(prop.type.isArray)
+                propAnyParentIsArrayChain.add('TODO3')
+                printGetForType(prop.implicitRef.type)
                 propChain.pop()
                 propIsArrayChain.pop()
                 propAnyParentIsArrayChain.pop()
