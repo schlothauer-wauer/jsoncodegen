@@ -264,13 +264,19 @@ class MaskExperiments {
                     useGetter = false
                 }
             }
+            parts.add('collect(Collectors.toList())')
+
+            // If the very last entry is the first array type, then these is no need to appending
+            // .stream() and .collect(Collectors.toList()) -> just discard these two entries!
+            if (parts[parts.size()-2] == "stream()") {
+                parts = parts.subList(0, parts.size() - 2)
+            }
             def retType = data.upperCamelCase.call(type.name)
             def stream = parts[0] + parts.subList(1,parts.size()).collect {"\n                    .$it"}.join('')
                     println """
     private static List<${retType}> get${retType}(${targetType} target) {
         if (check${checkMethodPart}Exists(target) {
-            return target.${stream}
-                    .collect(Collectors.toList());
+            return target.${stream};
         }
         return Collections.emptyList();
     }"""
