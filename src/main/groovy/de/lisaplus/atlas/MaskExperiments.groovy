@@ -131,14 +131,18 @@ class MaskExperiments {
                     break;
              */
             // FIXME change propStack to hold Property objects and evaluate the type of the parent!
-            def type = 'TODO'
-            def parent = propStack.last().name.take(1)
-            def method = data.upperCamelCase.call(propStack.last().name)
+
+            Property pProp = propStack.last()
+            def parent = pProp.name.take(1)
+            // TODO check with Eiko
+            Type parentType = pProp.isRefType() ? pProp.type.type : pProp.type
+            def parentJavaType = data.upperCamelCase.call(parentType.name)
+            def method = data.upperCamelCase.call(pProp.name)
             propStack.add(prop)
             def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
             lines = /            case "${key}":
-                for(${type} ${parent} : get${method}(target)){
+                for(${parentJavaType} ${parent} : get${method}(target)){
                     ${parent}.set${data.upperCamelCase.call(prop.name)}(null);
                 }
                 break;/
