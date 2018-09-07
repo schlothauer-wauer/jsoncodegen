@@ -125,7 +125,7 @@ class MaskExperiments {
             // Example:
             /*
                 case "address.persons.contact.phone":
-                    for (ContactData data : getContactData(target)) {
+                    for (ContactData data : getAddressPersonsContact(target)) {
                         data.setPhone(null);
                     }
                     break;
@@ -137,12 +137,12 @@ class MaskExperiments {
             // TODO check with Eiko
             Type parentType = pProp.isRefType() ? pProp.type.type : pProp.type
             def parentJavaType = data.upperCamelCase.call(parentType.name)
-            def method = parentJavaType // data.upperCamelCase.call(pProp.name)
+            def methodName = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
             propStack.add(prop)
             def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
             lines = /            case "${key}":
-                for(${parentJavaType} ${parent} : get${method}(target)){
+                for(${parentJavaType} ${parent} : get${methodName}(target)){
                     ${parent}.set${data.upperCamelCase.call(prop.name)}(null);
                 }
                 break;/
@@ -280,7 +280,7 @@ class MaskExperiments {
             // Example for key address.persons.contact where persons is the only array type
             // In case of multiple array types use .flatMap() for 2. to last array type!
             /*
-                private static List<ContactData> getContactData(JunctionContactJoined target) {
+                private static List<ContactData> getAddressPersonsContact(JunctionContactJoined target) {
                     if (checkAddressPersonsContactExists(target)) {
                         return target.getAddress().getPersons().stream()
                                                                .map(p -> p.getContact())
@@ -289,7 +289,7 @@ class MaskExperiments {
                     return Collections.emptyList();
                 }
              */
-            def checkMethodPart = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
+            def methodName = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
 
             // iterate through propStack and propIsArrayStack
             // Before first array type is encountered, add getter calls
@@ -328,8 +328,8 @@ class MaskExperiments {
             def retType = data.upperCamelCase.call(type.name)
             def stream = parts[0] + parts.subList(1,parts.size()).collect {"\n                    .$it"}.join('')
                     println """
-    private static List<${retType}> get${retType}(${targetType} target) {
-        if (check${checkMethodPart}Exists(target)) {
+    private static List<${retType}> get${methodName}(${targetType} target) {
+        if (check${methodName}Exists(target)) {
             return target.${stream};
         }
         return Collections.emptyList();
