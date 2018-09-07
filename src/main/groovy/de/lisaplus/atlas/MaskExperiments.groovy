@@ -57,14 +57,14 @@ class MaskExperiments {
     }
 
     /** This stack holds the property (names) visited while traversing the object hierarchy.*/
-    List propStack
+    List<Property> propStack
     /** Indicates that this property is an array. This sack is build while traversing the object hierarchy. */
-    List propIsArrayStack
+    List<Boolean> propIsArrayStack
     /**
      *  Indicates that this property or any of its parents was an array and that we therefore have to process an collection.
      *  This sack is build while traversing the object hierarchy.
      */
-    List propIsCollectionStack
+    List<Boolean> propIsCollectionStack
     Map data
     boolean joined
     String targetType
@@ -132,10 +132,10 @@ class MaskExperiments {
              */
             // FIXME change propStack to hold Property objects and evaluate the type of the parent!
             def type = 'TODO'
-            def parent = propStack.last().take(1)
-            def method = data.upperCamelCase.call(propStack.last())
-            propStack.add(prop.name)
-            def key = propStack.join('.')
+            def parent = propStack.last().name.take(1)
+            def method = data.upperCamelCase.call(propStack.last().name)
+            propStack.add(prop)
+            def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
             lines = /            case "${key}":
                 for(${type} ${parent} : get${method}(target)){
@@ -152,10 +152,10 @@ class MaskExperiments {
                     }
                     break;
              */
-            def checkMethodPart = propStack.collect{ data.upperCamelCase.call(it) }.join('')       // e.g. AddressPersonsContact
-            def getChain = propStack.collect{ "get${data.upperCamelCase.call(it)}" } .join('().')  // e.g. getObjectBase().getGis().getArea
-            propStack.add(prop.name)
-            def key = propStack.join('.')
+            def checkMethodPart = propStack.collect{ data.upperCamelCase.call(it.name) }.join('')       // e.g. AddressPersonsContact
+            def getChain = propStack.collect{ "get${data.upperCamelCase.call(it.name)}" } .join('().')  // e.g. getObjectBase().getGis().getArea
+            propStack.add(prop)
+            def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
             lines = /            case "${key}":
                 if (check${checkMethodPart}Exists(target)) {
@@ -209,7 +209,7 @@ class MaskExperiments {
      * @param property The property, which is to be visited
      */
     private void putStacks(Property property) {
-        propStack.add(property.name)
+        propStack.add(property)
         propIsArrayStack.add(property.type.isArray)
         // If either already collection of if this property is an collection.
         propIsCollectionStack.add(propIsCollectionStack.last() || propIsArrayStack.last())
@@ -237,10 +237,10 @@ class MaskExperiments {
                             && target.getObjectBase().getGis().getArea() != null;
                 }
              */
-            def checkMethodPart = propStack.collect{ data.upperCamelCase.call(it) }.join('')       // e.g. AddressPersonsContact
+            def checkMethodPart = propStack.collect{ data.upperCamelCase.call(it.name) }.join('')       // e.g. AddressPersonsContact
             // create longest getter call chain and then process it from one to all elements.
             List lines = []
-            List getCalls = propStack.collect { "get${data.upperCamelCase.call(it)}()"}
+            List getCalls = propStack.collect { "get${data.upperCamelCase.call(it.name)}()"}
             for (int i = 0; i < getCalls.size(); i++) {
                 def cond = getCalls.subList(0, i+1).join('.')
                 lines.add("target.${cond} != null")
@@ -287,21 +287,21 @@ class MaskExperiments {
                     return Collections.emptyList();
                 }
              */
-            def checkMethodPart = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it) }.join('') // e.g. AddressPersonsContact
+            def checkMethodPart = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
 
             // iterate through propStack and propIsArrayStack
             // Before first array type is encountered, add getter calls
             // When first array type is encountered, add .stream() and switch mode to .map(...)
             // Whenever another array type is encountered, use .flatMap(...) instead of .map(...)
             List parts = []
-            boolean useGetter = true;
+            boolean useGetter = true
             for (int i = 0; i < propStack.size(); i++) {
-                def currUpper = data.upperCamelCase.call(propStack[i])
+                def currUpper = data.upperCamelCase.call(propStack[i].name)
                 if (useGetter) {
                     // getXXX()
                     parts.add("get${currUpper}()")
                 } else {
-                    def parentProp = propStack[i-1].take(1)
+                    def parentProp = propStack[i-1].name.take(1)
                     if (propIsArrayStack[i]) {
                         // flatMap(), e.g. flatMap(contact -> contact.getEmail().stream())
                         parts.add("flatMap(${parentProp} -> ${parentProp}.get${currUpper}().stream())")
