@@ -310,7 +310,7 @@ class MaskExperiments {
                         parts.add("flatMap(${parentProp} -> ${parentProp}.get${currUpper}().stream())")
                     } else {
                         // map(), e.g. map(person -> person.getContact())
-                        parts.add("map(${parentProp} -> ${parentProp}.get${currUpper}()")
+                        parts.add("map(${parentProp} -> ${parentProp}.get${currUpper}())")
                     }
                 }
                 if (useGetter && propIsArrayStack[i]) {
