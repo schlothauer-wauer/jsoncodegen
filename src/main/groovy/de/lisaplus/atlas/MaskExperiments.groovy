@@ -81,6 +81,8 @@ class MaskExperiments {
         // avoid extra case for handling empty stack!
         propIsCollectionStack = [false]
 
+        println "public class ${targetType}Masking {"
+
         println '''    public static void mask(JunctionContactJoined target, PojoMask mask) {
         for (final String key : mask.hiddenKeys()) {
             switch(key) {'''
@@ -102,25 +104,61 @@ class MaskExperiments {
         // avoid extra case for handling empty stack!
         propIsCollectionStack = [false]
         printGetForType(type)
+
+        println '}'
     }
 
     /** Simple setXXX(null) without any array types in-between -> no for(xxx item : getXXX()) item.setYYY(null) */
     void printCaseSimple(Property prop) {
         def lines
         if (propStack.isEmpty()) {
+            // Example:
+            /*
+                 case "domainId":
+                    target.setDomainId(null);
+                    break;
+              */
             lines = /            case "${prop.name}":
                 target.set${data.upperCamelCase.call(prop.name)}(null);
                 break;/
+        } else if (propIsCollectionStack.last()) {
+            // Example:
+            /*
+                case "address.persons.contact.phone":
+                    for (ContactData data : getContactData(target)) {
+                        data.setPhone(null);
+                    }
+                    break;
+             */
+            // FIXME change propStack to hold Property objects and evaluate the type of the parent!
+            def type = 'TODO'
+            def parent = propStack.last().take(1)
+            def method = data.upperCamelCase.call(propStack.last())
+            propStack.add(prop.name)
+            def key = propStack.join('.')
+            propStack.pop()
+            lines = /            case "${key}":
+                for(${type} ${parent} : get${method}(target)){
+                    ${parent}.set${data.upperCamelCase.call(prop.name)}(null);
+                }
+                break;/
+
         } else {
-            // FIXME use methods getXXX() where necessary.
-            // Either examine propIsArrayStack or fill and evaluate propIsCollectionStack!
+            // Example:
+            /*
+                case "objectBase.number":
+                    if (checkObjectBaseExists(target)) {
+                        target.getObjectBase().setNumber(null);
+                    }
+                    break;
+             */
             def checkMethodPart = propStack.collect{ data.upperCamelCase.call(it) }.join('')       // e.g. AddressPersonsContact
             def getChain = propStack.collect{ "get${data.upperCamelCase.call(it)}" } .join('().')  // e.g. getObjectBase().getGis().getArea
             propStack.add(prop.name)
             def key = propStack.join('.')
             propStack.pop()
             lines = /            case "${key}":
-                if (chech${checkMethodPart}Exists(target)) {
+                if (check${checkMethodPart}Exists(target)) {
                     target.${getChain}().set${data.upperCamelCase.call(prop.name)}(null);
                 }
                 break;/
