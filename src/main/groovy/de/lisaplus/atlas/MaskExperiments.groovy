@@ -137,7 +137,7 @@ class MaskExperiments {
             // TODO check with Eiko
             Type parentType = pProp.isRefType() ? pProp.type.type : pProp.type
             def parentJavaType = data.upperCamelCase.call(parentType.name)
-            def method = data.upperCamelCase.call(pProp.name)
+            def method = parentJavaType // data.upperCamelCase.call(pProp.name)
             propStack.add(prop)
             def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
