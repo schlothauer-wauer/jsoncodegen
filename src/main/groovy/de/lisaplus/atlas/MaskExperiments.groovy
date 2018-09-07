@@ -227,6 +227,7 @@ class MaskExperiments {
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            printCaseSimple(prop)
             // recursive call!
             putStacks(prop)
             printCaseComplex(prop)
