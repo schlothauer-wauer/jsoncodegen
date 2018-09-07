@@ -15,8 +15,8 @@ class MaskExperiments {
     // TODO        generate all methods chechXXXExists(JunctionContact target) OR
     // TODO        generate all methods chechXXXExists(JunctionContactJoined target)
     // TODO        see usage of extraParam.joinedRun in codeGenTemplates\java\mongodb_beans_tests.txt
-    // TODO        maintain three stacks propChain, propIsArrayChain and propAnyParentIsArrayChain
-    // TODO        generate methods List<XXX> getXXX(JunctionContactJoined target) according to propAnyParentIsArrayChain
+    // TODO        maintain three stacks propStack, propIsArrayStack and propIsCollectionStack
+    // TODO        generate methods List<XXX> getXXX(JunctionContactJoined target) according to propIsCollectionStack
     // TODO        Add cases to switch of method mask(JunctionContactJoined target, PojoMask mask)
     // TODO        (Collect list of lines and write out after loop is done or write while looping?)
     // TODO        Run multiple loops:
@@ -56,9 +56,15 @@ class MaskExperiments {
         return builder.buildModel(modelFile)
     }
 
-    List propChain
-    List propIsArrayChain
-    List propAnyParentIsArrayChain
+    /** This stack holds the property (names) visited while traversing the object hierarchy.*/
+    List propStack
+    /** Indicates that this property is an array. This sack is build while traversing the object hierarchy. */
+    List propIsArrayStack
+    /**
+     *  Indicates that this property or any of its parents was an array and that we therefore have to process an collection.
+     *  This sack is build while traversing the object hierarchy.
+     */
+    List propIsCollectionStack
     Map data
     boolean joined
     String targetType
@@ -71,7 +77,9 @@ class MaskExperiments {
         targetType = type.name + (joined ? 'Joined' : '')
 
         // First loop: method mask
-        propChain = []; propIsArrayChain = []; propAnyParentIsArrayChain = []
+        propStack = []; propIsArrayStack = []
+        // avoid extra case for handling empty stack!
+        propIsCollectionStack = [false]
 
         println '''    public static void mask(JunctionContactJoined target, PojoMask mask) {
         for (final String key : mask.hiddenKeys()) {
@@ -83,10 +91,17 @@ class MaskExperiments {
         }
     }'''
         // Second loop: method checkXXXExists()
-        propChain = []; propIsArrayChain = []; propAnyParentIsArrayChain = []
+
+        propStack = []; propIsArrayStack = []
+        // avoid extra case for handling empty stack!
+        propIsCollectionStack = [false]
         printCheckExistsForType(type)
 
         // Third loop: method getXXX()
+
+        propStack = []; propIsArrayStack = []
+        // avoid extra case for handling empty stack!
+        propIsCollectionStack = [false]
         printGetForType(type)
 
     }
@@ -94,18 +109,18 @@ class MaskExperiments {
     /** Simple setXXX(null) without any array types in-between -> no for(xxx item : getXXX()) item.setYYY(null) */
     void printCaseSimple(Property prop) {
         def lines
-        if (propChain.isEmpty()) {
+        if (propStack.isEmpty()) {
             lines = /            case "${prop.name}":
                 target.set${data.upperCamelCase.call(prop.name)}(null);
                 break;/
         } else {
             // FIXME use methods getXXX() where necessary.
-            // Either examine propIsArrayChain or fill and evaluate propAnyParentIsArrayChain!
-            def checkMethodPart = propChain.collect{ data.upperCamelCase.call(it) }.join('')       // e.g. AddressPersonsContact
-            def getChain = propChain.collect{ "get${data.upperCamelCase.call(it)}" } .join('().')  // e.g. getObjectBase().getGis().getArea
-            propChain.add(prop.name)
-            def key = propChain.join('.')
-            propChain.pop()
+            // Either examine propIsArrayStack or fill and evaluate propIsCollectionStack!
+            def checkMethodPart = propStack.collect{ data.upperCamelCase.call(it) }.join('')       // e.g. AddressPersonsContact
+            def getChain = propStack.collect{ "get${data.upperCamelCase.call(it)}" } .join('().')  // e.g. getObjectBase().getGis().getArea
+            propStack.add(prop.name)
+            def key = propStack.join('.')
+            propStack.pop()
             lines = /            case "${key}":
                 if (chech${checkMethodPart}Exists(target)) {
                     target.${getChain}().set${data.upperCamelCase.call(prop.name)}(null);
@@ -137,17 +152,17 @@ class MaskExperiments {
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             // recursive call!
-            propChain.add(prop.name)
+            propStack.add(prop.name)
 //            println "debug ${prop.name}: ${prop.type}"
 //            if (!prop.type) {
 //                println 'why is it missing, need isArray!'
 //            }
-            propIsArrayChain.add(prop.type.isArray)
-            propAnyParentIsArrayChain.add('TODO')
+            propIsArrayStack.add(prop.type.isArray)
+            propIsCollectionStack.add('TODO')
             printCaseComplex(prop)
-            propChain.pop()
-            propIsArrayChain.pop()
-            propAnyParentIsArrayChain.pop()
+            propStack.pop()
+            propIsArrayStack.pop()
+            propIsCollectionStack.pop()
         }
 
         if (!joined) {
@@ -155,17 +170,17 @@ class MaskExperiments {
         }
         data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
             // recursive call!
-            propChain.add(prop.name)
+            propStack.add(prop.name)
 //            println "debug ${prop.name}: ${prop.type}"
 //            if (!prop.type) {
 //                println 'why is it missing, need isArray!'
 //            }
-            propIsArrayChain.add(prop.type.isArray)
-            propAnyParentIsArrayChain.add('TODO')
+            propIsArrayStack.add(prop.type.isArray)
+            propIsCollectionStack.add('TODO')
             printCaseJoined(prop)
-            propChain.pop()
-            propIsArrayChain.pop()
-            propAnyParentIsArrayChain.pop()
+            propStack.pop()
+            propIsArrayStack.pop()
+            propIsCollectionStack.pop()
         }
     }
 
@@ -174,7 +189,7 @@ class MaskExperiments {
      * @param type The type to process
      */
     void printCheckExistsForType(Type type) {
-        if (!propChain.isEmpty()) {
+        if (!propStack.isEmpty()) {
             /*
                 private static boolean checkObjectBaseGisArea(JunctionNumberJoined target) {
                     return target.getObjectBase() != null
@@ -182,10 +197,10 @@ class MaskExperiments {
                             && target.getObjectBase().getGis().getArea() != null;
                 }
              */
-            def checkMethodPart = propChain.collect{ data.upperCamelCase.call(it) }.join('')       // e.g. AddressPersonsContact
+            def checkMethodPart = propStack.collect{ data.upperCamelCase.call(it) }.join('')       // e.g. AddressPersonsContact
             // create longest getter call chain and then process it from one to all elements.
             List lines = []
-            List getCalls = propChain.collect { "get${data.upperCamelCase.call(it)}()"}
+            List getCalls = propStack.collect { "get${data.upperCamelCase.call(it)}()"}
             for (int i = 0; i < getCalls.size(); i++) {
                 def cond = getCalls.subList(0, i+1).join('.')
                 lines.add("target.${cond} != null")
@@ -197,25 +212,25 @@ class MaskExperiments {
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
             // recursive call!
-            propChain.add(prop.name)
-            propIsArrayChain.add(prop.type.isArray)
-            propAnyParentIsArrayChain.add('TODO2')
+            propStack.add(prop.name)
+            propIsArrayStack.add(prop.type.isArray)
+            propIsCollectionStack.add('TODO2')
             printCheckExistsForType(prop.type.type)
-            propChain.pop()
-            propIsArrayChain.pop()
-            propAnyParentIsArrayChain.pop()
+            propStack.pop()
+            propIsArrayStack.pop()
+            propIsCollectionStack.pop()
         }
 
         if (joined) {
             data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
                 // recursive call!
-                propChain.add(prop.name)
-                propIsArrayChain.add(prop.type.isArray)
-                propAnyParentIsArrayChain.add('TODO2')
+                propStack.add(prop.name)
+                propIsArrayStack.add(prop.type.isArray)
+                propIsCollectionStack.add('TODO2')
                 printCheckExistsForType(prop.implicitRef.type)
-                propChain.pop()
-                propIsArrayChain.pop()
-                propAnyParentIsArrayChain.pop()
+                propStack.pop()
+                propIsArrayStack.pop()
+                propIsCollectionStack.pop()
             }
         }
     }
@@ -226,8 +241,8 @@ class MaskExperiments {
      */
     void printGetForType(Type type) {
         // FIXME generate methods getXXX() only when actually necessary.
-        // Either examine propIsArrayChain or fill and evaluate propAnyParentIsArrayChain!
-        if (!propChain.isEmpty()) {
+        // Either examine propIsArrayStack or fill and evaluate propIsCollectionStack!
+        if (!propStack.isEmpty()) {
             // Example for key address.persons.contact where persons is the only array type
             // In case of multiple array types use .flatMap() for 2. to last array type!
             /*
@@ -240,22 +255,22 @@ class MaskExperiments {
                     return Collections.emptyList();
                 }
              */
-            def checkMethodPart = propChain.subList(0, propChain.size()).collect { data.upperCamelCase.call(it) }.join('') // e.g. AddressPersonsContact
+            def checkMethodPart = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it) }.join('') // e.g. AddressPersonsContact
 
-            // iterate through propChain and propIsArrayChain
+            // iterate through propStack and propIsArrayStack
             // Before first array type is encountered, add getter calls
             // When first array type is encountered, add .stream() and switch mode to .map(...)
             // Whenever another array type is encountered, use .flatMap(...) instead of .map(...)
             List parts = []
             boolean useGetter = true;
-            for (int i = 0; i < propChain.size(); i++) {
-                def currUpper = data.upperCamelCase.call(propChain[i])
+            for (int i = 0; i < propStack.size(); i++) {
+                def currUpper = data.upperCamelCase.call(propStack[i])
                 if (useGetter) {
                     // getXXX()
                     parts.add("get${currUpper}()")
                 } else {
-                    def parentProp = propChain[i-1].take(1)
-                    if (propIsArrayChain[i]) {
+                    def parentProp = propStack[i-1].take(1)
+                    if (propIsArrayStack[i]) {
                         // flatMap(), e.g. flatMap(contact -> contact.getEmail().stream())
                         parts.add("flatMap(${parentProp} -> ${parentProp}.get${currUpper}().stream())")
                     } else {
@@ -263,7 +278,7 @@ class MaskExperiments {
                         parts.add("map(${parentProp} -> ${parentProp}.get${currUpper}()")
                     }
                 }
-                if (useGetter && propIsArrayChain[i]) {
+                if (useGetter && propIsArrayStack[i]) {
                     parts.add("stream()")
                     useGetter = false
                 }
@@ -289,25 +304,25 @@ class MaskExperiments {
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
             // recursive call!
-            propChain.add(prop.name)
-            propIsArrayChain.add(prop.type.isArray)
-            propAnyParentIsArrayChain.add('TODO3')
+            propStack.add(prop.name)
+            propIsArrayStack.add(prop.type.isArray)
+            propIsCollectionStack.add('TODO3')
             printGetForType(prop.type.type)
-            propChain.pop()
-            propIsArrayChain.pop()
-            propAnyParentIsArrayChain.pop()
+            propStack.pop()
+            propIsArrayStack.pop()
+            propIsCollectionStack.pop()
         }
 
         if (joined) {
             data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
                 // recursive call!
-                propChain.add(prop.name)
-                propIsArrayChain.add(prop.type.isArray)
-                propAnyParentIsArrayChain.add('TODO3')
+                propStack.add(prop.name)
+                propIsArrayStack.add(prop.type.isArray)
+                propIsCollectionStack.add('TODO3')
                 printGetForType(prop.implicitRef.type)
-                propChain.pop()
-                propIsArrayChain.pop()
-                propAnyParentIsArrayChain.pop()
+                propStack.pop()
+                propIsArrayStack.pop()
+                propIsCollectionStack.pop()
             }
         }
     }
