@@ -276,9 +276,7 @@ class MaskExperiments {
      * @param type The type to process
      */
     void printGetForType(Type type) {
-        // FIXME generate methods getXXX() only when actually necessary.
-        // Either examine propIsArrayStack or fill and evaluate propIsCollectionStack!
-        if (!propStack.isEmpty()) {
+        if (propIsCollectionStack.last()) {
             // Example for key address.persons.contact where persons is the only array type
             // In case of multiple array types use .flatMap() for 2. to last array type!
             /*
@@ -331,7 +329,7 @@ class MaskExperiments {
             def stream = parts[0] + parts.subList(1,parts.size()).collect {"\n                    .$it"}.join('')
                     println """
     private static List<${retType}> get${retType}(${targetType} target) {
-        if (check${checkMethodPart}Exists(target) {
+        if (check${checkMethodPart}Exists(target)) {
             return target.${stream};
         }
         return Collections.emptyList();
