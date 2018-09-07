@@ -76,6 +76,10 @@ class MaskExperiments {
         Type type = data.model.types.find {type -> type.name == typeName}
         targetType = type.name + (joined ? 'Joined' : '')
 
+        // NOTE:
+        // The data model is being altered: tune propLookup parameter to loose Suffix Id!!
+        tuneType(type)
+
         /* First loop: method mask */
         propStack = []; propIsArrayStack = []
         // avoid extra case for handling empty stack!
@@ -108,7 +112,31 @@ class MaskExperiments {
         println '}'
     }
 
-    /** Simple setXXX(null) without any array types in-between -> no for(xxx item : getXXX()) item.setYYY(null) */
+    /**
+     * <b>THIS METHOD ALTERS THE MODEL!!!</b>
+     * This method tunes the properties of a (complex or reference) type and calls itself recursively if the type
+     * itself holds properties of other (complex or reference) types.
+     * Checks for properties with the tag <i>prepLookup</i> and removes the suffix Id.
+     * @param type The type to process.
+     */
+    void tuneType(Type type) {
+        type.properties.each { Property prop ->
+            if (prop.hasTag('prepLookup') && prop.name.endsWith('Id')) {
+                prop.setName(prop.name.take(prop.name.length() - 2))
+                if (prop.implicitRefIsRefType()) {
+                    tuneType(prop.implicitRef.type)
+                }
+            }
+            if (prop.isRefTypeOrComplexType()) {
+                tuneType(prop.type.type)
+            }
+        }
+    }
+
+    /**
+     * Actually creates the case for properties of a complex or reference class.
+     * @param prop The property to process
+     */
     void printCaseSimple(Property prop) {
         def lines
         if (propStack.isEmpty()) {
@@ -118,9 +146,16 @@ class MaskExperiments {
                     target.setDomainId(null);
                     break;
               */
-            lines = /            case "${prop.name}":
+            if (prop.hasTag('propLookup')) {
+                lines = /            case "${prop.name}":
+                target.set${data.upperCamelCase.call(prop.name)}(null);
+                target.set${data.upperCamelCase.call(prop.name)}Id(null);
+                break;/
+            } else {
+                lines = /            case "${prop.name}":
                 target.set${data.upperCamelCase.call(prop.name)}(null);
                 break;/
+            }
         } else if (propIsCollectionStack.last()) {
             // Example:
             /*
