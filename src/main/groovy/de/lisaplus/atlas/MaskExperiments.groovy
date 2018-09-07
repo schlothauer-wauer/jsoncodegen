@@ -70,7 +70,7 @@ class MaskExperiments {
     String targetType
 
     void execute(boolean joined) {
-        this.joined = joined;
+        this.joined = joined
         GeneratorBase generator = new DummyGenerator()
         data = generator.createTemplateDataMap(model)
         Type type = data.model.types.find {type -> type.name == typeName}
@@ -305,6 +305,7 @@ class MaskExperiments {
                     // getXXX()
                     parts.add("get${currUpper}()")
                 } else {
+                    // TODO Teach Eiko and Stephan
                     def parentProp = propStack[i-1].name.take(1)
                     if (propIsArrayStack[i]) {
                         // flatMap(), e.g. flatMap(contact -> contact.getEmail().stream())
