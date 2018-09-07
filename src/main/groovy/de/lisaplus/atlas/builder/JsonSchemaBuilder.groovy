@@ -276,7 +276,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                     newProp.aggregationType = AggregationType.composition
             }
         }
-        // implizit refs for normal types and array types differ
+        // implicit refs for normal types and array types differ
         if (newProp.type.isArray) {
             if (propObj.value.items.'__ref') {
                 newProp.implicitRef = initRefType(propObj.value.items.'__ref', currentSchemaPath)
