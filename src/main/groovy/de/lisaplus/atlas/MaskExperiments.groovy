@@ -76,7 +76,7 @@ class MaskExperiments {
         Type type = data.model.types.find {type -> type.name == typeName}
         targetType = type.name + (joined ? 'Joined' : '')
 
-        // First loop: method mask
+        /* First loop: method mask */
         propStack = []; propIsArrayStack = []
         // avoid extra case for handling empty stack!
         propIsCollectionStack = [false]
@@ -90,20 +90,18 @@ class MaskExperiments {
         println '''            }
         }
     }'''
-        // Second loop: method checkXXXExists()
 
+        /* Second loop: method checkXXXExists() */
         propStack = []; propIsArrayStack = []
         // avoid extra case for handling empty stack!
         propIsCollectionStack = [false]
         printCheckExistsForType(type)
 
-        // Third loop: method getXXX()
-
+        /* Third loop: method getXXX() */
         propStack = []; propIsArrayStack = []
         // avoid extra case for handling empty stack!
         propIsCollectionStack = [false]
         printGetForType(type)
-
     }
 
     /** Simple setXXX(null) without any array types in-between -> no for(xxx item : getXXX()) item.setYYY(null) */
@@ -145,6 +143,7 @@ class MaskExperiments {
      * @param type The type to process
      */
     void printCaseForType(Type type) {
+//        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:false]).each { Property prop ->
             printCaseSimple(prop)
         }
@@ -152,36 +151,39 @@ class MaskExperiments {
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             // recursive call!
-            propStack.add(prop.name)
-//            println "debug ${prop.name}: ${prop.type}"
-//            if (!prop.type) {
-//                println 'why is it missing, need isArray!'
-//            }
-            propIsArrayStack.add(prop.type.isArray)
-            propIsCollectionStack.add('TODO')
+            putStacks(prop, prop.type.isArray)
             printCaseComplex(prop)
-            propStack.pop()
-            propIsArrayStack.pop()
-            propIsCollectionStack.pop()
+            popStacks()
         }
 
-        if (!joined) {
-            return
+        if (joined) {
+            data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
+                // recursive call!
+                putStacks(prop, prop.type.isArray)
+                printCaseJoined(prop)
+                popStacks()
+            }
         }
-        data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
-            // recursive call!
-            propStack.add(prop.name)
-//            println "debug ${prop.name}: ${prop.type}"
-//            if (!prop.type) {
-//                println 'why is it missing, need isArray!'
-//            }
-            propIsArrayStack.add(prop.type.isArray)
-            propIsCollectionStack.add('TODO')
-            printCaseJoined(prop)
-            propStack.pop()
-            propIsArrayStack.pop()
-            propIsCollectionStack.pop()
-        }
+    }
+
+    /**
+     * Adds new elements to the stacks
+     * @param property The property, which is to be visited
+     * @param isArray Indicates whether this property is an array.
+     */
+    private void putStacks(Property property, boolean isArray) {
+        propStack.add(property.name)
+        propIsArrayStack.add(isArray)
+        // If either already collection of if this property is an collection.
+        propIsCollectionStack.add(propIsCollectionStack.last() || propIsArrayStack.last())
+    }
+    /**
+     * Pops the latest elements from the stacks
+     */
+    private void popStacks() {
+        propStack.pop()
+        propIsArrayStack.pop()
+        propIsCollectionStack.pop()
     }
 
     /**
@@ -209,28 +211,20 @@ class MaskExperiments {
             println "\n    private static boolean check${checkMethodPart}Exists(${targetType} target) {\n        return ${conditions};\n    }"
         }
 
-        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             // recursive call!
-            propStack.add(prop.name)
-            propIsArrayStack.add(prop.type.isArray)
-            propIsCollectionStack.add('TODO2')
+            putStacks(prop, prop.type.isArray)
             printCheckExistsForType(prop.type.type)
-            propStack.pop()
-            propIsArrayStack.pop()
-            propIsCollectionStack.pop()
+            popStacks()
         }
 
         if (joined) {
             data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
                 // recursive call!
-                propStack.add(prop.name)
-                propIsArrayStack.add(prop.type.isArray)
-                propIsCollectionStack.add('TODO2')
+                putStacks(prop, prop.type.isArray)
                 printCheckExistsForType(prop.implicitRef.type)
-                propStack.pop()
-                propIsArrayStack.pop()
-                propIsCollectionStack.pop()
+                popStacks()
             }
         }
     }
@@ -301,28 +295,20 @@ class MaskExperiments {
     }"""
         }
 
-        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             // recursive call!
-            propStack.add(prop.name)
-            propIsArrayStack.add(prop.type.isArray)
-            propIsCollectionStack.add('TODO3')
+            putStacks(prop, prop.type.isArray)
             printGetForType(prop.type.type)
-            propStack.pop()
-            propIsArrayStack.pop()
-            propIsCollectionStack.pop()
+            popStacks()
         }
 
         if (joined) {
             data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
                 // recursive call!
-                propStack.add(prop.name)
-                propIsArrayStack.add(prop.type.isArray)
-                propIsCollectionStack.add('TODO3')
+                putStacks(prop, prop.type.isArray)
                 printGetForType(prop.implicitRef.type)
-                propStack.pop()
-                propIsArrayStack.pop()
-                propIsCollectionStack.pop()
+                popStacks()
             }
         }
     }
