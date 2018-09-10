@@ -112,7 +112,7 @@ class MaskExperiments {
         for (final String key : mask.hiddenKeys()) {
             switch(key) {"""
         /* NOTE: The data model is being altered: tune propLookup parameter to loose Suffix Id !!!*/
-        printAllCases(type)
+        printAllCases.call(type)
 
         println '''            }
         }
@@ -120,11 +120,11 @@ class MaskExperiments {
 
         /* Second loop: method checkXXXExists() */
         prepareStacks.call()
-        printCheckExistsForType(type)
+        printCheckExistsForType.call(type)
 
         /* Third loop: method getXXX() */
         prepareStacks.call()
-        printGetForType(type)
+        printGetForType.call(type)
 
         println '}'
     }
@@ -333,23 +333,24 @@ class MaskExperiments {
                 lines.add("target.${cond} != null")
             }
             def conditions = lines.join('\n                && ')
-            println "\n    private static boolean check${checkMethodPart}Exists(${targetType} target) {\n        return ${conditions};\n    }"
+            def output = "\n    private static boolean check${checkMethodPart}Exists(${targetType} target) {\n        return ${conditions};\n    }"
+            println output
         }
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             // recursive call!
-            putStacks(prop)
-            printCheckExistsForType(prop.type.type)
-            popStacks()
+            putStacks.call(prop)
+            printCheckExistsForType.call(prop.type.type)
+            popStacks.call()
         }
 
         if (joined) {
             data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
                 // recursive call!
-                putStacks(prop)
-                printCheckExistsForType(prop.implicitRef.type)
-                popStacks()
+                putStacks.call(prop)
+                printCheckExistsForType.call(prop.implicitRef.type)
+                popStacks.call()
             }
         }
     }
@@ -419,29 +420,30 @@ class MaskExperiments {
             }
             def retType = data.upperCamelCase.call(type.name)
             def stream = parts[0] + parts.subList(1,parts.size()).collect {"\n                    .$it"}.join('')
-                    println """
+            def output = """
     private static List<${retType}> get${methodName}(${targetType} target) {
         if (check${checkName}Exists(target)) {
             return target.${stream};
         }
         return Collections.emptyList();
     }"""
+            println output
         }
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             // recursive call!
-            putStacks(prop)
-            printGetForType(prop.type.type)
-            popStacks()
+            putStacks.call(prop)
+            printGetForType.call(prop.type.type)
+            popStacks.call()
         }
 
         if (joined) {
             data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
                 // recursive call!
-                putStacks(prop)
-                printGetForType(prop.implicitRef.type)
-                popStacks()
+                putStacks.call(prop)
+                printGetForType.call(prop.implicitRef.type)
+                popStacks.call()
             }
         }
     }
