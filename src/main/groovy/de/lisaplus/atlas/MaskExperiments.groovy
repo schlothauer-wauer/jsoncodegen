@@ -2,6 +2,7 @@ package de.lisaplus.atlas
 
 import de.lisaplus.atlas.builder.JsonSchemaBuilder
 import de.lisaplus.atlas.codegen.GeneratorBase
+import de.lisaplus.atlas.codegen.helper.java.JavaTypeConvert
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Type
@@ -35,7 +36,7 @@ class MaskExperiments {
                 : args[0]
         def type = args.length > 0 ?
                 args[1]
-                : 'JunctionContact'
+                : 'JunctionLocation'    // 'JunctionContact'
         def joined = args.length > 1 ?
                 Boolean.valueOf(args[2])
                 : true
@@ -116,9 +117,9 @@ class MaskExperiments {
 
         println "public class ${targetType}Masking {"
 
-        println '''    public static void mask(JunctionContactJoined target, PojoMask mask) {
+        println """    public static void mask(${targetType} target, PojoMask mask) {
         for (final String key : mask.hiddenKeys()) {
-            switch(key) {'''
+            switch(key) {"""
 
         printCaseForType(type)
 
@@ -197,10 +198,14 @@ class MaskExperiments {
             // FIXME change propStack to hold Property objects and evaluate the type of the parent!
 
             Property pProp = propStack.last()
+//             println "// $prop.name"
             def parent = pProp.name.take(1)
             // TODO check with Eiko
+            /*
             Type parentType = pProp.isRefType() ? pProp.type.type : pProp.type
             def parentJavaType = data.upperCamelCase.call(parentType.name)
+            */
+            def parentJavaType = JavaTypeConvert.convertForceSingle.call(pProp.type)
             def methodName = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
             propStack.add(prop)
             def key = propStack.collect{ it.name }.join('.')
