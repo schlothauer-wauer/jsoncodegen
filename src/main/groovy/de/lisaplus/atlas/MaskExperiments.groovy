@@ -36,7 +36,7 @@ class MaskExperiments {
                 : args[0]
         def type = args.length > 0 ?
                 args[1]
-                : 'JunctionLocation'    // 'JunctionContact'
+                : 'Contact_type' // 'JunctionLocation'    // 'JunctionContact'
         def joined = args.length > 1 ?
                 Boolean.valueOf(args[2])
                 : true
@@ -101,7 +101,7 @@ class MaskExperiments {
 //        GeneratorBase generator = new DummyGenerator()
 //        data = generator.createTemplateDataMap(model)
 //        Type type = data.model.types.find {type -> type.name == typeName}
-        targetType = type.name + (joined ? 'Joined' : '')
+        targetType = data.upperCamelCase.call(type.name) + (joined ? 'Joined' : '')
         println '###################################################################'
         println "Start of $targetType:"
         println '###################################################################'
