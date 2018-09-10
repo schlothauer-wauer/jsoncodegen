@@ -36,7 +36,7 @@ class MaskExperiments {
                 : args[0]
         def type = args.length > 0 ?
                 args[1]
-                : 'Contact_type' // 'JunctionLocation'    // 'JunctionContact'
+                : 'Junction' // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
         def joined = args.length > 1 ?
                 Boolean.valueOf(args[2])
                 : true
@@ -106,40 +106,55 @@ class MaskExperiments {
         println "Start of $targetType:"
         println '###################################################################'
 
-        // NOTE:
-        // The data model is being altered: tune propLookup parameter to loose Suffix Id!!
-        tuneType(type)
-
         /* First loop: method mask */
-        propStack = []; propIsArrayStack = []
-        // avoid extra case for handling empty stack!
-        propIsCollectionStack = [false]
-
         println "public class ${targetType}Masking {"
 
         println """    public static void mask(${targetType} target, PojoMask mask) {
         for (final String key : mask.hiddenKeys()) {
             switch(key) {"""
-
-        printCaseForType(type)
+        /* NOTE: The data model is being altered: tune propLookup parameter to loose Suffix Id !!!*/
+        printAllCases(type)
 
         println '''            }
         }
     }'''
 
         /* Second loop: method checkXXXExists() */
-        propStack = []; propIsArrayStack = []
-        // avoid extra case for handling empty stack!
-        propIsCollectionStack = [false]
+        prepareStacks.call()
         printCheckExistsForType(type)
 
         /* Third loop: method getXXX() */
-        propStack = []; propIsArrayStack = []
-        // avoid extra case for handling empty stack!
-        propIsCollectionStack = [false]
+        prepareStacks.call()
         printGetForType(type)
 
         println '}'
+    }
+
+    /**
+     * Prepares the stacks for running the next loop over the model
+     */
+    def prepareStacks = {
+        propStack = []; propIsArrayStack = []
+        // avoid extra case for handling empty stack!
+        propIsCollectionStack = [false]
+
+    }
+
+    /**
+     * Performs some preparations and then triggers printing of all switch cases.
+     * @param type The top level type to process
+     */
+    def printAllCases = { Type type ->
+        // The data model is being altered: tune propLookup parameter to loose Suffix Id!!
+        tuneType(type)
+
+        /* First loop: method mask */
+//        propStack = []; propIsArrayStack = []
+//        // avoid extra case for handling empty stack!
+//        propIsCollectionStack = [false]
+        prepareStacks.call()
+
+        printCaseForType(type)
     }
 
     /**
@@ -149,7 +164,7 @@ class MaskExperiments {
      * Checks for properties with the tag <i>prepLookup</i> and removes the suffix Id.
      * @param type The type to process.
      */
-    void tuneType(Type type) {
+    def tuneType = { Type type ->
         type.properties.each { Property prop ->
             if (prop.hasTag('prepLookup') && prop.name.endsWith('Id')) {
                 prop.setName(prop.name.take(prop.name.length() - 2))
@@ -167,7 +182,7 @@ class MaskExperiments {
      * Actually creates the case for properties of a complex or reference class.
      * @param prop The property to process
      */
-    void printCaseSimple(Property prop) {
+    def printCaseSimple = {Property prop ->
         def lines
         if (propStack.isEmpty()) {
             // Example:
@@ -239,12 +254,12 @@ class MaskExperiments {
         println lines
     }
 
-    void printCaseComplex(Property property) {
+    def printCaseComplex = { Property property ->
         Type type = property.type.type
         printCaseForType(type)
     }
 
-    void printCaseJoined(Property property) {
+    def printCaseJoined = { Property property ->
         Type type = property.implicitRef.type
         printCaseForType(type)
     }
@@ -253,7 +268,7 @@ class MaskExperiments {
      * Prints the case statements for a certain type, calls itself recursively for reference and complex types!
      * @param type The type to process
      */
-    void printCaseForType(Type type) {
+    def printCaseForType = { Type type ->
 //        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:false]).each { Property prop ->
             printCaseSimple(prop)
@@ -282,7 +297,7 @@ class MaskExperiments {
      * Adds new elements to the stacks
      * @param property The property, which is to be visited
      */
-    private void putStacks(Property property) {
+    def putStacks = { Property property ->
         propStack.add(property)
         propIsArrayStack.add(property.type.isArray)
         // If either already collection of if this property is an collection.
@@ -292,7 +307,7 @@ class MaskExperiments {
     /**
      * Pops the latest elements from the stacks
      */
-    private void popStacks() {
+    def popStacks = {
         propStack.pop()
         propIsArrayStack.pop()
         propIsCollectionStack.pop()
@@ -302,7 +317,7 @@ class MaskExperiments {
      * Prints the methods checkXXX(target) for a certain type, calls itself recursively for reference and complex types!
      * @param type The type to process
      */
-    void printCheckExistsForType(Type type) {
+    def printCheckExistsForType = { Type type ->
         int size = propIsCollectionStack.size()
         if ( size > 2 && propIsCollectionStack.get(size-2)) {
             // can not check for null in children of array property -> stop creating more methods checkXXXExists()!
@@ -350,7 +365,7 @@ class MaskExperiments {
      * Prints the methods checkXXX(target) for a certain type, calls itself recursively for reference and complex types!
      * @param type The type to process
      */
-    void printGetForType(Type type) {
+    def printGetForType = { Type type ->
         if (propIsCollectionStack.last()) {
             // Example for key address.persons.contact where persons is the only array type
             // In case of multiple array types use .flatMap() for 2. to last array type!
