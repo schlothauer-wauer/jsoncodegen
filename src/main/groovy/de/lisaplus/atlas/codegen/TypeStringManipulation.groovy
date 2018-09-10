@@ -31,6 +31,7 @@ class TypeStringManipulation {
             isInnerType: isInnerType,
             isPropComplexType: isPropComplexType,
             typeToJava: JavaTypeConvert.convert,
+            typeToJavaForceSingle: JavaTypeConvert.convertForceSingle,
             typeToSwagger: SwaggerTypeConvert.convert,
             typeToJson: JsonTypeConvert.convert,
             typeToMeta: JsonTypeConvert.meta,
