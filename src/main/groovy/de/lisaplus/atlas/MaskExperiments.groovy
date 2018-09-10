@@ -269,6 +269,11 @@ class MaskExperiments {
      * @param type The type to process
      */
     void printCheckExistsForType(Type type) {
+        int size = propIsCollectionStack.size()
+        if ( size > 2 && propIsCollectionStack.get(size-2)) {
+            // can not check for null in children of array property -> stop creating more methods checkXXXExists()!
+            return
+        }
         if (!propStack.isEmpty()) {
             /*
                 private static boolean checkObjectBaseGisArea(JunctionNumberJoined target) {
@@ -315,10 +320,15 @@ class MaskExperiments {
         if (propIsCollectionStack.last()) {
             // Example for key address.persons.contact where persons is the only array type
             // In case of multiple array types use .flatMap() for 2. to last array type!
+            // We can not check for null references for objects in the object tree after hitting the first array property.
+            // ->
+            // A: the method checkXXXExists only checks for null references up to the first array property.
+            // B: do use Stream.filter() with a predicate for filtering out the null references!
             /*
                 private static List<ContactData> getAddressPersonsContact(JunctionContactJoined target) {
-                    if (checkAddressPersonsContactExists(target)) {
+                    if (checkAddressPersonsExists(target)) {
                         return target.getAddress().getPersons().stream()
+                                                               .filter(p -> p.getContact() != null)
                                                                .map(p -> p.getContact())
                                                                .collect(Collectors.toList());
                     }
@@ -326,6 +336,8 @@ class MaskExperiments {
                 }
              */
             def methodName = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
+            int maxCheckProp = propIsCollectionStack.last() ? propIsCollectionStack.indexOf(Boolean.TRUE) : propStack.size() // The index of the first entry of propIsCollectionStack indicating value collection
+            def checkName = propStack.subList(0, maxCheckProp).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersons
 
             // iterate through propStack and propIsArrayStack
             // Before first array type is encountered, add getter calls
@@ -343,9 +355,11 @@ class MaskExperiments {
                     def parentProp = propStack[i-1].name.take(1)
                     if (propIsArrayStack[i]) {
                         // flatMap(), e.g. flatMap(contact -> contact.getEmail().stream())
+                        parts.add("filter(${parentProp} -> ${parentProp}.get${currUpper}() != null)")
                         parts.add("flatMap(${parentProp} -> ${parentProp}.get${currUpper}().stream())")
                     } else {
                         // map(), e.g. map(person -> person.getContact())
+                        parts.add("filter(${parentProp} -> ${parentProp}.get${currUpper}() != null)")
                         parts.add("map(${parentProp} -> ${parentProp}.get${currUpper}())")
                     }
                 }
@@ -365,7 +379,7 @@ class MaskExperiments {
             def stream = parts[0] + parts.subList(1,parts.size()).collect {"\n                    .$it"}.join('')
                     println """
     private static List<${retType}> get${methodName}(${targetType} target) {
-        if (check${methodName}Exists(target)) {
+        if (check${checkName}Exists(target)) {
             return target.${stream};
         }
         return Collections.emptyList();
