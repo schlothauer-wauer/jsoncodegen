@@ -43,6 +43,9 @@ class MaskExperiments {
         def maskExp = new MaskExperiments(type, modelPath)
         maskExp.execute(joined)
 
+        // Check for exception while running code generation for all available types
+        maskExp.generateAll()
+
     }
 
     MaskExperiments(typeName, modelPath) {
@@ -69,12 +72,38 @@ class MaskExperiments {
     boolean joined
     String targetType
 
+    /**
+     * Execute code generation for all types
+     */
+    void generateAll() {
+        GeneratorBase generator = new DummyGenerator()
+        data = generator.createTemplateDataMap(model)
+        for(Type type : model.types) {
+            executeForType(type, true)
+            executeForType(type, false)
+        }
+    }
+
+    /**
+     * Execute code generation for the type defined by MaskExperiments#typeName
+     * @param joined
+     */
     void execute(boolean joined) {
-        this.joined = joined
         GeneratorBase generator = new DummyGenerator()
         data = generator.createTemplateDataMap(model)
         Type type = data.model.types.find {type -> type.name == typeName}
+        executeForType(type, joined)
+    }
+
+    private void executeForType(Type type, boolean joined) {
+        this.joined = joined
+//        GeneratorBase generator = new DummyGenerator()
+//        data = generator.createTemplateDataMap(model)
+//        Type type = data.model.types.find {type -> type.name == typeName}
         targetType = type.name + (joined ? 'Joined' : '')
+        println '###################################################################'
+        println "Start of $targetType:"
+        println '###################################################################'
 
         // NOTE:
         // The data model is being altered: tune propLookup parameter to loose Suffix Id!!
