@@ -2,7 +2,6 @@ package de.lisaplus.atlas
 
 import de.lisaplus.atlas.builder.JsonSchemaBuilder
 import de.lisaplus.atlas.codegen.GeneratorBase
-import de.lisaplus.atlas.codegen.helper.java.JavaTypeConvert
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Type
@@ -210,17 +209,11 @@ class MaskExperiments {
                     }
                     break;
              */
-            // FIXME change propStack to hold Property objects and evaluate the type of the parent!
 
             Property pProp = propStack.last()
 //             println "// $prop.name"
             def parent = pProp.name.take(1)
-            // TODO check with Eiko
-            /*
-            Type parentType = pProp.isRefType() ? pProp.type.type : pProp.type
-            def parentJavaType = data.upperCamelCase.call(parentType.name)
-            */
-            def parentJavaType = JavaTypeConvert.convertForceSingle.call(pProp.type)
+            def parentJavaType = data.typeToJavaForceSingle.call(pProp.type)
             def methodName = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
             propStack.add(prop)
             def key = propStack.collect{ it.name }.join('.')
