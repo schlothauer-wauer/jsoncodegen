@@ -35,7 +35,7 @@ class MaskExperiments {
                 : args[0]
         def type = args.length > 0 ?
                 args[1]
-                : 'JunctionJoined' // 'Junction' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
         def joined = type.endsWith('Joined')
 
         def maskExp = new MaskExperiments(type, modelPath)
@@ -160,25 +160,63 @@ class MaskExperiments {
      * <b>THIS METHOD ALTERS THE MODEL!!!</b>
      * This method tunes the properties of a (complex or reference) type and calls itself recursively if the type
      * itself holds properties of other (complex or reference) types.
-     * Checks for properties with the tag <i>prepLookup</i> and removes the suffix Id.
+     * Checks for properties with the tag <i>prepLookup</i> and
+     * <ul>
+     * <li>joined==true: removes the property completely</li>
+     * <li>joined==false: removes the suffix Id</li>
      * @param type The type to process.
      */
     def tuneType = { Type type ->
-        type.properties.each { Property prop ->
-            if (prop.hasTag('prepLookup') && prop.name.endsWith('Id')) {
+        // version 3:
+        Closure<Void> action
+        if (joined) {
+            action = {  Property prop ->
+                println "// ATTENTION: Removing lookup property ${prop.name}"
+                type.properties.remove(prop)
+            }
+        } else {
+            action = { Property prop ->
                 def orig = prop.name
                 def shorten = prop.name.take(prop.name.length() - 2)
                 println "// ATTENTION: Renaming lookup property from $orig to $shorten"
                 prop.setName(shorten)
-                joinedPropsNames.add(shorten)
-                if (prop.implicitRefIsRefType()) {
-                    tuneType(prop.implicitRef.type)
-                }
-            }
-            if (prop.isRefTypeOrComplexType()) {
-                tuneType(prop.type.type)
             }
         }
+        Collection<Property> lookupProps = type.properties.findAll {Property prop -> prop.hasTag('prepLookup') && prop.name.endsWith('Id')}
+        type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   } each { Property prop -> tuneType.call(prop.implicitRef.type)}
+        type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() } each { Property prop -> tuneType.call(prop.type.type)}
+        lookupProps.each(action)
+
+//        // version 2
+//        if (joined) {
+//            Collection<Property> lookupProps = type.properties.findAll { prop.hasTag('prepLookup') && prop.name.endsWith('Id')}
+//            lookupProps.each {  Property prop ->
+//                println "// ATTENTION: Removing lookup property ${prop.name}"
+//                type.properties.remove(prop)
+//                if (prop.implicitRefIsRefType()) {
+//                    tuneType.call(prop.implicitRef.type)
+//                }
+//            }
+//            type.properties.find { Property prop -> prop.isRefTypeOrComplexType() }.each { Property prop ->
+//                tuneType.call(prop.type.type)
+//            }
+//        } else {
+//            type.properties.each { Property prop ->
+//                if (prop.hasTag('prepLookup') && prop.name.endsWith('Id')) {
+//                    def orig = prop.name
+//                    def shorten = prop.name.take(prop.name.length() - 2)
+//                    println "// ATTENTION: Renaming lookup property from $orig to $shorten"
+//                    prop.setName(shorten)
+//                    joinedPropsNames.add(shorten)
+//                    if (prop.implicitRefIsRefType()) {
+//                        tuneType.call(prop.implicitRef.type)
+//                    }
+//                }
+//                if (prop.isRefTypeOrComplexType()) {
+//                    tuneType.call(prop.type.type)
+//                }
+//            }
+//        }
     }
 
     /**
@@ -194,22 +232,36 @@ class MaskExperiments {
                     target.setDomainId(null);
                     break;
               */
-            if (prop.hasTag('prepLookup')) {
-                if (joined) {
-                    lines = /            case "${prop.name}":
+            if (prop.hasTag('join')) {
+                lines = /            case "${prop.name}":
                 target.set${data.upperCamelCase.call(prop.name)}(null);
                 target.set${data.upperCamelCase.call(prop.name)}Id(null);
                 break;/
-                } else {
-                    lines = /            case "${prop.name}":
+            } else if ( prop.hasTag('prepLookup')){
+                lines = /            case "${prop.name}":
                 target.set${data.upperCamelCase.call(prop.name)}Id(null);
                 break;/
-                }
             } else {
                 lines = /            case "${prop.name}":
                 target.set${data.upperCamelCase.call(prop.name)}(null);
                 break;/
             }
+//            if (prop.hasTag('prepLookup')) {
+//                if (joined) {
+//                    lines = /            case "${prop.name}":
+//                target.set${data.upperCamelCase.call(prop.name)}(null);
+//                target.set${data.upperCamelCase.call(prop.name)}Id(null);
+//                break;/
+//                } else {
+//                    lines = /            case "${prop.name}":
+//                target.set${data.upperCamelCase.call(prop.name)}Id(null);
+//                break;/
+//                }
+//            } else {
+//                lines = /            case "${prop.name}":
+//                target.set${data.upperCamelCase.call(prop.name)}(null);
+//                break;/
+//            }
         } else if (propIsCollectionStack.last()) {
             // Example:
             /*
@@ -280,10 +332,11 @@ class MaskExperiments {
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
-            if ( !prop.hasTag('join') && !joinedPropsNames.contains(prop.name)) {
-                println "// evalCaseForType/RefTypeOrComplexType=true: type=${type.name} prop=${prop.name}"
-                evalCaseSimple.call(prop)
-            }
+//            if ( !prop.hasTag('join') && !joinedPropsNames.contains(prop.name)) {
+//                println "// evalCaseForType/RefTypeOrComplexType=true: type=${type.name} prop=${prop.name}"
+//                evalCaseSimple.call(prop)
+//            }
+            evalCaseSimple.call(prop)
             // recursive call!
             putStacks.call(prop)
             evalCaseComplex.call(prop)
