@@ -66,11 +66,6 @@ class MaskExperiments {
      *  This sack is build while traversing the object hierarchy.
      */
     List<Boolean> propIsCollectionStack
-    /**
-     * Contains the names of those properties, for which a join is performed / the lookup is being prepared.
-     * Can be used to e.g. avoid creating multiple cases for the switch statement,
-     */
-    List<String> joinedPropsNames
     /** The bindings of the template / code generation */
     Map data
     /** Indicates whether the current type is a joined type */
@@ -146,7 +141,6 @@ class MaskExperiments {
      * @param type The top level type to process
      */
     def evalAllCases = { Type type ->
-        joinedPropsNames = []
         // The data model is being altered: tune propLookup properties to loose suffix Id!!!
         tuneType(type)
 
@@ -167,7 +161,6 @@ class MaskExperiments {
      * @param type The type to process.
      */
     def tuneType = { Type type ->
-        // version 3:
         Closure<Void> action
         if (joined) {
             action = {  Property prop ->
@@ -182,41 +175,10 @@ class MaskExperiments {
                 prop.setName(shorten)
             }
         }
-        Collection<Property> lookupProps = type.properties.findAll {Property prop -> prop.hasTag('prepLookup') && prop.name.endsWith('Id')}
-        type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   } each { Property prop -> tuneType.call(prop.implicitRef.type)}
-        type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() } each { Property prop -> tuneType.call(prop.type.type)}
+        Collection<Property> lookupProps = type.properties.findAll { Property prop -> prop.hasTag('prepLookup') && prop.name.endsWith('Id') }
+        type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   } each { Property prop -> tuneType.call(prop.implicitRef.type) }
+        type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() } each { Property prop -> tuneType.call(prop.type.type) }
         lookupProps.each(action)
-
-//        // version 2
-//        if (joined) {
-//            Collection<Property> lookupProps = type.properties.findAll { prop.hasTag('prepLookup') && prop.name.endsWith('Id')}
-//            lookupProps.each {  Property prop ->
-//                println "// ATTENTION: Removing lookup property ${prop.name}"
-//                type.properties.remove(prop)
-//                if (prop.implicitRefIsRefType()) {
-//                    tuneType.call(prop.implicitRef.type)
-//                }
-//            }
-//            type.properties.find { Property prop -> prop.isRefTypeOrComplexType() }.each { Property prop ->
-//                tuneType.call(prop.type.type)
-//            }
-//        } else {
-//            type.properties.each { Property prop ->
-//                if (prop.hasTag('prepLookup') && prop.name.endsWith('Id')) {
-//                    def orig = prop.name
-//                    def shorten = prop.name.take(prop.name.length() - 2)
-//                    println "// ATTENTION: Renaming lookup property from $orig to $shorten"
-//                    prop.setName(shorten)
-//                    joinedPropsNames.add(shorten)
-//                    if (prop.implicitRefIsRefType()) {
-//                        tuneType.call(prop.implicitRef.type)
-//                    }
-//                }
-//                if (prop.isRefTypeOrComplexType()) {
-//                    tuneType.call(prop.type.type)
-//                }
-//            }
-//        }
     }
 
     /**
@@ -246,22 +208,6 @@ class MaskExperiments {
                 target.set${data.upperCamelCase.call(prop.name)}(null);
                 break;/
             }
-//            if (prop.hasTag('prepLookup')) {
-//                if (joined) {
-//                    lines = /            case "${prop.name}":
-//                target.set${data.upperCamelCase.call(prop.name)}(null);
-//                target.set${data.upperCamelCase.call(prop.name)}Id(null);
-//                break;/
-//                } else {
-//                    lines = /            case "${prop.name}":
-//                target.set${data.upperCamelCase.call(prop.name)}Id(null);
-//                break;/
-//                }
-//            } else {
-//                lines = /            case "${prop.name}":
-//                target.set${data.upperCamelCase.call(prop.name)}(null);
-//                break;/
-//            }
         } else if (propIsCollectionStack.last()) {
             // Example:
             /*
@@ -332,10 +278,6 @@ class MaskExperiments {
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
-//            if ( !prop.hasTag('join') && !joinedPropsNames.contains(prop.name)) {
-//                println "// evalCaseForType/RefTypeOrComplexType=true: type=${type.name} prop=${prop.name}"
-//                evalCaseSimple.call(prop)
-//            }
             evalCaseSimple.call(prop)
             // recursive call!
             putStacks.call(prop)
