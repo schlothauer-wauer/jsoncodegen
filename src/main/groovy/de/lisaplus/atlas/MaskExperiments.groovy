@@ -264,11 +264,13 @@ class MaskExperiments {
     def printCaseForType = { Type type ->
 //        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:false]).each { Property prop ->
+            println "// evalCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
             printCaseSimple.call(prop)
         }
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            println "// evalCaseForType/RefTypeOrComplexType=true: type=${type.name} prop=${prop.name}"
             printCaseSimple.call(prop)
             // recursive call!
             putStacks.call(prop)
@@ -278,6 +280,7 @@ class MaskExperiments {
 
         if (joined) {
             data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
+                println "// evalCaseForType/prepLookup:  type=${type.name} prop=${prop.name}"
                 // recursive call!
                 putStacks.call(prop)
                 printCaseJoined.call(prop)
