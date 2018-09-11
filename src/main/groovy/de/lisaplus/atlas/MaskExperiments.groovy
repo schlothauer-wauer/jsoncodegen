@@ -35,7 +35,7 @@ class MaskExperiments {
                 : args[0]
         def type = args.length > 0 ?
                 args[1]
-                : 'Junction' // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'Junction' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
         def joined = args.length > 1 ?
                 Boolean.valueOf(args[2])
                 : true
@@ -44,7 +44,7 @@ class MaskExperiments {
         maskExp.execute(joined)
 
         // Check for exception while running code generation for all available types
-        maskExp.generateAll()
+//        maskExp.generateAll()
 
     }
 
@@ -106,7 +106,7 @@ class MaskExperiments {
         println '###################################################################'
 
         /* First loop: method mask */
-        println "public class ${targetType}Masking {"
+        println "public class Mask${targetType} {"
 
         println """    public static void mask(${targetType} target, PojoMask mask) {
         for (final String key : mask.hiddenKeys()) {
