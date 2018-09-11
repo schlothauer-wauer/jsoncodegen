@@ -144,13 +144,10 @@ class MaskExperiments {
      * @param type The top level type to process
      */
     def printAllCases = { Type type ->
-        // The data model is being altered: tune propLookup parameter to loose Suffix Id!!
+        // The data model is being altered: tune propLookup properties to loose suffix Id!!
         tuneType(type)
 
         /* First loop: method mask */
-//        propStack = []; propIsArrayStack = []
-//        // avoid extra case for handling empty stack!
-//        propIsCollectionStack = [false]
         prepareStacks.call()
 
         printCaseForType(type)
@@ -166,7 +163,10 @@ class MaskExperiments {
     def tuneType = { Type type ->
         type.properties.each { Property prop ->
             if (prop.hasTag('prepLookup') && prop.name.endsWith('Id')) {
-                prop.setName(prop.name.take(prop.name.length() - 2))
+                def orig = prop.name
+                def shorten = prop.name.take(prop.name.length() - 2)
+//                println "ATTENTION: Renaming lookup property from $orig to $shorten"
+                prop.setName(shorten)
                 if (prop.implicitRefIsRefType()) {
                     tuneType(prop.implicitRef.type)
                 }
@@ -264,24 +264,24 @@ class MaskExperiments {
     def printCaseForType = { Type type ->
 //        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:false]).each { Property prop ->
-            printCaseSimple(prop)
+            printCaseSimple.call(prop)
         }
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
-            printCaseSimple(prop)
+            printCaseSimple.call(prop)
             // recursive call!
-            putStacks(prop)
-            printCaseComplex(prop)
-            popStacks()
+            putStacks.call(prop)
+            printCaseComplex.call(prop)
+            popStacks.call()
         }
 
         if (joined) {
             data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
                 // recursive call!
-                putStacks(prop)
-                printCaseJoined(prop)
-                popStacks()
+                putStacks.call(prop)
+                printCaseJoined.call(prop)
+                popStacks.call()
             }
         }
     }
