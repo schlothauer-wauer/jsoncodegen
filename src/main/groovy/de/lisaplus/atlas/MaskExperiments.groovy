@@ -35,10 +35,8 @@ class MaskExperiments {
                 : args[0]
         def type = args.length > 0 ?
                 args[1]
-                : 'Junction' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
-        def joined = args.length > 1 ?
-                Boolean.valueOf(args[2])
-                : true
+                : 'JunctionJoined' // 'Junction' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+        def joined = type.endsWith('Joined')
 
         def maskExp = new MaskExperiments(type, modelPath)
         maskExp.execute(joined)
@@ -68,8 +66,16 @@ class MaskExperiments {
      *  This sack is build while traversing the object hierarchy.
      */
     List<Boolean> propIsCollectionStack
+    /**
+     * Contains the names of those properties, for which a join is performed / the lookup is being prepared.
+     * Can be used to e.g. avoid creating multiple cases for the switch statement,
+     */
+    List<String> joinedPropsNames
+    /** The bindings of the template / code generation */
     Map data
+    /** Indicates whether the current type is a joined type */
     boolean joined
+    /** The name of the Java class of the type. */
     String targetType
 
     /**
@@ -79,8 +85,7 @@ class MaskExperiments {
         GeneratorBase generator = new DummyGenerator()
         data = generator.createTemplateDataMap(model)
         for(Type type : model.types) {
-            executeForType(type, true)
-            executeForType(type, false)
+            executeForType(type, type.name.endsWith('Joined'))
         }
     }
 
@@ -97,10 +102,7 @@ class MaskExperiments {
 
     private void executeForType(Type type, boolean joined) {
         this.joined = joined
-//        GeneratorBase generator = new DummyGenerator()
-//        data = generator.createTemplateDataMap(model)
-//        Type type = data.model.types.find {type -> type.name == typeName}
-        targetType = data.upperCamelCase.call(type.name) + (joined ? 'Joined' : '')
+        targetType = data.upperCamelCase.call(type.name)
         println '###################################################################'
         println "Start of $targetType:"
         println '###################################################################'
@@ -144,7 +146,8 @@ class MaskExperiments {
      * @param type The top level type to process
      */
     def evalAllCases = { Type type ->
-        // The data model is being altered: tune propLookup properties to loose suffix Id!!
+        joinedPropsNames = []
+        // The data model is being altered: tune propLookup properties to loose suffix Id!!!
         tuneType(type)
 
         /* First loop: method mask */
@@ -165,8 +168,9 @@ class MaskExperiments {
             if (prop.hasTag('prepLookup') && prop.name.endsWith('Id')) {
                 def orig = prop.name
                 def shorten = prop.name.take(prop.name.length() - 2)
-//                println "ATTENTION: Renaming lookup property from $orig to $shorten"
+                println "// ATTENTION: Renaming lookup property from $orig to $shorten"
                 prop.setName(shorten)
+                joinedPropsNames.add(shorten)
                 if (prop.implicitRefIsRefType()) {
                     tuneType(prop.implicitRef.type)
                 }
@@ -191,10 +195,16 @@ class MaskExperiments {
                     break;
               */
             if (prop.hasTag('prepLookup')) {
-                lines = /            case "${prop.name}":
+                if (joined) {
+                    lines = /            case "${prop.name}":
                 target.set${data.upperCamelCase.call(prop.name)}(null);
                 target.set${data.upperCamelCase.call(prop.name)}Id(null);
                 break;/
+                } else {
+                    lines = /            case "${prop.name}":
+                target.set${data.upperCamelCase.call(prop.name)}Id(null);
+                break;/
+                }
             } else {
                 lines = /            case "${prop.name}":
                 target.set${data.upperCamelCase.call(prop.name)}(null);
@@ -270,14 +280,17 @@ class MaskExperiments {
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
-            println "// evalCaseForType/RefTypeOrComplexType=true: type=${type.name} prop=${prop.name}"
-            evalCaseSimple.call(prop)
+            if ( !prop.hasTag('join') && !joinedPropsNames.contains(prop.name)) {
+                println "// evalCaseForType/RefTypeOrComplexType=true: type=${type.name} prop=${prop.name}"
+                evalCaseSimple.call(prop)
+            }
             // recursive call!
             putStacks.call(prop)
             evalCaseComplex.call(prop)
             popStacks.call()
         }
 
+        /*
         if (joined) {
             data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
                 println "// evalCaseForType/prepLookup:  type=${type.name} prop=${prop.name}"
@@ -287,6 +300,7 @@ class MaskExperiments {
                 popStacks.call()
             }
         }
+        */
     }
 
     /**
@@ -348,6 +362,7 @@ class MaskExperiments {
             popStacks.call()
         }
 
+        /*
         if (joined) {
             data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
                 // recursive call!
@@ -356,6 +371,7 @@ class MaskExperiments {
                 popStacks.call()
             }
         }
+        */
     }
 
     /**
@@ -441,6 +457,7 @@ class MaskExperiments {
             popStacks.call()
         }
 
+        /*
         if (joined) {
             data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
                 // recursive call!
@@ -449,5 +466,6 @@ class MaskExperiments {
                 popStacks.call()
             }
         }
+        */
     }
 }
