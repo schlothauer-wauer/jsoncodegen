@@ -20,7 +20,7 @@ class JavaTypeConvert {
         JSR_310_ZONED('java.time.LocalDate', 'java.time.ZonedDateTime');
         
         final String dateClass
-        final String dateTimeClass;
+        final String dateTimeClass
         
         private DateTypePreset(dateClass, dateTimeClass) {
             this.dateClass = dateClass
@@ -28,7 +28,7 @@ class JavaTypeConvert {
         }
     }
 
-    static DateTypePreset preset = DateTypePreset.LEGACY;
+    static DateTypePreset preset = DateTypePreset.LEGACY
 
     static {
         switch (System.getProperty('date.type.preset', 'legacy').toLowerCase()) {
@@ -68,6 +68,37 @@ class JavaTypeConvert {
                 return 'void'
         default:
             return "${BaseType.UNKNOWN_TYPE}\n$type\n${type.name()}"
+        }
+    }
+
+    static def convertForceSingle = { type,prefix = '' ->
+        if (! type instanceof BaseType) {
+            return BaseType.WRONG_TYPE+type
+        }
+        switch(type.name()) {
+            case IntType.NAME:
+                return 'Integer'
+            case NumberType.NAME:
+                return 'Double'
+            case StringType.NAME:
+                return 'String'
+            case UUIDType.NAME:
+                return 'String'
+            case BooleanType.NAME:
+                return 'Boolean'
+            case DateType.NAME:
+                return "${preset.dateClass}"
+            case DateTimeType.NAME:
+                return "${preset.dateTimeClass}"
+            case RefType.NAME:
+            case ComplexType.NAME:
+                return "${prefix}${firstUpperCamelCase(type.type.name)}"
+            case UnsupportedType.NAME:
+                return BaseType.UNSUPPORTED_TYPE+type
+            case VoidType.NAME:
+                return 'void'
+            default:
+                return "${BaseType.UNKNOWN_TYPE}\n$type\n${type.name()}"
         }
     }
 
