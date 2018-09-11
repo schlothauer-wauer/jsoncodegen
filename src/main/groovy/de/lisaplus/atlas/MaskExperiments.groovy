@@ -190,7 +190,7 @@ class MaskExperiments {
                     target.setDomainId(null);
                     break;
               */
-            if (prop.hasTag('propLookup')) {
+            if (prop.hasTag('prepLookup')) {
                 lines = /            case "${prop.name}":
                 target.set${data.upperCamelCase.call(prop.name)}(null);
                 target.set${data.upperCamelCase.call(prop.name)}Id(null);
