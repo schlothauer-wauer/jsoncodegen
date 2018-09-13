@@ -83,15 +83,15 @@ class MaskTestExperiment {
 
         /* 1st loop: find parameter names and mask keys */
         propStack = []
-        // The names of the parameter defined in the current type
-        Set<String> paramNames = []
+        // The names of the properties defined in the current type
+        Set<String> propNames = []
         // The mask keys, which are available for the current type
         List<String> maskKeys = []
-        findNamesKeysForType.call(type, paramNames, maskKeys)
+        findNamesKeysForType.call(type, propNames, maskKeys)
 
         // Debug output of 1st loop:
-        List<String> sorted = new ArrayList<>(paramNames); Collections.sort(sorted)
-        println "paramNames=${sorted}"
+        List<String> sorted = new ArrayList<>(propNames); Collections.sort(sorted)
+        println "propNames=${sorted}"
         sorted.clear(); sorted.addAll(maskKeys); Collections.sort(sorted)
         println "maskKey=${sorted}"
 
@@ -107,6 +107,24 @@ class MaskTestExperiment {
             sorted.clear(); sorted.addAll(maskKey2ParamNames.get(maskKey)); Collections.sort(sorted)
             println "maskKey='$maskKey' affected=${sorted}"
         }
+
+        /* 3rd loop: find mapping of mask key to the number of deleted parameter occurrences triggered by actually masking that key. */
+        int entryPerArray = 2
+        Map<String,Map<String,Integer>> propName2maskKey2count = [:]
+        for (String propName : propNames) {
+            Map<String, Integer> maskKey2Count = [:]
+            findMaskKeyCountMappingForType.call(type, propName, entryPerArray, maskKey2Count)
+            propName2maskKey2count.put(propName, maskKey2Count)
+        }
+
+        // Debug output of 3rd loop:
+        for (String paramName : propNames) {
+            println "param '$paramName':"
+            Map<String, Integer> maskKey2Count = propName2maskKey2count.get(paramName)
+            sorted.clear(); sorted.addAll(maskKey2Count.keySet()); Collections.sort(sorted)
+            sorted.each { key -> println "param=$paramName maskKey=$key count=${maskKey2Count.get(key)}" }
+        }
+
     }
 
     /**
@@ -131,10 +149,10 @@ class MaskTestExperiment {
 
     /**
      * Traverse the properties of a type and collect the mask keys and parameter names.
-     * This method calls itself recursively if the type contains parameters of complex or reference types.
+     * This method calls itself recursively if the type contains properties of complex or reference types.
      */
-    def findNamesKeysForType = { Type type, Set<String> paramNames, List<String> maskKeys ->
-        type.properties.each { prop -> paramNames.add(prop.name) }
+    def findNamesKeysForType = { Type type, Set<String> propNames, List<String> maskKeys ->
+        type.properties.each { prop -> propNames.add(prop.name) }
         type.properties.each { prop ->
             propStack.add(prop)
             maskKeys.add(propStack.collect { prop2 -> prop2.name }.join('.'))
@@ -144,7 +162,7 @@ class MaskTestExperiment {
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             // recursive call!
             putStacks.call(prop)
-            findNamesKeysForType.call(prop.type.type, paramNames, maskKeys)
+            findNamesKeysForType.call(prop.type.type, propNames, maskKeys)
             popStacks.call()
         }
     }
@@ -153,45 +171,58 @@ class MaskTestExperiment {
     /**
      * Traverse the properties of a type and collect mapping of mask key to the names of those those properties, which will
      * be affected by removing the property associated with the mask key.
-     * This method calls itself recursively if the type contains parameters of complex or reference types.
+     * This method calls itself recursively if the type contains properties of complex or reference types.
      * @param type the type to process
-     * @param maskKey2ParamNames The mapping to extend while traversin.
+     * @param maskKey2ParamNames The mapping to extend while traversing.
      */
-    Closure<Set<String>>  finaKeyAffectedParamsForType = { Type type, Map<String,Set<String>> maskKey2ParamNames ->
-        Set<String> affectedParams = []
+    Closure<Set<String>>  finaKeyAffectedParamsForType = { Type type, Map<String,Set<String>> maskKey2PropNames ->
+        Set<String> affectedProps = []
         // process nodes with children
         data.filterProps.call(type, [refComplex:true]).each { prop ->
             // Type type = prop.isRefType() ? prop.implicitRef.type : prop.type.type
             putStacks.call(prop)
-            affectedParams.add(prop.name)
-            affectedParams.addAll(finaKeyAffectedParamsForType.call(prop.type.type, maskKey2ParamNames))
+            affectedProps.add(prop.name)
+            affectedProps.addAll(finaKeyAffectedParamsForType.call(prop.type.type, maskKey2PropNames))
             popStacks.call()
         }
         // process nodes without children
         data.filterProps.call(type, [refComplex:false]).each { prop ->
             putStacks.call(prop)
-            addAffected.call(Collections.singleton(prop.name), maskKey2ParamNames)
+            addAffected.call(Collections.singleton(prop.name), maskKey2PropNames)
             popStacks.call()
-            affectedParams.add(prop.name)
+            affectedProps.add(prop.name)
         }
         if (!propStack.isEmpty()) {
-            affectedParams.add(propStack.last().name)
+            affectedProps.add(propStack.last().name)
         }
-        addAffected.call(affectedParams, maskKey2ParamNames)
-        return affectedParams
+        addAffected.call(affectedProps, maskKey2PropNames)
+        return affectedProps
     }
 
     /**
      * Adds the names of the affected properties to the mapping maskKey2ParamNames.
      * The mask key is created by examining propStack.
      */
-    def addAffected = { Set<String> affected, Map<String,Set<String>> maskKey2ParamNames ->
+    def addAffected = { Set<String> affected, Map<String,Set<String>> maskKey2PropNames ->
         String maskKey = propStack.isEmpty() ? '.' : propStack.collect { prop2 -> prop2.name }.join('.')
-        if (maskKey2ParamNames.put(maskKey, affected) != null) {
+        if (maskKey2PropNames.put(maskKey, affected) != null) {
             String msg = "maskKey already present: $maskKey!"
             System.err.println msg
             throw new RuntimeException(msg)
         }
+    }
+
+    /**
+     * Traverse the properties of a type and, for a given property name, collect mapping of mask key to the expected
+     * count of removed properties when that masking is being performed.
+     * This method calls itself recursively if the type contains properties of complex or reference types.
+     * @param type the type to process
+     * @param propName The name of the property, where the expected count is to evaluate
+     * @param entryPerArray The count of entries per array property.
+     * @param maskKey2Count The mapping to extend while traversing.
+     */
+    Closure findMaskKeyCountMappingForType = { Type type, String propName, int entryPerArray, Map<String, Integer> maskKey2Count ->
+        return [:]
     }
 
 }
