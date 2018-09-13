@@ -240,16 +240,22 @@ public class TestMask$targetType {
         mapper = MapperFactory.createObjectMapper();
         mapper.setSerializationInclusion(Include.NON_NULL);
         matcherFactory = ThreadLocal.withInitial(() -> Pattern.compile(KEY_PATTERN).matcher("dummy"));
+
         allProps = Arrays.asList($propNameSequence);
         allMaskKeys = Arrays.asList($maskKeySequence);
-        maskKey2propNames = new HashMap<>();
-"""
+
+        maskKey2propNames = new HashMap<>();"""
         println fileHead
         maskKeys.each { key ->
             String affectedProps = maskKey2PropNames.get(key).collect{ prop -> /"$prop"/ }.join(', ') // e.g. "city", "classification", "ountry"
             String line = /        maskKey2propNames.put("${key}", new HashSet<>(Arrays.asList($affectedProps)));/
             println line
         }
+
+        println """
+        final Map<String, Integer> maskKey2Count = new HashMap<>();
+        propName2maskKey2deleteCount = new HashMap<>();"""
+
     }
 
     /**
