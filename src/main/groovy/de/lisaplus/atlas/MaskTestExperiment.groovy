@@ -74,6 +74,7 @@ class MaskTestExperiment {
     private void executeForType(Type type, boolean joined) {
         this.joined = joined
         targetType = data.upperCamelCase.call(type.name)
+        boolean printDebug = false;
         println '###################################################################'
         println "Start of $targetType:"
         println '###################################################################'
@@ -86,22 +87,26 @@ class MaskTestExperiment {
         List<String> maskKeys = []
         findNamesKeysForType.call(type, propNames, maskKeys)
 
-        // Debug output of 1st loop:
-        List<String> sorted = new ArrayList<>(propNames); Collections.sort(sorted)
-        println "propNames=${sorted}"
-        sorted.clear(); sorted.addAll(maskKeys); Collections.sort(sorted)
-        println "maskKey=${sorted}"
+        if (printDebug) {
+            // Debug output of 1st loop:
+            List<String> sorted = new ArrayList<>(propNames); Collections.sort(sorted)
+            println "propNames=${sorted}"
+            sorted.clear(); sorted.addAll(maskKeys); Collections.sort(sorted)
+            println "maskKey=${sorted}"
+        }
 
         /* 2nd loop: find property names affected by masking a mask key */
         propStack = []
-        // A mapping  of mask key to the property names affected when masking the property associated with that mask key
-        Map<String,Set<String>> maskKey2ParamNames = [:]
-        finaKeyAffectedParamsForType.call(type, maskKey2ParamNames)
+        // A mapping of mask key to the property names affected when masking the property associated with that mask key
+        Map<String,Set<String>> maskKey2PropNames = [:]
+        finaKeyAffectedParamsForType.call(type, maskKey2PropNames)
 
         // Debug output of 2nd loop:
-        maskKey2ParamNames.keySet().stream().sorted().each { maskKey ->
-            sorted.clear(); sorted.addAll(maskKey2ParamNames.get(maskKey)); Collections.sort(sorted)
-            println "maskKey='$maskKey' affected=${sorted}"
+        if (printDebug) {
+            maskKey2PropNames.keySet().stream().sorted().each { maskKey ->
+                sorted.clear(); sorted.addAll(maskKey2PropNames.get(maskKey)); Collections.sort(sorted)
+                println "maskKey='$maskKey' affected=${sorted}"
+            }
         }
 
         /* 3rd loop: find mapping of mask key to the number of deleted property occurrences triggered by actually masking that key. */
@@ -115,40 +120,135 @@ class MaskTestExperiment {
         }
 
         // Debug output of 3rd loop:
-        for (String propName : propNames) {
-            println "prop '$propName':"
-            Map<String, Integer> maskKey2Count = propName2maskKey2count.get(propName)
-            sorted.clear(); sorted.addAll(maskKey2Count.keySet()); Collections.sort(sorted)
-            // display all counts
-             sorted.each { key -> println "prop=$propName maskKey='$key' count=${maskKey2Count.get(key)}" }
-        }
+        if (printDebug) {
+            for (String propName : propNames) {
+                println "prop '$propName':"
+                Map<String, Integer> maskKey2Count = propName2maskKey2count.get(propName)
+                sorted.clear(); sorted.addAll(maskKey2Count.keySet()); Collections.sort(sorted)
+                // display all counts
+                sorted.each { key -> println "prop=$propName maskKey='$key' count=${maskKey2Count.get(key)}" }
+            }
 
+            for (String propName : propNames) {
+                println "prop '$propName':"
+                Map<String, Integer> maskKey2Count = propName2maskKey2count.get(propName)
+                sorted.clear(); sorted.addAll(maskKey2Count.keySet()); Collections.sort(sorted)
+                // display count > 0!
+                sorted.findAll { key -> maskKey2Count.get(key) > 0 }.each { key -> println "prop=$propName maskKey='$key' count=${maskKey2Count.get(key)}" }
 
-        for (String propName : propNames) {
-            println "prop '$propName':"
-            Map<String, Integer> maskKey2Count = propName2maskKey2count.get(propName)
-            sorted.clear(); sorted.addAll(maskKey2Count.keySet()); Collections.sort(sorted)
-            // display count > 0!
-            sorted.findAll { key -> maskKey2Count.get(key) > 0 }.each { key -> println "prop=$propName maskKey='$key' count=${maskKey2Count.get(key)}" }
-
-            // Sanity checks for counts:
-            Deque<String> keysNotNull = new LinkedList<>(sorted.findAll { key -> maskKey2Count.get(key) > 0 }.collect())
-            // If the next key starts with the previous, then the next count must be <= the previous
-            // If the next key does not start with the previous, then the count must be smaller than the first!
-            int countFirst = maskKey2Count.get(keysNotNull.peekFirst())
-            while (keysNotNull.size() > 1) {
-                String prev = keysNotNull.removeFirst()
-                String curr = keysNotNull.peekFirst()
-                if (curr.startsWith(prev)) {
-                    if (maskKey2Count.get(curr) > maskKey2Count.get(prev)) {
-                        println "Count error!\nprev: key=$prev count=${maskKey2Count.get(prev)}\ncur: key=$curr count=${maskKey2Count.get(curr)}"
-                    }
-                } else {
-                    if (maskKey2Count.get(curr) > countFirst) {
-                        println "Count error!\nkeys: prev=$prev curr=$curr\n count: first=${countFirst} curr=${maskKey2Count.get(curr)}"
+                // Sanity checks for counts:
+                Deque<String> keysNotNull = new LinkedList<>(sorted.findAll { key -> maskKey2Count.get(key) > 0 }.collect())
+                // If the next key starts with the previous, then the next count must be <= the previous
+                // If the next key does not start with the previous, then the count must be smaller than the first!
+                int countFirst = maskKey2Count.get(keysNotNull.peekFirst())
+                while (keysNotNull.size() > 1) {
+                    String prev = keysNotNull.removeFirst()
+                    String curr = keysNotNull.peekFirst()
+                    if (curr.startsWith(prev)) {
+                        if (maskKey2Count.get(curr) > maskKey2Count.get(prev)) {
+                            println "Count error!\nprev: key=$prev count=${maskKey2Count.get(prev)}\ncur: key=$curr count=${maskKey2Count.get(curr)}"
+                        }
+                    } else {
+                        if (maskKey2Count.get(curr) > countFirst) {
+                            println "Count error!\nkeys: prev=$prev curr=$curr\n count: first=${countFirst} curr=${maskKey2Count.get(curr)}"
+                        }
                     }
                 }
             }
+        }
+
+        // start printing JUnit content
+
+        String propNameSequence = propNames.collect{ name -> /"$name"/ }.join(', ') // e.g. "area", "center", "city"
+        String maskKeySequence = maskKeys.collect { key -> /"$key"/ }.join(', ') // e.g. "domainId", "guid", "location"
+        String fileHead = """
+package de.lisaplus.lisa.junction.mask;
+
+/**
+ * This file is generated by jsonCodeGen. Changes will be overwritten with next code generation run.
+ * Template: test_mask.txt
+ */
+
+import static java.nio.charset.Charset.forName;
+import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.lisaplus.lisa.junction.mask.api.PojoMask;
+import de.lisaplus.lisa.junction.mask.internal.PojoMaskImpl;
+import de.lisaplus.lisa.junction.model.JunctionJoined;
+import de.lisaplus.util.serialization.MapperFactory;
+import io.github.benas.randombeans.EnhancedRandomBuilder;
+import io.github.benas.randombeans.api.EnhancedRandom;
+
+/**
+ * This class contains the Unit test for masking of class $targetType. 
+ */
+public class TestMask$targetType {
+    /** Count of entries in Lists / array properties */
+    static final int COLL_SIZE = 2;
+    /** Pattern for looking up the keys. */
+    static final String KEY_PATTERN = "\\"[a-zA-Z]+\\":";
+    
+    /** For generating random POJOs/Beans. */
+    static EnhancedRandom random;
+    /** Converts the POJOs/Beans into the JSON representation. POJO attributes with value <i>null</i> are being dropped! */
+    static ObjectMapper mapper;
+    /** Provides the Matchers needed to count the occurrence of the keys in the JSON */
+    static ThreadLocal<Matcher> matcherFactory;
+    /** The names of the properties defined in the current type */
+    private static List<String> allProps;
+    /** The mask keys, which are available for the current type */
+    private static List<String> allMaskKeys;
+    /** A mapping  of mask key to the property names affected when masking the property associated with that mask key */
+    private static Map<String,Set<String>> maskKey2propNames;
+    /** A mapping property name to a mapping of mask key to the expected count of removed properties when that masking is being performed */
+    private static Map<String,Map<String,Integer>> propName2maskKey2deleteCount;
+
+    @BeforeClass
+    public static void before() {
+        System.out.println ("*********************** de.lisaplus.mask.MaskTestProto - Start ***********************");
+        final LocalDate minDate = LocalDate.parse("2000-01-01");
+        final LocalDate endDate = LocalDate.parse("2017-12-31");
+        random = EnhancedRandomBuilder.aNewEnhancedRandomBuilder()
+                .charset(forName("UTF-8"))
+                .dateRange(minDate, endDate)
+                .collectionSizeRange(COLL_SIZE, COLL_SIZE)
+                .overrideDefaultInitialization(true)
+                .build();
+        mapper = MapperFactory.createObjectMapper();
+        mapper.setSerializationInclusion(Include.NON_NULL);
+        matcherFactory = ThreadLocal.withInitial(() -> Pattern.compile(KEY_PATTERN).matcher("dummy"));
+        allProps = Arrays.asList($propNameSequence);
+        allMaskKeys = Arrays.asList($maskKeySequence);
+        maskKey2propNames = new HashMap<>();
+"""
+        println fileHead
+        maskKeys.each { key ->
+            String affectedProps = maskKey2PropNames.get(key).collect{ prop -> /"$prop"/ }.join(', ') // e.g. "city", "classification", "ountry"
+            String line = /        maskKey2propNames.put("${key}", new HashSet<>(Arrays.asList($affectedProps)));/
+            println line
         }
     }
 
