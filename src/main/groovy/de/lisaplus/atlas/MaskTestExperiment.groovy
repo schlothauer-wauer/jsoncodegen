@@ -123,14 +123,24 @@ class MaskTestExperiment {
         }
         nodesNoChildren.each { prop ->
             putStacks.call(prop)
-            String maskKey = propStack.collect { prop2 -> prop2.name }.join('.')
-            maskKey2ParamNames.put(maskKey, Collections.singleton(prop.name))
+            addAffected.call(Collections.singleton(prop.name), maskKey2ParamNames)
             popStacks.call()
             affectedParams.add(prop.name)
         }
-        String maskKey = propStack.collect { prop2 -> prop2.name }.join('.')
-        maskKey2ParamNames.put(maskKey, affectedParams)
+        if (!propStack.isEmpty()) {
+            affectedParams.add(propStack.last().name)
+        }
+        addAffected.call(affectedParams, maskKey2ParamNames)
         return affectedParams
+    }
+
+    def addAffected = { Set<String> affected, Map<String,Set<String>> maskKey2ParamNames ->
+        String maskKey = propStack.isEmpty() ? '.' : propStack.collect { prop2 -> prop2.name }.join('.')
+        if (maskKey2ParamNames.put(maskKey, affected) != null) {
+            String msg = "maskKey already present: $maskKey!"
+            System.err.println msg
+            throw new RuntimeException(msg)
+        }
     }
 
     /**
