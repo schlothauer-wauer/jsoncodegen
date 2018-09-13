@@ -108,6 +108,7 @@ class MaskTestExperiment {
         int entryPerArray = 2
         Map<String,Map<String,Integer>> propName2maskKey2count = [:]
         for (String propName : propNames) {
+//        for (String propName : ['route']) {
             Map<String, Integer> maskKey2Count = [:]
             findMaskKeyCountMappingForType.call(type, propName, entryPerArray, 0, maskKey2Count)
             propName2maskKey2count.put(propName, maskKey2Count)
@@ -118,7 +119,36 @@ class MaskTestExperiment {
             println "prop '$propName':"
             Map<String, Integer> maskKey2Count = propName2maskKey2count.get(propName)
             sorted.clear(); sorted.addAll(maskKey2Count.keySet()); Collections.sort(sorted)
-            sorted.each { key -> println "prop=$propName maskKey=$key count=${maskKey2Count.get(key)}" }
+            // display all counts
+             sorted.each { key -> println "prop=$propName maskKey='$key' count=${maskKey2Count.get(key)}" }
+        }
+
+
+        for (String propName : propNames) {
+            println "prop '$propName':"
+            Map<String, Integer> maskKey2Count = propName2maskKey2count.get(propName)
+            sorted.clear(); sorted.addAll(maskKey2Count.keySet()); Collections.sort(sorted)
+            // display count > 0!
+            sorted.findAll { key -> maskKey2Count.get(key) > 0 }.each { key -> println "prop=$propName maskKey='$key' count=${maskKey2Count.get(key)}" }
+
+            // Sanity checks for counts:
+            Deque<String> keysNotNull = new LinkedList<>(sorted.findAll { key -> maskKey2Count.get(key) > 0 }.collect())
+            // If the next key starts with the previous, then the next count must be <= the previous
+            // If the next key does not start with the previous, then the count must be smaller than the first!
+            int countFirst = maskKey2Count.get(keysNotNull.peekFirst())
+            while (keysNotNull.size() > 1) {
+                String prev = keysNotNull.removeFirst()
+                String curr = keysNotNull.peekFirst()
+                if (curr.startsWith(prev)) {
+                    if (maskKey2Count.get(curr) > maskKey2Count.get(prev)) {
+                        println "Count error!\nprev: key=$prev count=${maskKey2Count.get(prev)}\ncur: key=$curr count=${maskKey2Count.get(curr)}"
+                    }
+                } else {
+                    if (maskKey2Count.get(curr) > countFirst) {
+                        println "Count error!\nkeys: prev=$prev curr=$curr\n count: first=${countFirst} curr=${maskKey2Count.get(curr)}"
+                    }
+                }
+            }
         }
     }
 
@@ -224,7 +254,7 @@ class MaskTestExperiment {
         int countSum = 0
         if (!propStack.isEmpty() && propStack.last().name == propName) {
             // We are currently processing a complex property with the wanted name
-            def count = entryPerArray.power(arrayCount)
+            def count = entryPerArray.power(Math.max(0, arrayCount-1))
             def maskKey = propStack.collect {prop2 -> prop2.name}.join('.')
             println "Found $count occurrences in complex property of wanted name $propName at ${maskKey}"
             countSum += count
