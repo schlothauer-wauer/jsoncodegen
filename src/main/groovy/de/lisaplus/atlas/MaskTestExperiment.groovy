@@ -81,7 +81,7 @@ class MaskTestExperiment {
         println "Start of $targetType:"
         println '###################################################################'
 
-        /* 1st loop: find parameter names and mask keys */
+        /* 1st loop: find property names and mask keys */
         propStack = []
         // The names of the properties defined in the current type
         Set<String> propNames = []
@@ -95,9 +95,9 @@ class MaskTestExperiment {
         sorted.clear(); sorted.addAll(maskKeys); Collections.sort(sorted)
         println "maskKey=${sorted}"
 
-        /* 2nd loop: find parameter names affected by masking a mask key */
+        /* 2nd loop: find property names affected by masking a mask key */
         propStack = []
-        // A mapping  of mask key to the parameter names affected when masking the property associated with that mask key
+        // A mapping  of mask key to the property names affected when masking the property associated with that mask key
         Map<String,Set<String>> maskKey2ParamNames = [:]
         Set<String> affectedRoot = finaKeyAffectedParamsForType.call(type, maskKey2ParamNames)
         // maskKey2ParamNames.put('.', affectedRoot)
@@ -108,21 +108,21 @@ class MaskTestExperiment {
             println "maskKey='$maskKey' affected=${sorted}"
         }
 
-        /* 3rd loop: find mapping of mask key to the number of deleted parameter occurrences triggered by actually masking that key. */
+        /* 3rd loop: find mapping of mask key to the number of deleted property occurrences triggered by actually masking that key. */
         int entryPerArray = 2
         Map<String,Map<String,Integer>> propName2maskKey2count = [:]
         for (String propName : propNames) {
             Map<String, Integer> maskKey2Count = [:]
-            findMaskKeyCountMappingForType.call(type, propName, entryPerArray, maskKey2Count)
+            findMaskKeyCountMappingForType.call(type, propName, entryPerArray, 0, maskKey2Count)
             propName2maskKey2count.put(propName, maskKey2Count)
         }
 
         // Debug output of 3rd loop:
-        for (String paramName : propNames) {
-            println "param '$paramName':"
-            Map<String, Integer> maskKey2Count = propName2maskKey2count.get(paramName)
+        for (String propName : propNames) {
+            println "prop '$propName':"
+            Map<String, Integer> maskKey2Count = propName2maskKey2count.get(propName)
             sorted.clear(); sorted.addAll(maskKey2Count.keySet()); Collections.sort(sorted)
-            sorted.each { key -> println "param=$paramName maskKey=$key count=${maskKey2Count.get(key)}" }
+            sorted.each { key -> println "prop=$propName maskKey=$key count=${maskKey2Count.get(key)}" }
         }
 
     }
@@ -148,7 +148,7 @@ class MaskTestExperiment {
     }
 
     /**
-     * Traverse the properties of a type and collect the mask keys and parameter names.
+     * Traverse the properties of a type and collect the mask keys and property names.
      * This method calls itself recursively if the type contains properties of complex or reference types.
      */
     def findNamesKeysForType = { Type type, Set<String> propNames, List<String> maskKeys ->
@@ -221,8 +221,54 @@ class MaskTestExperiment {
      * @param entryPerArray The count of entries per array property.
      * @param maskKey2Count The mapping to extend while traversing.
      */
-    Closure findMaskKeyCountMappingForType = { Type type, String propName, int entryPerArray, Map<String, Integer> maskKey2Count ->
-        return [:]
+    Closure<Integer> findMaskKeyCountMappingForType = { Type type,
+                                               String propName,
+                                               int entryPerArray,
+                                               int arrayCount,
+                                               Map<String, Integer> maskKey2Count ->
+
+        int countSum = 0
+        if (!propStack.isEmpty() && propStack.last().name == propName) {
+            // We are currently processing a complex property with the wanted name
+            def count = entryPerArray.power(arrayCount)
+            def maskKey = propStack.collect {prop2 -> prop2.name}.join('.')
+            println "Found $count occurrences in complex property of wanted name $propName at ${maskKey}"
+            countSum += count
+        }
+
+        // process nodes with children
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            putStacks.call(prop)
+            int childArrayCount = arrayCount + (prop.type.isArray ? 1 : 0)
+            countSum += findMaskKeyCountMappingForType.call(prop.type.type, propName, entryPerArray, childArrayCount, maskKey2Count)
+            popStacks.call(prop)
+        }
+        // process nodes without children
+        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
+            putStacks.call(prop)
+            if (prop.name == propName) {
+                def count = entryPerArray.power(arrayCount)
+                def maskKey = propStack.collect {prop2 -> prop2.name}.join('.')
+                println "Found $count occurrences in simple property of wanted name $propName at ${maskKey}"
+                addCount.call(count, maskKey2Count)
+                countSum += count
+            } else {
+                addCount.call(0, maskKey2Count)
+            }
+            popStacks.call(prop)
+        }
+        addCount.call(countSum, maskKey2Count)
+        return countSum
+    }
+
+
+    Closure<Void> addCount = { int count, Map<String, Integer> maskKey2Count ->
+        String maskKey = propStack.isEmpty() ? '.' : propStack.collect { prop2 -> prop2.name }.join('.')
+        if (maskKey2Count.put(maskKey, count) != null) {
+            String msg = "maskKey already present: $maskKey!"
+            System.err.println msg
+            throw new RuntimeException(msg)
+        }
     }
 
 }
