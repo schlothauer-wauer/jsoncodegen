@@ -89,20 +89,20 @@ class MaskTestExperiment {
         List<String> maskKeys = []
         findNamesKeysForType.call(type, paramNames, maskKeys)
 
-        // Debug output of 1st loop
+        // Debug output of 1st loop:
         List<String> sorted = new ArrayList<>(paramNames); Collections.sort(sorted)
         println "paramNames=${sorted}"
         sorted.clear(); sorted.addAll(maskKeys); Collections.sort(sorted)
         println "maskKey=${sorted}"
 
-        /* 2nd loop: find parameter names affected by masking a mask key*/
+        /* 2nd loop: find parameter names affected by masking a mask key */
         propStack = []
         // A mapping  of mask key to the parameter names affected when masking the property associated with that mask key
         Map<String,Set<String>> maskKey2ParamNames = [:]
         Set<String> affectedRoot = finaKeyAffectedParamsForType.call(type, maskKey2ParamNames)
         // maskKey2ParamNames.put('.', affectedRoot)
 
-        // Debug output of 2nd loop
+        // Debug output of 2nd loop:
         maskKey2ParamNames.keySet().stream().sorted().each { maskKey ->
             sorted.clear(); sorted.addAll(maskKey2ParamNames.get(maskKey)); Collections.sort(sorted)
             println "maskKey='$maskKey' affected=${sorted}"
