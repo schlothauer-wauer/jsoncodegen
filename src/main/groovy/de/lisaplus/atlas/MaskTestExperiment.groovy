@@ -109,19 +109,22 @@ class MaskTestExperiment {
         }
     }
 
+    /**
+     * Traverse the type and collect mapping of mask key to the names of those those properties, which will
+     * be affected by removing the property associated with the mask key.
+     */
     Closure<Set<String>>  finaKeyAffectedParamsForType = { Type type, Map<String,Set<String>> maskKey2ParamNames ->
-
         Set<String> affectedParams = []
-        List<Property> nodesWithChildren = data.filterProps.call(type, [refComplex:true])
-        List<Property> nodesNoChildren = data.filterProps.call(type, [refComplex:false])
-        nodesWithChildren.each { prop ->
+        // process nodes with children
+        data.filterProps.call(type, [refComplex:true]).each { prop ->
             // Type type = prop.isRefType() ? prop.implicitRef.type : prop.type.type
             putStacks.call(prop)
             affectedParams.add(prop.name)
             affectedParams.addAll(finaKeyAffectedParamsForType.call(prop.type.type, maskKey2ParamNames))
             popStacks.call()
         }
-        nodesNoChildren.each { prop ->
+        // process nodes without children
+        data.filterProps.call(type, [refComplex:false]).each { prop ->
             putStacks.call(prop)
             addAffected.call(Collections.singleton(prop.name), maskKey2ParamNames)
             popStacks.call()
@@ -134,6 +137,10 @@ class MaskTestExperiment {
         return affectedParams
     }
 
+    /**
+     * Adds the names of the affected properties to the mapping maskKey2ParamNames.
+     * The mask key is created by examining propStack.
+     */
     def addAffected = { Set<String> affected, Map<String,Set<String>> maskKey2ParamNames ->
         String maskKey = propStack.isEmpty() ? '.' : propStack.collect { prop2 -> prop2.name }.join('.')
         if (maskKey2ParamNames.put(maskKey, affected) != null) {
