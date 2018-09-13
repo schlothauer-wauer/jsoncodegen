@@ -25,7 +25,6 @@ class MaskTestExperiment {
 
         // Check for exception while running code generation for all available types
 //        maskExp.generateAll()
-
     }
 
     /** The complete model with all types */
@@ -36,7 +35,6 @@ class MaskTestExperiment {
     boolean joined
     /** The name of the Java class of the type. */
     String targetType
-
     /** This stack holds the property (names) visited while traversing the object hierarchy.*/
     List<Property> propStack
 
@@ -50,7 +48,6 @@ class MaskTestExperiment {
         return builder.buildModel(modelFile)
     }
 
-
     /**
      * Execute code generation for all types
      */
@@ -63,7 +60,7 @@ class MaskTestExperiment {
     }
 
     /**
-     * Execute code generation for the type defined by MaskExperiments#typeName
+     * Execute code generation for one type
      * @param typeName The name of the type, which is to be processed
      * @param joined Indicates whether that type is a joined type
      */
@@ -99,8 +96,7 @@ class MaskTestExperiment {
         propStack = []
         // A mapping  of mask key to the property names affected when masking the property associated with that mask key
         Map<String,Set<String>> maskKey2ParamNames = [:]
-        Set<String> affectedRoot = finaKeyAffectedParamsForType.call(type, maskKey2ParamNames)
-        // maskKey2ParamNames.put('.', affectedRoot)
+        finaKeyAffectedParamsForType.call(type, maskKey2ParamNames)
 
         // Debug output of 2nd loop:
         maskKey2ParamNames.keySet().stream().sorted().each { maskKey ->
@@ -124,7 +120,6 @@ class MaskTestExperiment {
             sorted.clear(); sorted.addAll(maskKey2Count.keySet()); Collections.sort(sorted)
             sorted.each { key -> println "prop=$propName maskKey=$key count=${maskKey2Count.get(key)}" }
         }
-
     }
 
     /**
@@ -166,7 +161,6 @@ class MaskTestExperiment {
             popStacks.call()
         }
     }
-
 
     /**
      * Traverse the properties of a type and collect mapping of mask key to the names of those those properties, which will
@@ -270,5 +264,4 @@ class MaskTestExperiment {
             throw new RuntimeException(msg)
         }
     }
-
 }
