@@ -207,7 +207,7 @@ import io.github.benas.randombeans.api.EnhancedRandom;
  */
 public class TestMask$targetType {
     /** Count of entries in Lists / array properties */
-    static final int COLL_SIZE = 2;
+    static final int COLL_SIZE = ${entryPerArray};
     /** Pattern for looking up the keys. */
     static final String KEY_PATTERN = "\\"[a-zA-Z]+\\":";
     
@@ -228,7 +228,7 @@ public class TestMask$targetType {
 
     @BeforeClass
     public static void before() {
-        System.out.println ("*********************** de.lisaplus.mask.MaskTestProto - Start ***********************");
+        System.out.println ("*********************** TestMask$targetType - Start ***********************");
         final LocalDate minDate = LocalDate.parse("2000-01-01");
         final LocalDate endDate = LocalDate.parse("2017-12-31");
         random = EnhancedRandomBuilder.aNewEnhancedRandomBuilder()
@@ -255,6 +255,103 @@ public class TestMask$targetType {
         println """
         final Map<String, Integer> maskKey2Count = new HashMap<>();
         propName2maskKey2deleteCount = new HashMap<>();"""
+
+        List<String> sorted = []
+        propNames.each { propName ->
+            println '        maskKey2Count.clear();'
+            Map<String, Integer> maskKey2Count = propName2maskKey2count.get(propName)
+            // Process only those maskKey with count > 0!
+            sorted.clear(); sorted.addAll( maskKey2Count.keySet().findAll {key -> maskKey2Count.get(key) > 0} ); Collections.sort(sorted)
+            sorted.each { key ->
+                println "        maskKey2Count.put(\"$key\", ${maskKey2Count.get(key)});"
+            }
+            println "        propName2maskKey2deleteCount.put(\"$propName\", new HashMap<>(maskKey2Count));"
+        }
+
+        println """
+    }
+
+    @AfterClass
+    public static void after() {
+        allProps = null;
+        allMaskKeys = null;
+        maskKey2propNames = null;
+        propName2maskKey2deleteCount = null;
+        System.out.println ("*********************** TestMask$targetType - End ***********************");
+    }
+
+    @Test
+    public void testMaskOne() throws Exception {
+        final Map<String,Integer> emptyMap = Collections.emptyMap();
+        final Integer zero = Integer.valueOf(0);
+        final Map<String, Integer> expDelta = new HashMap<>(allProps.size());
+        for (final String maskKey : allMaskKeys) {
+            final JunctionJoined t = random.nextObject(JunctionJoined.class);
+            assertNotNull(t);
+            final String jsonBefore = mapper.writeValueAsString(t); // JSON Output
+            assertNotNull(jsonBefore);
+            final Map<String, Integer> occurrencesBefore = countOccurences(jsonBefore);
+            final PojoMask mask = new PojoMaskImpl(Collections.singleton(maskKey));
+            MaskJunctionJoined.mask(t, mask);
+            final String jsonAfter= mapper.writeValueAsString(t); // JSON Output
+            assertNotNull(jsonAfter);
+            final Map<String, Integer> occurrencesAfter = countOccurences(jsonAfter);
+            expDelta.clear();
+            for (final String propName : maskKey2propNames.get(maskKey)) {
+                final int count = propName2maskKey2deleteCount.getOrDefault(propName, emptyMap).getOrDefault(maskKey, zero).intValue();
+                expDelta.put(propName, count);
+            }
+            checkDelta(occurrencesBefore, occurrencesAfter, expDelta, jsonBefore, jsonAfter);
+        }
+    }
+
+    private Map<String, Integer> countOccurences(String json) {
+        // Find all matches of pattern "[a-zA-Z]+:" -> keys
+        // For every key evaluate how often they occur!
+        final Matcher matcher = matcherFactory.get();
+        matcher.reset(json);
+        final List<String> keys = new ArrayList<>(json.length() / 10);
+        while(matcher.find()) {
+            // finds "abc":  -> strip quotes and trailing colon!
+            final String tmp = matcher.group();
+            keys.add(tmp.substring(1, tmp.length()-2));
+        }
+        if (keys.isEmpty()) {
+            // either
+            throw new RuntimeException(String.format("No keys found in JSON '%s'", json));
+//            // or
+//            return Collections.emptyMap();
+        }
+        return keys.stream().collect(Collectors.groupingBy(key -> key, Collectors.summingInt(l -> 1)));
+    }
+
+
+    private void checkDelta(Map<String, Integer> occurrencesBefore,
+                            Map<String, Integer> occurrencesAfter,
+                            Map<String, Integer> expDelta,
+                            String jsonBefore, String jsonAfter) {
+        final Integer zero = Integer.valueOf(0);
+        // Check that the occurrence of the keys from before match expectation
+        for (final String key : occurrencesBefore.keySet()) {
+            final Integer countBefore = occurrencesBefore.get(key);
+            final Integer countAfter = occurrencesAfter.getOrDefault(key, zero);
+            final Integer exp = expDelta.get(key);
+            final String msg = String.format("key='%s'%njsonBefore:%n%s%njsonAfter:%n%s", key, jsonBefore, jsonAfter);
+            if (exp == null) {
+                assertEquals(msg, countBefore, countAfter);
+            } else {
+                final int expCount = countBefore.intValue() - exp.intValue();
+                assertEquals(key, expCount, countAfter.intValue());
+            }
+        }
+        // Check that masking did not add new keys!
+        final Set<String> keysAfter = new HashSet<>(occurrencesAfter.keySet());
+        keysAfter.removeAll(occurrencesBefore.keySet());
+        final String msg = String.format("newKeys='%s'%njsonBefore:%n%s%njsonAfter:%n%s", keysAfter, jsonBefore, jsonAfter);
+        assertTrue(msg, keysAfter.isEmpty());
+    }
+}
+"""
 
     }
 
