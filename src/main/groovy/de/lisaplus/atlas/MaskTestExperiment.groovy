@@ -110,8 +110,52 @@ class MaskTestExperiment {
     }
 
     /**
-     * Traverse the type and collect mapping of mask key to the names of those those properties, which will
+     * Adds new elements to the stacks
+     * @param property The property, which is to be visited
+     */
+    def putStacks = { Property property ->
+        propStack.add(property)
+//        propIsArrayStack.add(property.type.isArray)
+//        // If either already collection of if this property is an collection.
+//        propIsCollectionStack.add(propIsCollectionStack.last() || propIsArrayStack.last())
+    }
+
+    /**
+     * Pops the latest elements from the stacks
+     */
+    def popStacks = {
+        propStack.pop()
+//        propIsArrayStack.pop()
+//        propIsCollectionStack.pop()
+    }
+
+    /**
+     * Traverse the properties of a type and collect the mask keys and parameter names.
+     * This method calls itself recursively if the type contains parameters of complex or reference types.
+     */
+    def findNamesKeysForType = { Type type, Set<String> paramNames, List<String> maskKeys ->
+        type.properties.each { prop -> paramNames.add(prop.name) }
+        type.properties.each { prop ->
+            propStack.add(prop)
+            maskKeys.add(propStack.collect { prop2 -> prop2.name }.join('.'))
+            propStack.pop()
+        }
+
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            // recursive call!
+            putStacks.call(prop)
+            findNamesKeysForType.call(prop.type.type, paramNames, maskKeys)
+            popStacks.call()
+        }
+    }
+
+
+    /**
+     * Traverse the properties of a type and collect mapping of mask key to the names of those those properties, which will
      * be affected by removing the property associated with the mask key.
+     * This method calls itself recursively if the type contains parameters of complex or reference types.
+     * @param type the type to process
+     * @param maskKey2ParamNames The mapping to extend while traversin.
      */
     Closure<Set<String>>  finaKeyAffectedParamsForType = { Type type, Map<String,Set<String>> maskKey2ParamNames ->
         Set<String> affectedParams = []
@@ -150,39 +194,4 @@ class MaskTestExperiment {
         }
     }
 
-    /**
-     * Adds new elements to the stacks
-     * @param property The property, which is to be visited
-     */
-    def putStacks = { Property property ->
-        propStack.add(property)
-//        propIsArrayStack.add(property.type.isArray)
-//        // If either already collection of if this property is an collection.
-//        propIsCollectionStack.add(propIsCollectionStack.last() || propIsArrayStack.last())
-    }
-
-    /**
-     * Pops the latest elements from the stacks
-     */
-    def popStacks = {
-        propStack.pop()
-//        propIsArrayStack.pop()
-//        propIsCollectionStack.pop()
-    }
-
-    def findNamesKeysForType = { Type type, Set<String> paramNames, List<String> maskKeys ->
-        type.properties.each { prop -> paramNames.add(prop.name) }
-        type.properties.each { prop ->
-            propStack.add(prop)
-            maskKeys.add(propStack.collect { prop2 -> prop2.name }.join('.'))
-            propStack.pop()
-        }
-
-        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
-            // recursive call!
-            putStacks.call(prop)
-            findNamesKeysForType.call(prop.type.type, paramNames, maskKeys)
-            popStacks.call()
-        }
-    }
 }
