@@ -18,7 +18,7 @@ class MaskTestExperiment {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'JunctionJoined' // 'Junction' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
 
         def maskExp = new MaskTestExperiment(modelPath)
         maskExp.execute(typeName, typeName.endsWith('Joined'))
@@ -77,11 +77,71 @@ class MaskTestExperiment {
         executeForType(type, joined)
     }
 
+    def applyMaskKeyOverwritesLoop1 = { List<String> maskKeys, Map<String, String> overwrites ->
+        if (joined) {
+            // check that both the original maskKey and the over
+            overwrites.each {entry ->
+                assert maskKeys.contains(entry.key)
+                assert maskKeys.contains(entry.value)
+                maskKeys.remove(entry.key)
+                if (!maskKeys.contains(entry.value)) {
+                    maskKeys.add(entry.value)
+                }
+            }
+        } else {
+            // replace e.g. objectBaseId with objectBase
+            overwrites.each { entry ->
+                int idx = maskKeys.indexOf(entry.key)
+                if (idx > -1) {
+                    maskKeys.set(idx, entry.getValue())
+                } else {
+                    throw new RuntimeException("Failed to apply overwrite: maskKeys=$maskKeys  overwrite= $entry")
+                }
+            }
+        }
+    }
+
+    def applyMaskKeyOverwritesLoop2 = { Map<String,Set<String>> maskKey2affectedProps, Map<String, String> overwrites ->
+        if (joined) {
+            overwrites.each {entry ->
+                // remove entry with out-dated mask key
+                maskKey2affectedProps.remove(entry.key)
+                // For the entry with the correct mask key, add the the property name with suffix Id, too
+                Set<String> affected = maskKey2affectedProps.get(entry.value)
+                if (affected != null && !affected.contains(entry.key)) {
+                    affected.add(entry.key)
+                }
+            }
+        } else {
+            // find the entry with wrong key and update the key
+            overwrites.each {entry ->
+                Set<String> affected = maskKey2affectedProps.remove(entry.key)
+                if (affected != null) {
+                    maskKey2affectedProps.put(entry.value, affected)
+                } else {
+                    throw new RuntimeException(entry)
+                }
+            }
+        }
+    }
+
+    def applyMaskKeyOverwritesLoop3 = { Map<String,Map<String,Integer>> propName2maskKey2count, Map<String, String> overwrites ->
+        // just loop through all inner maps and update the mask key
+        propName2maskKey2count.values().each { Map<String,Integer> maskKey2Count ->
+            overwrites.each { entry ->
+                Integer count = maskKey2Count.remove(entry.key)
+                if (count != null) {
+                    maskKey2Count.put(entry.value, count)
+                }
+            }
+        }
+    }
+
     private void executeForType(Type type, boolean joined) {
         this.joined = joined
         targetType = data.upperCamelCase.call(type.name)
         maskKeyOverwrites = [:]
-        boolean printDebug = true
+        boolean printDebug = false
         println '###################################################################'
         println "Start of $targetType:"
         println '###################################################################'
@@ -93,6 +153,9 @@ class MaskTestExperiment {
         // The mask keys, which are available for the current type
         List<String> maskKeys = []
         findNamesKeysForType.call(type, propNames, maskKeys)
+
+        // apply maskKey overwrites
+        applyMaskKeyOverwritesLoop1.call(maskKeys, maskKeyOverwrites)
 
         List<String> sorted = []
         if (printDebug) {
@@ -108,6 +171,9 @@ class MaskTestExperiment {
         // A mapping of mask key to the property names affected when masking the property associated with that mask key
         Map<String,Set<String>> maskKey2PropNames = [:]
         finaKeyAffectedParamsForType.call(type, maskKey2PropNames)
+
+        // apply maskKey overwrites
+        applyMaskKeyOverwritesLoop2.call(maskKey2PropNames, maskKeyOverwrites)
 
         // Debug output of 2nd loop:
         if (printDebug) {
@@ -126,6 +192,9 @@ class MaskTestExperiment {
             findMaskKeyCountMappingForType.call(type, propName, entryPerArray, 0, maskKey2Count)
             propName2maskKey2count.put(propName, maskKey2Count)
         }
+
+        // apply maskKey overwrites
+        applyMaskKeyOverwritesLoop3.call(propName2maskKey2count, maskKeyOverwrites)
 
         // Debug output of 3rd loop:
         if (printDebug) {
