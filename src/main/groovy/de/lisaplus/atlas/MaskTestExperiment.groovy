@@ -18,7 +18,7 @@ class MaskTestExperiment {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'JunctionJoined' // 'Junction' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
 
         def maskExp = new MaskTestExperiment(modelPath)
         maskExp.execute(typeName, typeName.endsWith('Joined'))
@@ -74,7 +74,7 @@ class MaskTestExperiment {
     private void executeForType(Type type, boolean joined) {
         this.joined = joined
         targetType = data.upperCamelCase.call(type.name)
-        boolean printDebug = false;
+        boolean printDebug = true
         println '###################################################################'
         println "Start of $targetType:"
         println '###################################################################'
@@ -87,9 +87,10 @@ class MaskTestExperiment {
         List<String> maskKeys = []
         findNamesKeysForType.call(type, propNames, maskKeys)
 
+        List<String> sorted = []
         if (printDebug) {
             // Debug output of 1st loop:
-            List<String> sorted = new ArrayList<>(propNames); Collections.sort(sorted)
+            sorted.addAll(propNames); Collections.sort(sorted)
             println "propNames=${sorted}"
             sorted.clear(); sorted.addAll(maskKeys); Collections.sort(sorted)
             println "maskKey=${sorted}"
@@ -256,7 +257,6 @@ public class TestMask$targetType {
         final Map<String, Integer> maskKey2Count = new HashMap<>();
         propName2maskKey2deleteCount = new HashMap<>();"""
 
-        List<String> sorted = []
         propNames.each { propName ->
             println '        maskKey2Count.clear();'
             Map<String, Integer> maskKey2Count = propName2maskKey2count.get(propName)
@@ -301,10 +301,14 @@ public class TestMask$targetType {
                 final int count = propName2maskKey2deleteCount.getOrDefault(propName, emptyMap).getOrDefault(maskKey, zero).intValue();
                 expDelta.put(propName, count);
             }
-            checkDelta(occurrencesBefore, occurrencesAfter, expDelta, jsonBefore, jsonAfter);
+            checkDelta(occurrencesBefore, occurrencesAfter, expDelta, formatJson(jsonBefore, mapper), formatJson(jsonAfter, mapper), maskKey);
         }
     }
 
+    /**
+     * @param json The JSON representation of the POJO / Bean
+     * @return A mapping of property name to the occurrence count of that property name throughout the JSON.
+     */
     private Map<String, Integer> countOccurences(String json) {
         // Find all matches of pattern "[a-zA-Z]+:" -> keys
         // For every key evaluate how often they occur!
@@ -325,18 +329,29 @@ public class TestMask$targetType {
         return keys.stream().collect(Collectors.groupingBy(key -> key, Collectors.summingInt(l -> 1)));
     }
 
-
+    /**
+     * @param occurrencesBefore A mapping of the property name to the occurence count of that property name in the JSON
+     * @param occurrencesAfter
+     * @param expDelta Defines the expected loss of property name occurrences. A mapping of property name to the number
+     *            of occurrences, which are supposed to have been eliminated by the operation.
+     * @param jsonBefore The JSON representation of the POJO / Bean before the operation, used for debugging.
+     * @param jsonAfter The JSON representation of the POJO / Bean after the operation, used for debugging.
+     * @param maskKey The mask key associated with the operation, used for debugging.
+     */
     private void checkDelta(Map<String, Integer> occurrencesBefore,
                             Map<String, Integer> occurrencesAfter,
                             Map<String, Integer> expDelta,
-                            String jsonBefore, String jsonAfter) {
+                            String jsonBefore, String jsonAfter,
+                            String maskKey) {
         final Integer zero = Integer.valueOf(0);
         // Check that the occurrence of the keys from before match expectation
         for (final String key : occurrencesBefore.keySet()) {
             final Integer countBefore = occurrencesBefore.get(key);
             final Integer countAfter = occurrencesAfter.getOrDefault(key, zero);
             final Integer exp = expDelta.get(key);
-            final String msg = String.format("key='%s'%njsonBefore:%n%s%njsonAfter:%n%s", key, jsonBefore, jsonAfter);
+            final String msg = String.format(
+                    "maskKey='%s' currKey='%s'%njsonBefore:%n%s%njsonAfter:%n%s%n",
+                        maskKey, key, jsonBefore, jsonAfter);
             if (exp == null) {
                 assertEquals(msg, countBefore, countAfter);
             } else {
@@ -349,6 +364,17 @@ public class TestMask$targetType {
         keysAfter.removeAll(occurrencesBefore.keySet());
         final String msg = String.format("newKeys='%s'%njsonBefore:%n%s%njsonAfter:%n%s", keysAfter, jsonBefore, jsonAfter);
         assertTrue(msg, keysAfter.isEmpty());
+    }
+
+    /**
+     * @param json The JSON string to pretty print
+     * @param mapper The mapper doing the actual work
+     * @return the pretty printed JSON
+     * @throws Exception Should not happen for valid JSON created from a POJO / Bean.
+     */
+    private static String formatJson(String json, ObjectMapper mapper) throws Exception {
+        final Object jsonObject = mapper.readValue(json, Object.class);
+        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
     }
 }
 """
