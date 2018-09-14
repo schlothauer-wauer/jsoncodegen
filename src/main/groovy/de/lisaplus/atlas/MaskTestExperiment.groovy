@@ -79,13 +79,14 @@ class MaskTestExperiment {
 
     def applyMaskKeyOverwritesLoop1 = { List<String> maskKeys, Map<String, String> overwrites ->
         if (joined) {
-            // check that both the original maskKey and the over
+            // Kick out the original maskKey and add the corrected one if that is missing
             overwrites.each {entry ->
                 assert maskKeys.contains(entry.key)
                 assert maskKeys.contains(entry.value)
                 maskKeys.remove(entry.key)
                 if (!maskKeys.contains(entry.value)) {
                     maskKeys.add(entry.value)
+                    println "ATTENTION: added corrected maskKey ${entry.value} which ususally is already available!"
                 }
             }
         } else {
@@ -113,7 +114,7 @@ class MaskTestExperiment {
                 }
             }
         } else {
-            // find the entry with wrong key and update the key
+            // find the entry with wrong mask key and update the key
             overwrites.each {entry ->
                 Set<String> affected = maskKey2affectedProps.remove(entry.key)
                 if (affected != null) {
@@ -150,6 +151,27 @@ class MaskTestExperiment {
                     if (count != null) {
                         maskKey2Count.put(entry.value, count)
                     }
+                }
+            }
+        }
+    }
+
+    def applyMaskKeyOverwritesLoop3a = { Map<String,Map<String,Integer>> maskKey2propName2deleteCount, Map<String, String> overwrites ->
+        if (joined) {
+            overwrites.each { entry ->
+                // When masking using key 'objectBase', then the same amount of properties named 'objectBase'
+                // and 'objectBaseId' are deleted, but the later one is missing!
+                Map<String, Integer> prop2delCount = maskKey2propName2deleteCount.get(entry.value)
+                prop2delCount.put(entry.key, prop2delCount.get(entry.value))
+            }
+        } else {
+            // Just update the maskKey
+            overwrites.each {entry ->
+                Map<String, Integer> prop2delCount = maskKey2propName2deleteCount.get(entry.key)
+                if (prop2delCount != null) {
+                    maskKey2propName2deleteCount.put(entry.value, prop2delCount)
+                } else {
+                    throw new RuntimeException("No counts for maskKey ${entry.key}?!?")
                 }
             }
         }
@@ -203,6 +225,11 @@ class MaskTestExperiment {
 
         /* 3rd loop: find mapping of mask key to the number of deleted property occurrences triggered by actually masking that key. */
         int entryPerArray = 2
+        Map<String,Map<String,Integer>> maskKey2propName2deleteCount = ['.': [:]]
+        maskKeys.each { key -> maskKey2propName2deleteCount.put(key, [:]) }
+        for (String propName : propNames) {
+            findMaskKey2propName2CountForType.call(type, propName, entryPerArray, 0, maskKey2propName2deleteCount)
+        }
         Map<String,Map<String,Integer>> propName2maskKey2count = [:]
         for (String propName : propNames) {
 //        for (String propName : ['route']) {
@@ -214,7 +241,8 @@ class MaskTestExperiment {
         // apply maskKey overwrites
         applyMaskKeyOverwritesLoop1.call(maskKeys, maskKeyOverwrites)
         applyMaskKeyOverwritesLoop2.call(maskKey2PropNames, maskKeyOverwrites)
-        applyMaskKeyOverwritesLoop3.call(propName2maskKey2count, maskKeyOverwrites)
+        // applyMaskKeyOverwritesLoop3.call(propName2maskKey2count, maskKeyOverwrites)
+        applyMaskKeyOverwritesLoop3a.call(maskKey2propName2deleteCount, maskKeyOverwrites)
 
         // Debug output of 3rd loop:
         if (printDebug) {
@@ -302,7 +330,7 @@ import io.github.benas.randombeans.api.EnhancedRandom;
 /**
  * This class contains the Unit test for masking of class $targetType. 
  */
-public class TestMask$targetType {
+public class TestMask${targetType}2 {
     /** Count of entries in Lists / array properties */
     static final int COLL_SIZE = ${entryPerArray};
     /** Pattern for looking up the keys. */
@@ -322,6 +350,8 @@ public class TestMask$targetType {
     private static Map<String,Set<String>> maskKey2propNames;
     /** A mapping property name to a mapping of mask key to the expected count of removed properties when that masking is being performed */
     private static Map<String,Map<String,Integer>> propName2maskKey2deleteCount;
+    /** A mapping mask key to a mapping of property name to the expected count of removed properties when that masking is being performed */
+    private static Map<String,Map<String,Integer>> maskKey2propName2deleteCount;
 
     @BeforeClass
     public static void before() {
@@ -365,6 +395,22 @@ public class TestMask$targetType {
         }
 
         println """
+        final Map<String, Integer> propName2Count = new HashMap<>();
+        maskKey2propName2deleteCount = new HashMap<>();"""
+
+        maskKeys.each { maskKey ->
+            println '        propName2Count.clear();  //' + maskKey
+            Map<String, Integer> propName2Count = maskKey2propName2deleteCount.get(maskKey)
+            // Process only those maskKey with count > 0!
+            sorted.clear(); sorted.addAll( propName2Count.keySet().findAll {key -> propName2Count.get(key) > 0} ); Collections.sort(sorted)
+            sorted.each { key ->
+                println "        propName2Count.put(\"$key\", ${propName2Count.get(key)});"
+            }
+            println "        maskKey2propName2deleteCount.put(\"$maskKey\", new HashMap<>(propName2Count));"
+
+        }
+
+        println """
     }
 
     @AfterClass
@@ -373,6 +419,7 @@ public class TestMask$targetType {
         allMaskKeys = null;
         maskKey2propNames = null;
         propName2maskKey2deleteCount = null;
+        maskKey2propName2deleteCount = null;
         System.out.println ("*********************** TestMask$targetType - End ***********************");
     }
 
@@ -393,10 +440,13 @@ public class TestMask$targetType {
             assertNotNull(jsonAfter);
             final Map<String, Integer> occurrencesAfter = countOccurences(jsonAfter);
             expDelta.clear();
+            expDelta.putAll(maskKey2propName2deleteCount.getOrDefault(maskKey, emptyMap));
+            /*
             for (final String propName : maskKey2propNames.get(maskKey)) {
                 final int count = propName2maskKey2deleteCount.getOrDefault(propName, emptyMap).getOrDefault(maskKey, zero).intValue();
                 expDelta.put(propName, count);
             }
+            */
             checkDelta(occurrencesBefore, occurrencesAfter, expDelta, formatJson(jsonBefore, mapper), formatJson(jsonAfter, mapper), maskKey);
         }
     }
@@ -657,6 +707,72 @@ public class TestMask$targetType {
         String maskKey = propStack.isEmpty() ? '.' : propStack.collect { prop2 -> prop2.name }.join('.')
         if (maskKey2Count.put(maskKey, count) != null) {
             String msg = "maskKey already present: $maskKey!"
+            System.err.println msg
+            throw new RuntimeException(msg)
+        }
+    }
+
+    /**
+     * Traverse the properties of a type and, for a given property name, collect mapping of mask key to the expected
+     * count of removed properties when that masking is being performed.
+     * This method calls itself recursively if the type contains properties of complex or reference types.
+     * @param type the type to process
+     * @param propName The name of the property, where the expected count is to evaluate
+     * @param entryPerArray The count of entries per array property.
+     * @param maskKey2propName2deleteCount The mapping to extend while traversing.
+     */
+    Closure<Integer> findMaskKey2propName2CountForType = { Type type,
+                                                           String propName,
+                                                           int entryPerArray,
+                                                           int arrayCount,
+                                                           Map<String, Map<String, Integer>> maskKey2propName2deleteCount ->
+        int countSum = 0
+        if (!propStack.isEmpty() && propStack.last().name == propName) {
+            // We are currently processing a complex property with the wanted name
+            def count = entryPerArray.power(Math.max(0, arrayCount-1))
+            def maskKey = propStack.collect {prop2 -> prop2.name}.join('.')
+            println "Found $count occurrences in complex property of wanted name $propName at ${maskKey}"
+            countSum += count
+        }
+
+        // process nodes with children
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            putStacks.call(prop)
+            int childArrayCount = arrayCount + (prop.type.isArray ? 1 : 0)
+            countSum += findMaskKey2propName2CountForType.call(prop.type.type, propName, entryPerArray, childArrayCount, maskKey2propName2deleteCount)
+            popStacks.call(prop)
+        }
+        // process nodes without children
+        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
+            putStacks.call(prop)
+            if (prop.name == propName) {
+                def count = entryPerArray.power(arrayCount)
+                def maskKey = propStack.collect {prop2 -> prop2.name}.join('.')
+                println "Found $count occurrences in simple property of wanted name $propName at ${maskKey}"
+                addCount2.call(propName, count, maskKey2propName2deleteCount)
+                countSum += count
+            } else {
+                addCount2.call(propName, 0, maskKey2propName2deleteCount)
+            }
+            popStacks.call(prop)
+        }
+        addCount2.call(propName, countSum, maskKey2propName2deleteCount)
+        return countSum
+    }
+
+    /**
+     * Adds a delete count to the mapping of mask key to the expected count of removed properties when that masking
+     * is being performed.
+     * @param propName The name of the property
+     * @param count The expected delete count
+     * @param maskKey2propName2deleteCount The mapping to extend
+     */
+    Closure<Void> addCount2 = { String propName,
+                                int count,
+                                Map<String, Map<String, Integer>> maskKey2propName2deleteCount ->
+        String maskKey = propStack.isEmpty() ? '.' : propStack.collect { prop2 -> prop2.name }.join('.')
+        if (maskKey2propName2deleteCount.get(maskKey).put(propName, count) != null) {
+            String msg = "Count already present: maskKey=$maskKey propName=$propName!"
             System.err.println msg
             throw new RuntimeException(msg)
         }
