@@ -151,7 +151,7 @@ class MaskTestExperiment {
         this.joined = joined
         targetType = data.upperCamelCase.call(type.name)
         maskKeyOverwrites = [:]
-        boolean printDebug = false
+        boolean printDebug = true
         println '###################################################################'
         println "Start of $targetType:"
         println '###################################################################'
@@ -221,7 +221,7 @@ class MaskTestExperiment {
                 Map<String, Integer> prop2Count = maskKey2propName2deleteCount.get(maskKey)
                 sorted.clear(); sorted.addAll(prop2Count.keySet()); Collections.sort(sorted)
                 // display count > 0!
-                sorted.findAll { key -> prop2Count.get(key) > 0 }.each { key -> println "prop=$prop maskKey='$maskKey' count=${prop2Count.get(prop)}" }
+                sorted.findAll { prop -> prop2Count.get(prop) > 0 }.each { prop -> println "prop=$prop maskKey='$maskKey' count=${prop2Count.get(prop)}" }
             }
         }
 
