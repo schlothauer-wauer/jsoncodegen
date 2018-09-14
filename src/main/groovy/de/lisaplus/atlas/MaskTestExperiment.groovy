@@ -18,7 +18,7 @@ class MaskTestExperiment {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'JunctionJoined' // 'Junction' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
 
         def maskExp = new MaskTestExperiment(modelPath)
         maskExp.execute(typeName, typeName.endsWith('Joined'))
@@ -126,12 +126,30 @@ class MaskTestExperiment {
     }
 
     def applyMaskKeyOverwritesLoop3 = { Map<String,Map<String,Integer>> propName2maskKey2count, Map<String, String> overwrites ->
-        // just loop through all inner maps and update the mask key
-        propName2maskKey2count.values().each { Map<String,Integer> maskKey2Count ->
-            overwrites.each { entry ->
-                Integer count = maskKey2Count.remove(entry.key)
-                if (count != null) {
-                    maskKey2Count.put(entry.value, count)
+        if (joined) {
+            // contains entries for both variants -> kill of that of maskKey, which is to be deprecated!
+            propName2maskKey2count.each { entry ->
+                String prop = entry.key
+                Map<String,Integer> maskKey2Count = entry.value
+                overwrites.each { entry2 ->
+                    if (maskKey2Count.containsKey(entry2.value)) {
+                        maskKey2Count.remove(entry2.key)
+                    } else {
+                        Integer count = maskKey2Count.remove(entry2.key)
+                        if (count != null) {
+                            maskKey2Count.put(entry2.value, count)
+                        }
+                    }
+                }
+            }
+        } else {
+            // just loop through all inner maps and update the mask key
+            propName2maskKey2count.values().each { Map<String,Integer> maskKey2Count ->
+                overwrites.each { entry ->
+                    Integer count = maskKey2Count.remove(entry.key)
+                    if (count != null) {
+                        maskKey2Count.put(entry.value, count)
+                    }
                 }
             }
         }
@@ -155,7 +173,7 @@ class MaskTestExperiment {
         findNamesKeysForType.call(type, propNames, maskKeys)
 
         // apply maskKey overwrites
-        applyMaskKeyOverwritesLoop1.call(maskKeys, maskKeyOverwrites)
+//        applyMaskKeyOverwritesLoop1.call(maskKeys, maskKeyOverwrites)
 
         List<String> sorted = []
         if (printDebug) {
@@ -173,7 +191,7 @@ class MaskTestExperiment {
         finaKeyAffectedParamsForType.call(type, maskKey2PropNames)
 
         // apply maskKey overwrites
-        applyMaskKeyOverwritesLoop2.call(maskKey2PropNames, maskKeyOverwrites)
+//        applyMaskKeyOverwritesLoop2.call(maskKey2PropNames, maskKeyOverwrites)
 
         // Debug output of 2nd loop:
         if (printDebug) {
@@ -194,6 +212,8 @@ class MaskTestExperiment {
         }
 
         // apply maskKey overwrites
+        applyMaskKeyOverwritesLoop1.call(maskKeys, maskKeyOverwrites)
+        applyMaskKeyOverwritesLoop2.call(maskKey2PropNames, maskKeyOverwrites)
         applyMaskKeyOverwritesLoop3.call(propName2maskKey2count, maskKeyOverwrites)
 
         // Debug output of 3rd loop:
