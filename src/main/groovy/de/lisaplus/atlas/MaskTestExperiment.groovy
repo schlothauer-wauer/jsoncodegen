@@ -33,7 +33,7 @@ class MaskTestExperiment {
     Map data
     /** Indicates whether the current type is a joined type */
     boolean joined
-    /** The name of the Java class of the type. */
+    /** The name of the Java class, which is being masked. */
     String targetType
     /** This stack holds the property (names) visited while traversing the object hierarchy.*/
     List<Property> propStack
@@ -452,9 +452,6 @@ public class TestMask${targetType}2 {
      */
     def putStacks = { Property property ->
         propStack.add(property)
-//        propIsArrayStack.add(property.type.isArray)
-//        // If either already collection of if this property is an collection.
-//        propIsCollectionStack.add(propIsCollectionStack.last() || propIsArrayStack.last())
     }
 
     /**
@@ -462,8 +459,6 @@ public class TestMask${targetType}2 {
      */
     def popStacks = {
         propStack.pop()
-//        propIsArrayStack.pop()
-//        propIsCollectionStack.pop()
     }
 
     /**
