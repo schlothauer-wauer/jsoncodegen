@@ -18,7 +18,7 @@ class MaskTestExperiment {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'JunctionJoined' // 'Junction' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
 
         def maskExp = new MaskTestExperiment(modelPath)
         maskExp.execute(typeName, typeName.endsWith('Joined'))
@@ -37,6 +37,12 @@ class MaskTestExperiment {
     String targetType
     /** This stack holds the property (names) visited while traversing the object hierarchy.*/
     List<Property> propStack
+    /**
+     * Defines overwrites for maskKeys (mapping of property name to associated mask key).
+     * This may be necessary for e.g. Joined types, where on property holds the Id of the joined object, and another
+     * property holds the joined object itself (property objectBaseId vs. property objectBase).
+     */
+    Map<String, String> maskKeyOverwrites
 
     MaskTestExperiment( String modelPath) {
         this.model = readModel(modelPath)
@@ -74,6 +80,7 @@ class MaskTestExperiment {
     private void executeForType(Type type, boolean joined) {
         this.joined = joined
         targetType = data.upperCamelCase.call(type.name)
+        maskKeyOverwrites = [:]
         boolean printDebug = true
         println '###################################################################'
         println "Start of $targetType:"
@@ -413,11 +420,53 @@ public class TestMask$targetType {
             propStack.pop()
         }
 
+        // search property pairs for handling joined objects
+        searchPrepLookupProps.call(type)
+
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             // recursive call!
             putStacks.call(prop)
             findNamesKeysForType.call(prop.type.type, propNames, maskKeys)
             popStacks.call()
+        }
+    }
+
+    /**
+     * Use the assumption, that ll properties with tag "prepLookup" have a suffix "Id" and have a associated mask key
+     * without that suffix, to populate maskKeyOverwrites!
+     */
+    def searchPrepLookupProps = { Type type  ->
+        // search property pairs for handling joined objects
+        String baseMsg = 'The assumption that all properties with tag "prepLookup" have a suffix "Id" and have a associated mask key without that suffix seams to be broken!'
+        if (joined) {
+            // Assume (and check) that the names off all properties tagged with prepLookup are ending with Id have a
+            // corresponding property tagged join / mask key without the suffix Id at the end of the name.
+            List<String> joinProps = type.properties.findAll { prop -> prop.hasTag('join')}.collect { prop -> prop.name}
+            List<String> prepLookupProps = type.properties.findAll { prop -> prop.hasTag('prepLookup')}.collect { prop -> prop.name}
+            List<String> prepLookupWrongSuffix = prepLookupProps.findAll { name -> !name.endsWith('Id')}
+            if (!prepLookupWrongSuffix.isEmpty()) {
+                throw new RuntimeException(baseMsg + " Properties with missing suffix: " + prepLookupWrongSuffix)
+            }
+            prepLookupProps.each { name ->
+                String maskKey = name.substring(0, name.length()-2)
+                if (!joinProps.contains(maskKey)) {
+                    throw new RuntimeException(baseMsg + " Property $name with tag prepLookup is misses corresponding property with tag joned. Candidates: $joinProps")
+                }
+                println "Attention: Overwriting maskKey of property $name: $maskKey!"
+                maskKeyOverwrites.put(name, maskKey)
+            }
+        }  else {
+            // Assume that prepLookup properties ending with Id have a corresponding mask key without the suffix Id
+            List<String> prepLookupProps = type.properties.findAll { prop -> prop.hasTag('prepLookup')}.collect { prop -> prop.name}
+            List<String> prepLookupWrongSuffix = prepLookupProps.findAll { name -> !name.endsWith('Id')}
+            if (!prepLookupWrongSuffix.isEmpty()) {
+                throw new RuntimeException(baseMsg + " Properties with missing suffix: " + prepLookupWrongSuffix)
+            }
+            prepLookupProps.each { name ->
+                String maskKey = name.substring(0, name.length()-2)
+                println "Attention: Overwriting maskKey of property $name: $maskKey!"
+                maskKeyOverwrites.put(name, maskKey)
+            }
         }
     }
 
