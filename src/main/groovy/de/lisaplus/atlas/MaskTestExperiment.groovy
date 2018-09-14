@@ -198,7 +198,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.lisaplus.lisa.junction.mask.api.PojoMask;
 import de.lisaplus.lisa.junction.mask.internal.PojoMaskImpl;
-import de.lisaplus.lisa.junction.model.JunctionJoined;
+import de.lisaplus.lisa.junction.model.*;
 import de.lisaplus.util.serialization.MapperFactory;
 import io.github.benas.randombeans.EnhancedRandomBuilder;
 import io.github.benas.randombeans.api.EnhancedRandom;
@@ -286,13 +286,13 @@ public class TestMask$targetType {
         final Integer zero = Integer.valueOf(0);
         final Map<String, Integer> expDelta = new HashMap<>(allProps.size());
         for (final String maskKey : allMaskKeys) {
-            final JunctionJoined t = random.nextObject(JunctionJoined.class);
+            final $targetType t = random.nextObject(${targetType}.class);
             assertNotNull(t);
             final String jsonBefore = mapper.writeValueAsString(t); // JSON Output
             assertNotNull(jsonBefore);
             final Map<String, Integer> occurrencesBefore = countOccurences(jsonBefore);
             final PojoMask mask = new PojoMaskImpl(Collections.singleton(maskKey));
-            MaskJunctionJoined.mask(t, mask);
+            Mask${targetType}.mask(t, mask);
             final String jsonAfter= mapper.writeValueAsString(t); // JSON Output
             assertNotNull(jsonAfter);
             final Map<String, Integer> occurrencesAfter = countOccurences(jsonAfter);
@@ -356,7 +356,7 @@ public class TestMask$targetType {
                 assertEquals(msg, countBefore, countAfter);
             } else {
                 final int expCount = countBefore.intValue() - exp.intValue();
-                assertEquals(key, expCount, countAfter.intValue());
+                assertEquals(msg, expCount, countAfter.intValue());
             }
         }
         // Check that masking did not add new keys!
