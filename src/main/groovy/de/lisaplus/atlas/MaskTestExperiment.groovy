@@ -18,7 +18,7 @@ class MaskTestExperiment {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'JunctionContact' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
 
         def maskExp = new MaskTestExperiment(modelPath)
         maskExp.execute(typeName, typeName.endsWith('Joined'))
@@ -581,10 +581,13 @@ public class TestMask${targetType}2 {
                                                            int entryPerArray,
                                                            int arrayCount,
                                                            Map<String, Map<String, Integer>> maskKey2propName2deleteCount ->
+        def isArray = propStack.isEmpty() ? false : propStack.last().type.isArray
+        int childArrayCount = arrayCount + (isArray ? 1 : 0)
+
         int countSum = 0
         if (!propStack.isEmpty() && propStack.last().name == propName) {
             // We are currently processing a complex property with the wanted name
-            def count = entryPerArray.power(Math.max(0, arrayCount-1))
+            def count = entryPerArray.power(arrayCount)
             def maskKey = propStack.collect {prop2 -> prop2.name}.join('.')
             println "Found $count occurrences in complex property of wanted name $propName at ${maskKey}"
             countSum += count
@@ -593,22 +596,23 @@ public class TestMask${targetType}2 {
         // process nodes with children
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             putStacks.call(prop)
-            int childArrayCount = arrayCount + (prop.type.isArray ? 1 : 0)
             countSum += findMaskKey2propName2CountForType.call(prop.type.type, propName, entryPerArray, childArrayCount, maskKey2propName2deleteCount)
             popStacks.call(prop)
         }
         // process nodes without children
         data.filterProps.call(type, [refComplex:false]).each { Property prop ->
             putStacks.call(prop)
+            def count
             if (prop.name == propName) {
-                def count = entryPerArray.power(arrayCount)
+                count = entryPerArray.power(childArrayCount)
                 def maskKey = propStack.collect {prop2 -> prop2.name}.join('.')
                 println "Found $count occurrences in simple property of wanted name $propName at ${maskKey}"
-                addCount2.call(propName, count, maskKey2propName2deleteCount)
-                countSum += count
             } else {
-                addCount2.call(propName, 0, maskKey2propName2deleteCount)
+                count = 0
             }
+            // Do add entries with mask keys associated with this node / property of simple type
+            addCount2.call(propName, count, maskKey2propName2deleteCount)
+            countSum += count
             popStacks.call(prop)
         }
         addCount2.call(propName, countSum, maskKey2propName2deleteCount)
