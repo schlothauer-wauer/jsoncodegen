@@ -180,7 +180,7 @@ class MaskTestExperiment {
         propStack = []
         // A mapping of mask key to the property names affected when masking the property associated with that mask key
         Map<String,Set<String>> maskKey2PropNames = [:]
-        finaKeyAffectedParamsForType.call(type, maskKey2PropNames)
+        findKeyAffectedParamsForType.call(type, maskKey2PropNames)
 
         // apply maskKey overwrites
 //        applyMaskKeyOverwritesLoop2.call(maskKey2PropNames, maskKeyOverwrites)
@@ -225,7 +225,12 @@ class MaskTestExperiment {
             }
         }
 
-        // start printing JUnit content
+        // 4th loop: Find lowest complex properties / notes with child for checking that no NPE is thrown when
+        // first masking that node / property and then masking its children.content
+//        List lowestPropsWithChildren = []
+//        findLowestPropsWithChildern.call(type, lowestPropsWithChildren)
+
+        // start printing JUnit
 
         String propNameSequence = propNames.collect{ name -> /"$name"/ }.join(', ') // e.g. "area", "center", "city"
         String maskKeySequence = maskKeys.collect { key -> /"$key"/ }.join(', ') // e.g. "domainId", "guid", "location"
@@ -530,14 +535,14 @@ public class TestMask${targetType}2 {
      * @param type the type to process
      * @param maskKey2ParamNames The mapping to extend while traversing.
      */
-    Closure<Set<String>>  finaKeyAffectedParamsForType = { Type type, Map<String,Set<String>> maskKey2PropNames ->
+    Closure<Set<String>> findKeyAffectedParamsForType = { Type type, Map<String,Set<String>> maskKey2PropNames ->
         Set<String> affectedProps = []
         // process nodes with children
         data.filterProps.call(type, [refComplex:true]).each { prop ->
             // Type type = prop.isRefType() ? prop.implicitRef.type : prop.type.type
             putStacks.call(prop)
             affectedProps.add(prop.name)
-            affectedProps.addAll(finaKeyAffectedParamsForType.call(prop.type.type, maskKey2PropNames))
+            affectedProps.addAll(findKeyAffectedParamsForType.call(prop.type.type, maskKey2PropNames))
             popStacks.call()
         }
         // process nodes without children
