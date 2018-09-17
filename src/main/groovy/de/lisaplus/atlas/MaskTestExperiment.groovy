@@ -225,17 +225,24 @@ class MaskTestExperiment {
             }
         }
 
-        // 4th loop: Find complex properties / notes with child for checking that no NPE is thrown when masking that
-        // node's children while the parent node is already masked / null!
+        // 4th loop: Find complex properties / notes with child for checking that no NPE is thrown while masking that
+        // node's children, even when the parent node is already masked / null!
         List<String> masksOfPropsWithChildren = []
         findMaskOfPropsWithChildren.call( type, masksOfPropsWithChildren)
-        masksOfPropsWithChildren.each { println "Check that there are no NPE when masking childre of property associated with key '${it}' when that value is already masked / null!" }
 
+        // Debug output of 4th loop:
+        if (printDebug) {
+            masksOfPropsWithChildren.each {
+                println "Check that there are no NPE while masking children of the property associated with the mask key '${it}', even when that value is already masked / null!"
+            }
+        }
 
         // start printing JUnit
 
         String propNameSequence = propNames.collect{ name -> /"$name"/ }.join(', ') // e.g. "area", "center", "city"
         String maskKeySequence = maskKeys.collect { key -> /"$key"/ }.join(', ') // e.g. "domainId", "guid", "location"
+        String npeMaskKeySequence = masksOfPropsWithChildren.collect { key -> /"$key"/ }.join(', ') // e.g. "address.persons.contact", "address.persons", "address.contact", "address"
+
         String fileHead = """
 package de.lisaplus.lisa.junction.mask;
 
@@ -300,6 +307,11 @@ public class TestMask${targetType}2 {
     private static Map<String,Set<String>> maskKey2propNames;
     /** A mapping mask key to a mapping of property name to the expected count of removed properties when that masking is being performed */
     private static Map<String,Map<String,Integer>> maskKey2propName2deleteCount;
+    /** 
+     * This list contain the mask keys of all the complex properties. No NullPointerException may occuree while masking
+     * these properties or the children of these properties, even if these property itselve are already masked / null!
+     */
+    private static List<String> npeCheckMaskKeys;
 
     @BeforeClass
     public static void before() {
@@ -318,6 +330,7 @@ public class TestMask${targetType}2 {
 
         allProps = Arrays.asList($propNameSequence);
         allMaskKeys = Arrays.asList($maskKeySequence);
+        npeCheckMaskKeys = Arrays.asList($npeMaskKeySequence);
 
         maskKey2propNames = new HashMap<>();"""
         println fileHead
@@ -374,6 +387,35 @@ public class TestMask${targetType}2 {
             expDelta.clear();
             expDelta.putAll(maskKey2propName2deleteCount.getOrDefault(maskKey, emptyMap));
             checkDelta(occurrencesBefore, occurrencesAfter, expDelta, formatJson(jsonBefore, mapper), formatJson(jsonAfter, mapper), maskKey);
+        }
+    }
+
+    /**
+     * This test processes all complex properties of the ${targetType}. It checks that there are no NPE while masking
+     * these properties itself or masking children of these properties, when these property are already masked / have
+     * value <i>null</i>!
+     * @throws Exception
+     */
+    @Test
+    public void testNoNPE() {
+        for (final String parentMaskKey : npeCheckMaskKeys) {
+            final List<String> childrenMaskKeys = allMaskKeys.stream()
+                                                          .filter(key -> key.startsWith(parentMaskKey))
+                                                          .collect(Collectors.toList());
+            final String message = String.format("No mask keys of children nodes?!?: parent maskKey=%s ", parentMaskKey);
+            assertFalse(message, childrenMaskKeys.isEmpty());
+            System.out.format("Perform NPE checks: parent maskKey=%s childrenMaskKeys=%s%n", parentMaskKey, childrenMaskKeys);
+            final ${targetType} t = random.nextObject(${targetType}.class);
+            assertNotNull(t);
+            Mask${targetType}.mask(t, new PojoMaskImpl(Collections.singleton(parentMaskKey)));
+            for (final String childMaskKey : childrenMaskKeys) {
+                try {
+                    Mask${targetType}.mask(t, new PojoMaskImpl(Collections.singleton(childMaskKey)));
+                } catch (final Exception exception) {
+                    final String msg = String.format("Encountered %s: parent maskKey=%s childMaskKey=%s", exception.toString(), parentMaskKey, childMaskKey);
+                    fail(msg);
+                }
+            }
         }
     }
 
@@ -652,7 +694,7 @@ public class TestMask${targetType}2 {
      * The masks key of the relevant nodes found in the deepest level of the tree come first.
      */
     Closure<Void> findMaskOfPropsWithChildren = { type, List masksOfPropsWithChildren ->
-        List<Property> complex = data.filterProps(type, [refComplex: true])
+        List<Property> complex = data.filterProps.call(type, [refComplex: true])
         complex.each { prop ->
             putStacks.call(prop)
             def maskKey = propStack.collect { prop2 -> prop2.name }.join('.')
