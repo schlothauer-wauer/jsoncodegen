@@ -147,27 +147,6 @@ class MaskTestExperiment {
         }
     }
 
-    Closure<Void> findPropsWithChildren = { Type type, List propsWithChildren ->
-        List<Property> complex = data.filterProps(type, [refComplex: true])
-        complex.each { prop -> propsWithChildren.add(0, prop) }
-        complex.each { prop -> findPropsWithChildren.call(prop.type.type, propsWithChildren) }
-    }
-
-    Closure<Void> findMaskOfPropsWithChildren = { type, List masksOfPropsWithChildren ->
-        List<Property> complex = data.filterProps(type, [refComplex: true])
-        complex.each { prop ->
-            putStacks.call(prop)
-            def maskKey = propStack.collect { prop2 -> prop2.name }.join('.')
-            masksOfPropsWithChildren.add(0,  maskKey)
-            popStacks.call()
-        }
-        complex.each { prop ->
-            putStacks.call(prop)
-            findMaskOfPropsWithChildren.call(prop.type.type, masksOfPropsWithChildren)
-            popStacks.call()
-        }
-    }
-
     private void executeForType(Type type, boolean joined) {
         this.joined = joined
         targetType = data.upperCamelCase.call(type.name)
@@ -245,13 +224,6 @@ class MaskTestExperiment {
                 sorted.findAll { prop -> prop2Count.get(prop) > 0 }.each { prop -> println "prop=$prop maskKey='$maskKey' count=${prop2Count.get(prop)}" }
             }
         }
-
-        // 4th loop: Find lowest complex properties / notes with child for checking that no NPE is thrown when
-        // first masking that node / property and then masking its children.content
-//        List<Property> propsWithChildren = []
-//        findPropsWithChildren.call( type, propsWithChildren)
-//        propsWithChildren.each { println "Check that there are no NPE when masking children of property '${it.name}' when that value is already masked / null!" }
-
 
         // 4th loop: Find complex properties / notes with child for checking that no NPE is thrown when masking that
         // node's children while the parent node is already masked / null!
@@ -671,4 +643,27 @@ public class TestMask${targetType}2 {
             throw new RuntimeException(msg)
         }
     }
+
+    /**
+     * This method collects all complex properties / nodes with children.
+     * This method calls itself recursively if the type contains properties of complex or reference types.
+     * @param type the type to process
+     * @param masksOfPropsWithChildren The list contains the mask keys associated with the properties / nodes with children.
+     * The masks key of the relevant nodes found in the deepest level of the tree come first.
+     */
+    Closure<Void> findMaskOfPropsWithChildren = { type, List masksOfPropsWithChildren ->
+        List<Property> complex = data.filterProps(type, [refComplex: true])
+        complex.each { prop ->
+            putStacks.call(prop)
+            def maskKey = propStack.collect { prop2 -> prop2.name }.join('.')
+            masksOfPropsWithChildren.add(0,  maskKey)
+            popStacks.call()
+        }
+        complex.each { prop ->
+            putStacks.call(prop)
+            findMaskOfPropsWithChildren.call(prop.type.type, masksOfPropsWithChildren)
+            popStacks.call()
+        }
+    }
+
 }
