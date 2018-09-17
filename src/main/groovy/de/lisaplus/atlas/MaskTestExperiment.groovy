@@ -147,6 +147,27 @@ class MaskTestExperiment {
         }
     }
 
+    Closure<Void> findPropsWithChildren = { Type type, List propsWithChildren ->
+        List<Property> complex = data.filterProps(type, [refComplex: true])
+        complex.each { prop -> propsWithChildren.add(0, prop) }
+        complex.each { prop -> findPropsWithChildren.call(prop.type.type, propsWithChildren) }
+    }
+
+    Closure<Void> findMaskOfPropsWithChildren = { type, List masksOfPropsWithChildren ->
+        List<Property> complex = data.filterProps(type, [refComplex: true])
+        complex.each { prop ->
+            putStacks.call(prop)
+            def maskKey = propStack.collect { prop2 -> prop2.name }.join('.')
+            masksOfPropsWithChildren.add(0,  maskKey)
+            popStacks.call()
+        }
+        complex.each { prop ->
+            putStacks.call(prop)
+            findMaskOfPropsWithChildren.call(prop.type.type, masksOfPropsWithChildren)
+            popStacks.call()
+        }
+    }
+
     private void executeForType(Type type, boolean joined) {
         this.joined = joined
         targetType = data.upperCamelCase.call(type.name)
@@ -227,8 +248,17 @@ class MaskTestExperiment {
 
         // 4th loop: Find lowest complex properties / notes with child for checking that no NPE is thrown when
         // first masking that node / property and then masking its children.content
-//        List lowestPropsWithChildren = []
-//        findLowestPropsWithChildern.call(type, lowestPropsWithChildren)
+//        List<Property> propsWithChildren = []
+//        findPropsWithChildren.call( type, propsWithChildren)
+//        propsWithChildren.each { println "Check that there are no NPE when masking children of property '${it.name}' when that value is already masked / null!" }
+
+
+        // 4th loop: Find complex properties / notes with child for checking that no NPE is thrown when masking that
+        // node's children while the parent node is already masked / null!
+        List<String> masksOfPropsWithChildren = []
+        findMaskOfPropsWithChildren.call( type, masksOfPropsWithChildren)
+        masksOfPropsWithChildren.each { println "Check that there are no NPE when masking childre of property associated with key '${it}' when that value is already masked / null!" }
+
 
         // start printing JUnit
 
