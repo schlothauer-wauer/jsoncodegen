@@ -255,7 +255,9 @@ import static java.nio.charset.Charset.forName;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -279,7 +281,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.lisaplus.lisa.junction.mask.api.PojoMask;
 import de.lisaplus.lisa.junction.mask.internal.PojoMaskImpl;
-import de.lisaplus.lisa.junction.model.*;
+import de.lisaplus.lisa.junction.model.${targetType};
 import de.lisaplus.util.serialization.MapperFactory;
 import io.github.benas.randombeans.EnhancedRandomBuilder;
 import io.github.benas.randombeans.api.EnhancedRandom;
@@ -287,12 +289,12 @@ import io.github.benas.randombeans.api.EnhancedRandom;
 /**
  * This class contains the Unit test for masking of class $targetType. 
  */
-public class TestMask${targetType}2 {
+public class TestMask${targetType} {
     /** Count of entries in Lists / array properties */
     static final int COLL_SIZE = ${entryPerArray};
     /** Pattern for looking up the keys. */
     static final String KEY_PATTERN = "\\"[a-zA-Z]+\\":";
-    
+
     /** For generating random POJOs/Beans. */
     static EnhancedRandom random;
     /** Converts the POJOs/Beans into the JSON representation. POJO attributes with value <i>null</i> are being dropped! */
@@ -307,9 +309,9 @@ public class TestMask${targetType}2 {
     private static Map<String,Set<String>> maskKey2propNames;
     /** A mapping mask key to a mapping of property name to the expected count of removed properties when that masking is being performed */
     private static Map<String,Map<String,Integer>> maskKey2propName2deleteCount;
-    /** 
-     * This list contain the mask keys of all the complex properties. No NullPointerException may occuree while masking
-     * these properties or the children of these properties, even if these property itselve are already masked / null!
+    /**
+     * This list contains the mask keys of all the complex properties. No NullPointerException may occuree while masking
+     * these properties or the children of these properties, even if these property themselves are already masked / null!
      */
     private static List<String> npeCheckMaskKeys;
 
@@ -347,8 +349,6 @@ public class TestMask${targetType}2 {
         maskKeys.each { maskKey ->
             println '        propName2Count.clear();  //' + maskKey
             Map<String, Integer> propName2Count = maskKey2propName2deleteCount.get(maskKey)
-            // Process only those maskKey with count > 0!
-            sorted.clear(); sorted.addAll( propName2Count.keySet().findAll {key -> propName2Count.get(key) > 0} ); Collections.sort(sorted)
             sorted.each { key ->
                 println "        propName2Count.put(\"$key\", ${propName2Count.get(key)});"
             }
@@ -392,9 +392,8 @@ public class TestMask${targetType}2 {
 
     /**
      * This test processes all complex properties of the ${targetType}. It checks that there are no NPE while masking
-     * these properties itself or masking children of these properties, when these property are already masked / have
-     * value <i>null</i>!
-     * @throws Exception
+     * these properties themselves or masking its children properties, even when the parent properties are already 
+     * masked / have value <i>null</i>!
      */
     @Test
     public void testNoNPE() {
