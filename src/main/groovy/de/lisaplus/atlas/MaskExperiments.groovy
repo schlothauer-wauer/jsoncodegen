@@ -169,7 +169,7 @@ class MaskExperiments {
 
     /**
      * Creates the case of the supplement method for properties of a complex or reference class
-     * Case: parent property is array and has entryId:
+     * Case: parent property is array and has entryId
      * @param prop The property to process
      */
     def evalSupportParentIsArrayHasEntryId = { Property prop ->
@@ -225,7 +225,7 @@ class MaskExperiments {
 
     /**
      * Creates the case of the supplement method for properties of a complex or reference class
-     * Case: parent property is array but has no entryId:
+     * Case: parent property is array but has no entryId
      * @param prop The property to process
      */
     def evalSupportParentIsArrayNoEntryId = { Property prop ->
@@ -275,7 +275,7 @@ class MaskExperiments {
 
     /**
      * Creates the case of the supplement method for properties of a complex or reference class
-     * Case: array property is before parent, array property has entryId:
+     * Case: array property is before parent, array property has entryId
      * @param prop The property to process
      */
     def evalSupportArrayBeforeParentHasEntryId = { Property prop, int idxEntryId ->
@@ -340,6 +340,59 @@ class MaskExperiments {
     }
 
     /**
+     * Creates the case of the supplement method for properties of a complex or reference class
+     * Case: has parent properties but is not an array
+     * @param prop The property to process
+     */
+    def evalSupportWithParentsNoArray = { Property prop ->
+        // Example for has parent properties but is not array:
+        /*
+        case "objectBase.gis.area":
+            if (checkObjectBaseGisExists(source)) {
+                if (checkObjectBaseGisExists(target)) {
+                    target.getObjectBase().getGis().setArea(source.getObjectBase().getGis().getArea());
+                } else {
+                    // TODO Parent may have been removed intentionally!
+                    final String msg =
+                            "Target object is missing mandatory parent object for supplementing value associated with 'objectBase.gis.area'";
+                    throw new IllegalArgumentException(msg);
+
+                }
+            } else {
+                // ensure that target does not contain changes in mask property!
+                if (checkObjectBaseExists(target)) {
+                    target.getObjectBase().setGis(null);
+                }
+            }
+            break;
+         */
+        def checkMethodPart = propStack.collect{ data.upperCamelCase.call(it.name) }.join('')       // e.g. AddressPersonsContact
+        def getChain = propStack.collect{ "get${data.upperCamelCase.call(it.name)}" } .join('().')  // e.g. getObjectBase().getGis().getArea
+        def upperPropName = data.upperCamelCase.call(prop.name) // e.g. DomainId
+        propStack.add(prop)
+        def key = propStack.collect{ it.name }.join('.')
+        propStack.pop()
+        def lines = /            case "${key}":
+                if (check${checkMethodPart}Exists(source)) {
+                    if (check${checkMethodPart}Exists(target)) {
+                        target.${getChain}().set${upperPropName}(source.${getChain}().get${upperPropName}());
+                    } else {
+                        \/\/ TODO Parent may have been removed intentionally!
+                        final String msg =
+                                "Target object is missing mandatory parent object for supplementing value associated with '${key}'";
+                        throw new IllegalArgumentException(msg);
+                    }
+                } else {
+                    \/\/ ensure that target does not contain changes in mask property!
+                    if (check${checkMethodPart}Exists(target)) {
+                        target.${getChain}().set${upperPropName}(null);
+                    }
+                }
+                break;/
+        return lines
+    }
+
+    /**
      * Actually creates the case of the supplement method for properties of a complex or reference class.
      * @param prop The property to process
      */
@@ -397,49 +450,8 @@ class MaskExperiments {
                 }
             }
         } else {
-            // Example:
-            /*
-            case "objectBase.gis.area":
-                if (checkObjectBaseGisExists(source)) {
-                    if (checkObjectBaseGisExists(target)) {
-                        target.getObjectBase().getGis().setArea(source.getObjectBase().getGis().getArea());
-                    } else {
-                        // TODO Parent may have been removed intentionally!
-                        final String msg =
-                                "Target object is missing mandatory parent object for supplementing value associated with 'objectBase.gis.area'";
-                        throw new IllegalArgumentException(msg);
-
-                    }
-                } else {
-                    // ensure that target does not contain changes in mask property!
-                    if (checkObjectBaseExists(target)) {
-                        target.getObjectBase().setGis(null);
-                    }
-                }
-                break;
-             */
-            def checkMethodPart = propStack.collect{ data.upperCamelCase.call(it.name) }.join('')       // e.g. AddressPersonsContact
-            def getChain = propStack.collect{ "get${data.upperCamelCase.call(it.name)}" } .join('().')  // e.g. getObjectBase().getGis().getArea
-            propStack.add(prop)
-            def key = propStack.collect{ it.name }.join('.')
-            propStack.pop()
-            lines = /            case "${key}":
-                if (check${checkMethodPart}Exists(source)) {
-                    if (check${checkMethodPart}Exists(target)) {
-                        target.${getChain}().set${upperPropName}(source.${getChain}().get${upperPropName}());
-                    } else {
-                        \/\/ TODO Parent may have been removed intentionally!
-                        final String msg =
-                                "Target object is missing mandatory parent object for supplementing value associated with '${key}'";
-                        throw new IllegalArgumentException(msg);
-                    }
-                } else {
-                    \/\/ ensure that target does not contain changes in mask property!
-                    if (check${checkMethodPart}Exists(target)) {
-                        target.${getChain}().set${upperPropName}(null);
-                    }
-                }
-                break;/
+            // has parent and no array
+            lines = evalSupportWithParentsNoArray.call(prop)
         }
         println lines
         // allCaseLines.add(lines)
