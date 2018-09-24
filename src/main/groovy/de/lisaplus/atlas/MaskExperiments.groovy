@@ -167,6 +167,11 @@ class MaskExperiments {
         propIsCollectionStack = [false]
     }
 
+    /**
+     * Creates the case of the supplement method for properties of a complex or reference class
+     * Case: parent property is array and has entryId:
+     * @param prop The property to process
+     */
     def evalSupportParentIsArrayHasEntryId = { Property prop ->
         // Example for parent property is array and has entryId:
         /*
@@ -218,6 +223,11 @@ class MaskExperiments {
         return lines
     }
 
+    /**
+     * Creates the case of the supplement method for properties of a complex or reference class
+     * Case: parent property is array but has no entryId:
+     * @param prop The property to process
+     */
     def evalSupportParentIsArrayNoEntryId = { Property prop ->
         // Example for parent property is array but has no entryId:
         /*
@@ -263,6 +273,11 @@ class MaskExperiments {
         return lines
     }
 
+    /**
+     * Creates the case of the supplement method for properties of a complex or reference class
+     * Case: array property is before parent, array property has entryId:
+     * @param prop The property to process
+     */
     def evalSupportArrayBeforeParentHasEntryId = { Property prop, int idxEntryId ->
         // Example for array property before parent, array property has entryId:
         /*
@@ -324,7 +339,6 @@ class MaskExperiments {
         return lines
     }
 
-
     /**
      * Actually creates the case of the supplement method for properties of a complex or reference class.
      * @param prop The property to process
@@ -355,7 +369,6 @@ class MaskExperiments {
             }
         } else if (propIsCollectionStack.last()) {
             Property pProp = propStack.last()
-            def parentJavaType = data.typeToJavaForceSingle.call(pProp.type)
             boolean parentHasEntryId = pProp.isRefTypeOrComplexType() && pProp.type.type.properties.collect { prop2 -> prop2.name }.contains('entryId')
             if (pProp.type.isArray) {
                 if (parentHasEntryId) {
