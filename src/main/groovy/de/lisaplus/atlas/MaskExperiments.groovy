@@ -105,11 +105,37 @@ class MaskExperiments {
         /* First loop: method mask */
         println "public class Mask${targetType} {"
 
-        println """    public static void mask(${targetType} target, PojoMask mask) {
+        println """
+    /**
+     * @param source The (unmasked) object, which represents the pristine state of the object.
+     * @param target The masked and potentially altered object, where the masked information is to be restored.
+     * @param mask The mask defining the attributes, which are to be restored.
+     */
+    public static void supplementMasked(${targetType} source, ${targetType} target, PojoMask mask) {
+        for (final String key : mask.hiddenKeys()) {
+            switch(key) {
+"""
+        // TODO iterate over model and insert case statements!
+        evalAllSupplementCases.call(type)
+
+
+        println """            default:
+                // do nothing
+            }
+        }
+    }"""
+
+        println """
+    /**
+     * This method alters the target object: It masks some of its attributes by setting the attributes to <i>null</i>!
+     * @param target The object to mask, not <i>null</i>!
+     * @param mask Defines the attributes of the object, which are to be masked, not <i>null</i>!
+     */    
+    public static void mask(${targetType} target, PojoMask mask) {
         for (final String key : mask.hiddenKeys()) {
             switch(key) {"""
         /* NOTE: The data model is being altered: tune propLookup parameter to loose Suffix Id !!!*/
-        evalAllCases.call(type)
+        evalAllMaskCases.call(type)
 
         println '''            }
         }
@@ -137,55 +163,11 @@ class MaskExperiments {
     }
 
     /**
-     * Performs some preparations and then triggers printing of all switch cases.
-     * @param type The top level type to process
-     */
-    def evalAllCases = { Type type ->
-        // The data model is being altered: tune propLookup properties to loose suffix Id!!!
-        tuneType(type)
-
-        /* First loop: method mask */
-        prepareStacks.call()
-
-        evalCaseForType(type)
-    }
-
-    /**
-     * <b>THIS METHOD ALTERS THE MODEL!!!</b>
-     * This method tunes the properties of a (complex or reference) type and calls itself recursively if the type
-     * itself holds properties of other (complex or reference) types.
-     * Checks for properties with the tag <i>prepLookup</i> and
-     * <ul>
-     * <li>joined==true: removes the property completely</li>
-     * <li>joined==false: removes the suffix Id</li>
-     * @param type The type to process.
-     */
-    def tuneType = { Type type ->
-        Closure<Void> action
-        if (joined) {
-            action = {  Property prop ->
-                println "// ATTENTION: Removing lookup property ${prop.name}"
-                type.properties.remove(prop)
-            }
-        } else {
-            action = { Property prop ->
-                def orig = prop.name
-                def shorten = prop.name.take(prop.name.length() - 2)
-                println "// ATTENTION: Renaming lookup property from $orig to $shorten"
-                prop.setName(shorten)
-            }
-        }
-        Collection<Property> lookupProps = type.properties.findAll { Property prop -> prop.hasTag('prepLookup') && prop.name.endsWith('Id') }
-        type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   } each { Property prop -> tuneType.call(prop.implicitRef.type) }
-        type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() } each { Property prop -> tuneType.call(prop.type.type) }
-        lookupProps.each(action)
-    }
-
-    /**
-     * Actually creates the case for properties of a complex or reference class.
+     * Actually creates the case of the supplement method for properties of a complex or reference class.
      * @param prop The property to process
      */
-    def evalCaseSimple = { Property prop ->
+    def evalSupplementCaseSimple = { Property prop ->
+        // FIXME Do add new implementation!
         def lines
         if (propStack.isEmpty()) {
             // Example:
@@ -255,43 +237,214 @@ class MaskExperiments {
         println lines
     }
 
-    def evalCaseComplex = { Property property ->
-        Type type = property.type.type
-        evalCaseForType(type)
-    }
-
-    def evalCaseJoined = { Property property ->
-        Type type = property.implicitRef.type
-        evalCaseForType(type)
-    }
 
     /**
-     * Prints the case statements for a certain type, calls itself recursively for reference and complex types!
+     * Prints the case statements of the supplement method for a certain type, calls itself recursively for reference
+     * and complex types!
      * @param type The type to process
      */
-    def evalCaseForType = { Type type ->
+    def evalSupplementCaseForType = { Type type ->
 //        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:false]).each { Property prop ->
-            println "// evalCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
-            evalCaseSimple.call(prop)
+            println "// evalSupplementCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
+            evalSupplementCaseSimple.call(prop)
         }
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
-            evalCaseSimple.call(prop)
+            evalSupplementCaseSimple.call(prop)
             // recursive call!
             putStacks.call(prop)
-            evalCaseComplex.call(prop)
+            evalSupplementCaseComplex.call(prop)
+            popStacks.call()
+        }
+    }
+
+    /**
+     * Code for continuing recursive case creation of supplement method for a complex property.
+     * @param property The complex property to process.
+     */
+    def evalSupplementCaseComplex = { Property property ->
+        Type type = property.type.type
+        evalSupplementCaseForType.call(type)
+    }
+
+    /**
+     * Performs some preparations and then triggers printing of all switch cases of the supplement method.
+     * @param type The top level type to process
+     */
+    def evalAllSupplementCases = { Type currentType ->
+        prepareStacks.call()
+        evalSupplementCaseForType.call(currentType)
+    }
+
+
+    /**
+     * Performs some preparations and then triggers printing of all switch cases of the mask method.
+     * @param type The top level type to process
+     */
+    def evalAllMaskCases = { Type currentType ->
+        // The data model is being altered: tune propLookup properties to loose suffix Id!!!
+        tuneType.call(currentType)
+
+        /* First loop: method mask */
+        prepareStacks.call()
+
+        evalMaskCaseForType.call(currentType)
+    }
+
+    /**
+     * <b>THIS METHOD ALTERS THE MODEL!!!</b>
+     * This method tunes the properties of a (complex or reference) type and calls itself recursively if the type
+     * itself holds properties of other (complex or reference) types.
+     * Checks for properties with the tag <i>prepLookup</i> and
+     * <ul>
+     * <li>joined==true: removes the property completely</li>
+     * <li>joined==false: removes the suffix Id</li>
+     * @param type The type to process.
+     */
+    def tuneType = { Type type ->
+        Closure<Void> action
+        if (joined) {
+            action = {  Property prop ->
+                println "// ATTENTION: Removing lookup property ${prop.name}"
+                type.properties.remove(prop)
+            }
+        } else {
+            action = { Property prop ->
+                def orig = prop.name
+                def shorten = prop.name.take(prop.name.length() - 2)
+                println "// ATTENTION: Renaming lookup property from $orig to $shorten"
+                prop.setName(shorten)
+            }
+        }
+        Collection<Property> lookupProps = type.properties.findAll { Property prop -> prop.hasTag('prepLookup') && prop.name.endsWith('Id') }
+        type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   } each { Property prop -> tuneType.call(prop.implicitRef.type) }
+        type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() } each { Property prop -> tuneType.call(prop.type.type) }
+        lookupProps.each(action)
+    }
+
+    /**
+     * Actually creates the case of the mask method for properties of a complex or reference class.
+     * @param prop The property to process
+     */
+    def evalMakCaseSimple = { Property prop ->
+        def lines
+        if (propStack.isEmpty()) {
+            // Example:
+            /*
+                 case "domainId":
+                    target.setDomainId(null);
+                    break;
+              */
+            if (prop.hasTag('join')) {
+                lines = /            case "${prop.name}":
+                target.set${data.upperCamelCase.call(prop.name)}(null);
+                target.set${data.upperCamelCase.call(prop.name)}Id(null);
+                break;/
+            } else if ( prop.hasTag('prepLookup')){
+                lines = /            case "${prop.name}":
+                target.set${data.upperCamelCase.call(prop.name)}Id(null);
+                break;/
+            } else {
+                lines = /            case "${prop.name}":
+                target.set${data.upperCamelCase.call(prop.name)}(null);
+                break;/
+            }
+        } else if (propIsCollectionStack.last()) {
+            // Example:
+            /*
+                case "address.persons.contact.phone":
+                    for (ContactData data : getAddressPersonsContact(target)) {
+                        data.setPhone(null);
+                    }
+                    break;
+             */
+
+            Property pProp = propStack.last()
+//             println "// $prop.name"
+            def parent = pProp.name.take(1)
+            def parentJavaType = data.typeToJavaForceSingle.call(pProp.type)
+            def methodName = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
+            propStack.add(prop)
+            def key = propStack.collect{ it.name }.join('.')
+            propStack.pop()
+            lines = /            case "${key}":
+                for(${parentJavaType} ${parent} : get${methodName}(target)){
+                    ${parent}.set${data.upperCamelCase.call(prop.name)}(null);
+                }
+                break;/
+
+        } else {
+            // Example:
+            /*
+                case "objectBase.number":
+                    if (checkObjectBaseExists(target)) {
+                        target.getObjectBase().setNumber(null);
+                    }
+                    break;
+             */
+            def checkMethodPart = propStack.collect{ data.upperCamelCase.call(it.name) }.join('')       // e.g. AddressPersonsContact
+            def getChain = propStack.collect{ "get${data.upperCamelCase.call(it.name)}" } .join('().')  // e.g. getObjectBase().getGis().getArea
+            propStack.add(prop)
+            def key = propStack.collect{ it.name }.join('.')
+            propStack.pop()
+            lines = /            case "${key}":
+                if (check${checkMethodPart}Exists(target)) {
+                    target.${getChain}().set${data.upperCamelCase.call(prop.name)}(null);
+                }
+                break;/
+        }
+        println lines
+    }
+
+    /**
+     * Code for continuing recursive case creation of mask method for a complex property.
+     * @param property The complex property to process.
+     */
+    def evalMaskCaseComplex = { Property property ->
+        Type type = property.type.type
+        evalMaskCaseForType.call(type)
+    }
+
+    /**
+     * Code for continuing recursive case creation of mask method for a joined property.
+     * @param property The complex property to process.
+     * @deprecated Currently model holds only explicitly joined types!
+     */
+    def evalMaskCaseJoined = { Property property ->
+        Type type = property.implicitRef.type
+        evalMaskCaseForType.call(type)
+    }
+
+    /**
+     * Prints the case statements of the mask method for a certain type, calls itself recursively for reference and
+     * complex types!
+     * @param type The type to process
+     */
+    def evalMaskCaseForType = { Type type ->
+//        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() }.each { prop ->
+        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
+            println "// evalMaskCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
+            evalMakCaseSimple.call(prop)
+        }
+
+//        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            evalMakCaseSimple.call(prop)
+            // recursive call!
+            putStacks.call(prop)
+            evalMaskCaseComplex.call(prop)
             popStacks.call()
         }
 
         /*
         if (joined) {
             data.filterProps.call(type, [prepLookup:true, implRefIsRef:true]).each { Property prop ->
-                println "// evalCaseForType/prepLookup:  type=${type.name} prop=${prop.name}"
+                println "// evalMaskCaseForType/prepLookup:  type=${type.name} prop=${prop.name}"
                 // recursive call!
                 putStacks.call(prop)
-                evalCaseJoined.call(prop)
+                evalMaskCaseJoined.call(prop)
                 popStacks.call()
             }
         }
