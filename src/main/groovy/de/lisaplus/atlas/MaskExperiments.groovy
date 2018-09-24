@@ -72,6 +72,8 @@ class MaskExperiments {
     boolean joined
     /** The name of the Java class of the type. */
     String targetType
+    /** For collecting the lines of the case statements. Write sequence is easily messed up in templates! */
+    List<String> allCaseLines
 
     /**
      * Execute code generation for all types
@@ -182,7 +184,7 @@ class MaskExperiments {
             if (prop.hasTag('join')) {
                 lines = /            case "${prop.name}":
                 target.set${upperPropName}(source.get${upperPropName}());
-                arget.set${upperPropName}Id(source.get${upperPropName}Id());
+                target.set${upperPropName}Id(source.get${upperPropName}Id());
                 break;/
             } else if ( prop.hasTag('prepLookup')){
                 lines = /            case "${prop.name}":
@@ -196,6 +198,26 @@ class MaskExperiments {
         } else if (propIsCollectionStack.last()) {
             // Example:
             /*
+            case "location.streets.classification":
+                final Map<String, JunctionLocationStreetsItem> sourceMapping = getLocationStreets(source)
+                        .stream()
+                        .collect(Collectors.toMap(JunctionLocationStreetsItem::getEntryId, Function.identity()));
+                if (!sourceMapping.isEmpty()) {
+                    final Map<String, JunctionLocationStreetsItem> targetMapping = getLocationStreets(target)
+                            .stream()
+                            .collect(Collectors.toMap(JunctionLocationStreetsItem::getEntryId, Function.identity()));
+                    for (final Entry<String, JunctionLocationStreetsItem> entry : sourceMapping.entrySet()) {
+                        // version 1:
+                        if(targetMapping.containsKey(entry.getKey())) {
+                            targetMapping.get(entry.getKey()).setClassification(entry.getValue().getClassification());
+                        }
+                        // version 2:
+                        final JunctionLocationStreetsItem targetItem = targetMapping.get(entry.getKey());
+                        if (targetItem != null) {
+                            targetItem.setClassification(entry.getValue().getClassification());
+                        }
+                    }
+                }
                 case "address.persons.contact.phone":
                     for (ContactData data : getAddressPersonsContact(target)) {
                         data.setPhone(null);
@@ -211,7 +233,22 @@ class MaskExperiments {
             def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
             lines = /            case "${key}":
-                \/\/ FIXME Get mapping of ID to object holding property and assign attributes accordingly!
+                final Map<Object, $parentJavaType> sourceMapping =  get${methodName}(source)
+                    .stream()
+                    .collect(Collectors.toMap($parentJavaType::getEntryId, Function.identity()));
+                if (!sourceMapping.isEmpty()) {
+                    final Map<Object, $parentJavaType> targetMapping =  get${methodName}(target)
+                        .stream()
+                        .collect(Collectors.toMap($parentJavaType::getEntryId, Function.identity()));
+                    if (targetMapping.isEmpty()) {
+                        for (final Entry<Object, $parentJavaType> entry : sourceMapping.entrySet()) {
+                            final $parentJavaType targetItem = targetMapping.get(entry.getKey());
+                            if (targetItem != null) {
+                                targetItem.set${upperPropName}(entry.getValue().get${upperPropName}());
+                            }
+                        }
+                    }
+                }
                 \/*
                 for(${parentJavaType} ${parent} : get${methodName}(target)){
                     ${parent}.set${upperPropName}(null);
@@ -265,6 +302,7 @@ class MaskExperiments {
                 break;/
         }
         println lines
+        // allCaseLines.add(lines)
     }
 
 
@@ -307,6 +345,7 @@ class MaskExperiments {
         // The data model is being altered: tune propLookup properties to loose suffix Id!!!
         tuneType.call(currentType)
         prepareStacks.call()
+        allCaseLines = []
         evalSupplementCaseForType.call(currentType)
     }
 
@@ -322,6 +361,7 @@ class MaskExperiments {
         /* First loop: method mask */
         prepareStacks.call()
 
+        allCaseLines = []
         evalMaskCaseForType.call(currentType)
     }
 
@@ -428,6 +468,7 @@ class MaskExperiments {
                 break;/
         }
         println lines
+        // allCaseLines.add(lines)
     }
 
     /**
