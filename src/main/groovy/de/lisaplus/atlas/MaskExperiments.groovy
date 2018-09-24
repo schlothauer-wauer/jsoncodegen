@@ -176,12 +176,12 @@ class MaskExperiments {
         def lines
         def upperPropName = data.upperCamelCase.call(prop.name) // e.g. DomainId
         if (propStack.isEmpty()) {
-            // Example:
+            // Example no parent property:
             /*
                  case "domainId":
                     target.setDomainId(source.getDomainId());
                     break;
-              */
+             */
             if (prop.hasTag('join')) {
                 lines = /            case "${prop.name}":
                 target.set${upperPropName}(source.get${upperPropName}());
@@ -202,7 +202,7 @@ class MaskExperiments {
             if (pProp.type.isArray) {
                 boolean parentHasEntryId = pProp.isRefTypeOrComplexType() && pProp.type.type.properties.collect { prop2 -> prop2.name }.contains('entryId')
                 if (parentHasEntryId) {
-                    // Example for parent is array and has entryId:
+                    // Example for parent property is array and has entryId:
                     /*
                     case "location.streets.classification":
                         final Map<String, JunctionLocationStreetsItem> sourceMapping0 = getLocationStreets(source)
@@ -249,7 +249,7 @@ class MaskExperiments {
                 break;/
                     idx+=1
                 } else {
-                    // Example for parent is array but has no entryId:
+                    // Example for parent property is array but has no entryId:
                     /*
                         final List<GeoPoint> sourceList0 = getGisRoutePoints(source);
                         final List<GeoPoint> targetList0= getGisRoutePoints(target);
@@ -291,7 +291,7 @@ class MaskExperiments {
                     idx+=1
                 }
             } else {
-                // Example for array before parent:
+                // Example for array property before parent, array property has entryId:
                 /*
                 case "address.persons.contact.email":
                 final Map<Object, ContactData> sourceMapping7 =  getAddressPersons(source)
@@ -348,20 +348,17 @@ class MaskExperiments {
                 break;/
                     idx+=1
                 } else {
+                    // Array property before parent and array property has no entryId :
                     // GeoPoint?!?
                     propStack.add(prop)
                     def key = propStack.collect{ it.name }.join('.')
                     propStack.pop()
 
                     lines = /            case "${key}":
-
                     \/\/ GeoPoint? ${pProp.type.name()}
                     break;/
-
                 }
-
             }
-
         } else {
             // Example:
             /*
