@@ -120,7 +120,7 @@ class MaskExperiments {
 
 
         println """            default:
-                // do nothing
+                throw new IllegalArgumentException(String.format("Unsupported key '%s' for model class ${targetType}!", key));
             }
         }
     }"""
@@ -137,9 +137,11 @@ class MaskExperiments {
         /* NOTE: The data model is being altered: tune propLookup parameter to loose Suffix Id !!!*/
         evalAllMaskCases.call(type)
 
-        println '''            }
+        println """           default:
+                throw new IllegalArgumentException(String.format("Unsupported key '%s' for model class ${targetType}!", key));
+            }
         }
-    }'''
+    }"""
 
         /* Second loop: method checkXXXExists() */
         prepareStacks.call()
@@ -169,25 +171,26 @@ class MaskExperiments {
     def evalSupplementCaseSimple = { Property prop ->
         // FIXME Do add new implementation!
         def lines
+        def upperPropName = data.upperCamelCase.call(prop.name) // e.g. DomainId
         if (propStack.isEmpty()) {
             // Example:
             /*
                  case "domainId":
-                    target.setDomainId(null);
+                    target.setDomainId(source.getDomainId());
                     break;
               */
             if (prop.hasTag('join')) {
                 lines = /            case "${prop.name}":
-                target.set${data.upperCamelCase.call(prop.name)}(null);
-                target.set${data.upperCamelCase.call(prop.name)}Id(null);
+                target.set${upperPropName}(source.get${upperPropName}());
+                arget.set${upperPropName}Id(source.get${upperPropName}Id());
                 break;/
             } else if ( prop.hasTag('prepLookup')){
                 lines = /            case "${prop.name}":
-                target.set${data.upperCamelCase.call(prop.name)}Id(null);
+                target.set${upperPropName}Id(source.get${upperPropName}Id());
                 break;/
             } else {
                 lines = /            case "${prop.name}":
-                target.set${data.upperCamelCase.call(prop.name)}(null);
+                target.set${upperPropName}(source.get${upperPropName}());
                 break;/
             }
         } else if (propIsCollectionStack.last()) {
@@ -209,19 +212,36 @@ class MaskExperiments {
             def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
             lines = /            case "${key}":
+                \/\/ FIXME Get mapping of ID to object holding property and assign attributes accordingly!
+                \/*
                 for(${parentJavaType} ${parent} : get${methodName}(target)){
-                    ${parent}.set${data.upperCamelCase.call(prop.name)}(null);
+                    ${parent}.set${upperPropName}(null);
                 }
+                 *\/
                 break;/
 
         } else {
             // Example:
             /*
-                case "objectBase.number":
-                    if (checkObjectBaseExists(target)) {
-                        target.getObjectBase().setNumber(null);
+            case "objectBase.gis.area":
+                // NPE is possible, depth 2
+                if (checkObjectBaseGisExists(source)) {
+                    if (checkObjectBaseGisExists(target)) {
+                        target.getObjectBase().getGis().setArea(source.getObjectBase().getGis().getArea());
+                    } else {
+                        final String msg = String.format(
+                                "Target object is missing mandatory parent object for supplementing value associated with '%s'",
+                                    key);
+                        throw new IllegalArgumentException(msg);
+
                     }
-                    break;
+                } else {
+                    // ensure that target does not contain changes in mask property!
+                    if (checkObjectBaseExists(target)) {
+                        target.getObjectBase().setGis(null);
+                    }
+                }
+                break;
              */
             def checkMethodPart = propStack.collect{ data.upperCamelCase.call(it.name) }.join('')       // e.g. AddressPersonsContact
             def getChain = propStack.collect{ "get${data.upperCamelCase.call(it.name)}" } .join('().')  // e.g. getObjectBase().getGis().getArea
@@ -229,8 +249,20 @@ class MaskExperiments {
             def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
             lines = /            case "${key}":
-                if (check${checkMethodPart}Exists(target)) {
-                    target.${getChain}().set${data.upperCamelCase.call(prop.name)}(null);
+                if (check${checkMethodPart}Exists(source)) {
+                    if (check${checkMethodPart}Exists(target)) {
+                        target.${getChain}().set${upperPropName}(source.${getChain}().get${upperPropName}());
+                    } else {
+                        final String msg = String.format(
+                                "Target object is missing mandatory parent object for supplementing value associated with '%s'",
+                                    key);
+                        throw new IllegalArgumentException(msg);
+                    }
+                } else {
+                    \/\/ ensure that target does not contain changes in mask property!
+                    if (check${checkMethodPart}Exists(target)) {
+                        target.${getChain}().set${upperPropName}(null);
+                    }
                 }
                 break;/
         }
@@ -274,6 +306,8 @@ class MaskExperiments {
      * @param type The top level type to process
      */
     def evalAllSupplementCases = { Type currentType ->
+        // The data model is being altered: tune propLookup properties to loose suffix Id!!!
+        tuneType.call(currentType)
         prepareStacks.call()
         evalSupplementCaseForType.call(currentType)
     }
@@ -285,7 +319,7 @@ class MaskExperiments {
      */
     def evalAllMaskCases = { Type currentType ->
         // The data model is being altered: tune propLookup properties to loose suffix Id!!!
-        tuneType.call(currentType)
+        // tuneType.call(currentType)
 
         /* First loop: method mask */
         prepareStacks.call()
