@@ -204,7 +204,6 @@ class MaskExperiments {
              */
 
             Property pProp = propStack.last()
-//             println "// $prop.name"
             def parent = pProp.name.take(1)
             def parentJavaType = data.typeToJavaForceSingle.call(pProp.type)
             def methodName = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
@@ -224,14 +223,13 @@ class MaskExperiments {
             // Example:
             /*
             case "objectBase.gis.area":
-                // NPE is possible, depth 2
                 if (checkObjectBaseGisExists(source)) {
                     if (checkObjectBaseGisExists(target)) {
                         target.getObjectBase().getGis().setArea(source.getObjectBase().getGis().getArea());
                     } else {
-                        final String msg = String.format(
-                                "Target object is missing mandatory parent object for supplementing value associated with '%s'",
-                                    key);
+                        // TODO Parent may have been removed intentionally!
+                        final String msg =
+                                "Target object is missing mandatory parent object for supplementing value associated with 'objectBase.gis.area'";
                         throw new IllegalArgumentException(msg);
 
                     }
@@ -253,9 +251,9 @@ class MaskExperiments {
                     if (check${checkMethodPart}Exists(target)) {
                         target.${getChain}().set${upperPropName}(source.${getChain}().get${upperPropName}());
                     } else {
-                        final String msg = String.format(
-                                "Target object is missing mandatory parent object for supplementing value associated with '%s'",
-                                    key);
+                        \/\/ TODO Parent may have been removed intentionally!
+                        final String msg =
+                                "Target object is missing mandatory parent object for supplementing value associated with '${key}'";
                         throw new IllegalArgumentException(msg);
                     }
                 } else {
