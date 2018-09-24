@@ -35,7 +35,7 @@ class MaskExperiments {
                 : args[0]
         def type = args.length > 0 ?
                 args[1]
-                : 'Contact', // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'Contact' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
         def joined = type.endsWith('Joined')
 
         def maskExp = new MaskExperiments(type, modelPath)
@@ -115,7 +115,7 @@ class MaskExperiments {
      * @param target The masked and potentially altered object, where the masked information is to be restored.
      * @param mask The mask defining the attributes, which are to be restored.
      */
-    public static void supplementMasked(${targetType} source, ${targetType} target, PojoMask mask) {
+    public static void supplementMasked2(${targetType} source, ${targetType} target, PojoMask mask) {
         for (final String key : mask.hiddenKeys()) {
             switch(key) {
 """
@@ -198,38 +198,37 @@ class MaskExperiments {
                 break;/
             }
         } else if (propIsCollectionStack.last()) {
-            // Example:
-            /*
-            case "location.streets.classification":
-                final Map<String, JunctionLocationStreetsItem> sourceMapping0 = getLocationStreets(source)
-                        .stream()
-                        .collect(Collectors.toMap(JunctionLocationStreetsItem::getEntryId, Function.identity()));
-                if (!sourceMapping0.isEmpty()) {
-                    final Map<String, JunctionLocationStreetsItem> targetMapping = getLocationStreets(target)
+            Property pProp = propStack.last()
+            def parentJavaType = data.typeToJavaForceSingle.call(pProp.type)
+            if (pProp.type.isArray) {
+                // Example for parent is array:
+                /*
+                case "location.streets.classification":
+                    final Map<String, JunctionLocationStreetsItem> sourceMapping0 = getLocationStreets(source)
                             .stream()
                             .collect(Collectors.toMap(JunctionLocationStreetsItem::getEntryId, Function.identity()));
-                    for (final Entry<String, JunctionLocationStreetsItem> entry : sourceMapping0.entrySet()) {
-                        final JunctionLocationStreetsItem targetItem = targetMapping.get(entry.getKey());
-                        if (targetItem != null) {
-                            targetItem.setClassification(entry.getValue().getClassification());
+                    if (!sourceMapping0.isEmpty()) {
+                        final Map<String, JunctionLocationStreetsItem> targetMapping = getLocationStreets(target)
+                                .stream()
+                                .collect(Collectors.toMap(JunctionLocationStreetsItem::getEntryId, Function.identity()));
+                        for (final Entry<String, JunctionLocationStreetsItem> entry : sourceMapping0.entrySet()) {
+                            final JunctionLocationStreetsItem targetItem = targetMapping.get(entry.getKey());
+                            if (targetItem != null) {
+                                targetItem.setClassification(entry.getValue().getClassification());
+                            }
                         }
                     }
-                }
-                case "address.persons.contact.phone":
-                    for (ContactData data : getAddressPersonsContact(target)) {
-                        data.setPhone(null);
-                    }
-                    break;
-             */
-
-            Property pProp = propStack.last()
-            def parent = pProp.name.take(1)
-            def parentJavaType = data.typeToJavaForceSingle.call(pProp.type)
-            def methodName = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
-            propStack.add(prop)
-            def key = propStack.collect{ it.name }.join('.')
-            propStack.pop()
-            lines = /            case "${key}":
+                    case "address.persons.contact.phone":
+                        for (ContactData data : getAddressPersonsContact(target)) {
+                            data.setPhone(null);
+                        }
+                        break;
+                 */
+                def methodName = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
+                propStack.add(prop)
+                def key = propStack.collect{ it.name }.join('.')
+                propStack.pop()
+                lines = /            case "${key}":
                 final Map<Object, $parentJavaType> sourceMapping${idx} =  get${methodName}(source)
                     .stream()
                     .collect(Collectors.toMap($parentJavaType::getEntryId, Function.identity()));
@@ -247,7 +246,79 @@ class MaskExperiments {
                     }
                 }
                 break;/
-            idx+=1
+                idx+=1
+            } else {
+                // Example for array before parent:
+                /*
+                case "address.persons.contact.email":
+                final Map<Object, ContactData> sourceMapping7 =  getAddressPersons(source)
+                        .stream()
+                        .collect(Collectors.toMap(p -> p.getEntryId(), p -> p.getContact()));
+                if (!sourceMapping7.isEmpty()) {
+                    final Map<Object, ContactData> targetMapping =  getAddressPersons(target)
+                            .stream()
+                            .collect(Collectors.toMap(p -> p.getEntryId(), p -> p.getContact()));
+                    if (targetMapping.isEmpty()) {
+                        for (final Entry<Object, ContactData> entry : sourceMapping7.entrySet()) {
+                            final ContactData targetItem = targetMapping.get(entry.getKey());
+                            if (targetItem != null) {
+                                targetItem.setEmail(entry.getValue().getEmail());
+                            }
+                        }
+                    }
+                }
+                break;
+                */
+                // && prop2.type.properties.collect { prop3 -> prop3.name }.contains('entryId')
+                int idxEntryId = propStack.findLastIndexOf { prop2 -> prop2.type.isArray && prop2.isRefTypeOrComplexType() && prop2.type.type.properties.collect { prop3 -> prop3.name }.contains('entryId')}    // TODO contains property named entryId!
+                if (idxEntryId > -1) {
+                    List<Property> chainUntilEntryId = propStack.subList(0, idxEntryId +1)
+                    List<Property> chainAfterEntryId = propStack.subList(idxEntryId +1, propStack.size())
+                    Property propEntryId = chainUntilEntryId.last()
+                    def debugUntil = chainUntilEntryId.collect{ prop2 -> prop2.name }.join('.')
+                    def debugAfter = chainAfterEntryId.collect{ prop2 -> prop2.name}.join('.')
+                    println "// chainUntill=${debugUntil} chainAfter=${debugAfter} propId=${propEntryId.name}"
+                    def objEntryId = propEntryId.name.take(1)
+                    def methodNameUntil = chainUntilEntryId.collect {data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersons
+                    def methodNameAfter = chainAfterEntryId.collect { "get${data.upperCamelCase.call(it.name)}()" }.join('.') // e.g. getContact().getEmail()
+
+                    propStack.add(prop)
+                    def key = propStack.collect{ it.name }.join('.')
+                    propStack.pop()
+
+                    lines = /            case "${key}":
+                final Map<Object,$parentJavaType> sourceMapping${idx} =  get${methodNameUntil}(source)
+                    .stream()
+                    .collect(Collectors.toMap(${objEntryId} -> ${objEntryId}.getEntryId(), ${objEntryId} -> ${objEntryId}.${methodNameAfter}));
+                if (!sourceMapping${idx}.isEmpty()) {
+                    final Map<Object, $parentJavaType> targetMapping =  get${methodNameUntil}(target)
+                        .stream()
+                        .collect(Collectors.toMap(${objEntryId} -> ${objEntryId}.getEntryId(), ${objEntryId} -> ${objEntryId}.${methodNameAfter}));
+                    if (targetMapping.isEmpty()) {
+                        for (final Entry<Object, $parentJavaType> entry : sourceMapping${idx}.entrySet()) {
+                            final $parentJavaType targetItem = targetMapping.get(entry.getKey());
+                            if (targetItem != null) {
+                                targetItem.set${upperPropName}(entry.getValue().get${upperPropName}());
+                            }
+                        }
+                    }
+                }
+                break;/
+                    idx+=1
+                } else {
+                    // GeoPoint?!?
+                    propStack.add(prop)
+                    def key = propStack.collect{ it.name }.join('.')
+                    propStack.pop()
+
+                    lines = /            case "${key}":
+
+                    \/\/ GeoPoint? ${pProp.type.name()}
+                    break;/
+
+                }
+
+            }
 
         } else {
             // Example:
@@ -307,7 +378,7 @@ class MaskExperiments {
     def evalSupplementCaseForType = { Type type ->
 //        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:false]).each { Property prop ->
-            println "// evalSupplementCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
+            // println "// evalSupplementCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
             evalSupplementCaseSimple.call(prop)
         }
 
