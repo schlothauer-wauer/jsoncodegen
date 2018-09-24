@@ -35,7 +35,7 @@ class MaskExperiments {
                 : args[0]
         def type = args.length > 0 ?
                 args[1]
-                : 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'Contact', // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
         def joined = type.endsWith('Joined')
 
         def maskExp = new MaskExperiments(type, modelPath)
@@ -74,6 +74,8 @@ class MaskExperiments {
     String targetType
     /** For collecting the lines of the case statements. Write sequence is easily messed up in templates! */
     List<String> allCaseLines
+    /** Index for generating unique identifiers, e.g. in the case statements. */
+    int idx
 
     /**
      * Execute code generation for all types
@@ -199,19 +201,14 @@ class MaskExperiments {
             // Example:
             /*
             case "location.streets.classification":
-                final Map<String, JunctionLocationStreetsItem> sourceMapping = getLocationStreets(source)
+                final Map<String, JunctionLocationStreetsItem> sourceMapping0 = getLocationStreets(source)
                         .stream()
                         .collect(Collectors.toMap(JunctionLocationStreetsItem::getEntryId, Function.identity()));
-                if (!sourceMapping.isEmpty()) {
+                if (!sourceMapping0.isEmpty()) {
                     final Map<String, JunctionLocationStreetsItem> targetMapping = getLocationStreets(target)
                             .stream()
                             .collect(Collectors.toMap(JunctionLocationStreetsItem::getEntryId, Function.identity()));
-                    for (final Entry<String, JunctionLocationStreetsItem> entry : sourceMapping.entrySet()) {
-                        // version 1:
-                        if(targetMapping.containsKey(entry.getKey())) {
-                            targetMapping.get(entry.getKey()).setClassification(entry.getValue().getClassification());
-                        }
-                        // version 2:
+                    for (final Entry<String, JunctionLocationStreetsItem> entry : sourceMapping0.entrySet()) {
                         final JunctionLocationStreetsItem targetItem = targetMapping.get(entry.getKey());
                         if (targetItem != null) {
                             targetItem.setClassification(entry.getValue().getClassification());
@@ -233,15 +230,15 @@ class MaskExperiments {
             def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
             lines = /            case "${key}":
-                final Map<Object, $parentJavaType> sourceMapping =  get${methodName}(source)
+                final Map<Object, $parentJavaType> sourceMapping${idx} =  get${methodName}(source)
                     .stream()
                     .collect(Collectors.toMap($parentJavaType::getEntryId, Function.identity()));
-                if (!sourceMapping.isEmpty()) {
+                if (!sourceMapping${idx}.isEmpty()) {
                     final Map<Object, $parentJavaType> targetMapping =  get${methodName}(target)
                         .stream()
                         .collect(Collectors.toMap($parentJavaType::getEntryId, Function.identity()));
                     if (targetMapping.isEmpty()) {
-                        for (final Entry<Object, $parentJavaType> entry : sourceMapping.entrySet()) {
+                        for (final Entry<Object, $parentJavaType> entry : sourceMapping${idx}.entrySet()) {
                             final $parentJavaType targetItem = targetMapping.get(entry.getKey());
                             if (targetItem != null) {
                                 targetItem.set${upperPropName}(entry.getValue().get${upperPropName}());
@@ -249,12 +246,8 @@ class MaskExperiments {
                         }
                     }
                 }
-                \/*
-                for(${parentJavaType} ${parent} : get${methodName}(target)){
-                    ${parent}.set${upperPropName}(null);
-                }
-                 *\/
                 break;/
+            idx+=1
 
         } else {
             // Example:
@@ -346,6 +339,7 @@ class MaskExperiments {
         tuneType.call(currentType)
         prepareStacks.call()
         allCaseLines = []
+        idx = 0
         evalSupplementCaseForType.call(currentType)
     }
 
