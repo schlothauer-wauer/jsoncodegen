@@ -254,8 +254,8 @@ class MaskExperiments {
         propStack.pop()
 
         def lines = /            case "${key}":
-                List<$parentJavaType> sourceList${idx} = get${methodName}(source);
-                List<$parentJavaType> targetList${idx} = get${methodName}(target);
+                final List<$parentJavaType> sourceList${idx} = get${methodName}(source);
+                final List<$parentJavaType> targetList${idx} = get${methodName}(target);
                 if (sourceList${idx}.size() == targetList${idx}.size()) {
                     \/\/ FIXME: Assumes unchanged object sequence!
                     final Iterator<$parentJavaType> iterSource = sourceList${idx}.iterator();
@@ -352,14 +352,14 @@ class MaskExperiments {
                 if (checkObjectBaseGisExists(target)) {
                     target.getObjectBase().getGis().setArea(source.getObjectBase().getGis().getArea());
                 } else {
-                    // TODO Parent may have been removed intentionally!
+                    // TODO Change to log message? Parent may have been removed intentionally!
                     final String msg =
                             "Target object is missing mandatory parent object for supplementing value associated with 'objectBase.gis.area'";
                     throw new IllegalArgumentException(msg);
 
                 }
             } else {
-                // ensure that target does not contain changes in mask property!
+                // ensure that target does not contain changes in masked property!
                 if (checkObjectBaseExists(target)) {
                     target.getObjectBase().setGis(null);
                 }
@@ -377,13 +377,13 @@ class MaskExperiments {
                     if (check${checkMethodPart}Exists(target)) {
                         target.${getChain}().set${upperPropName}(source.${getChain}().get${upperPropName}());
                     } else {
-                        \/\/ TODO Parent may have been removed intentionally!
+                        \/\/ TODO Change to log message? Parent may have been removed intentionally!
                         final String msg =
                                 "Target object is missing mandatory parent object for supplementing value associated with '${key}'";
                         throw new IllegalArgumentException(msg);
                     }
                 } else {
-                    \/\/ ensure that target does not contain changes in mask property!
+                    \/\/ ensure that target does not contain changes in masked property!
                     if (check${checkMethodPart}Exists(target)) {
                         target.${getChain}().set${upperPropName}(null);
                     }
