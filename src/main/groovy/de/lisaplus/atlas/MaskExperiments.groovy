@@ -120,7 +120,7 @@ class MaskExperiments {
             switch(key) {
 """
         // TODO iterate over model and insert case statements!
-        evalAllSupplementCases.call(type)
+        evalAllRestoreCases.call(type)
 
 
         println """            default:
@@ -168,11 +168,11 @@ class MaskExperiments {
     }
 
     /**
-     * Creates the case of the supplement method for properties of a complex or reference class
+     * Creates the case of the restore method for properties of a complex or reference class
      * Case: parent property is array and has entryId
      * @param prop The property to process
      */
-    def evalSupportParentIsArrayHasEntryId = { Property prop ->
+    def evalRestoreParentIsArrayHasEntryId = { Property prop ->
         // Example for parent property is array and has entryId:
         /*
         case "location.streets.classification":
@@ -224,11 +224,11 @@ class MaskExperiments {
     }
 
     /**
-     * Creates the case of the supplement method for properties of a complex or reference class
+     * Creates the case of the restore method for properties of a complex or reference class
      * Case: parent property is array but has no entryId
      * @param prop The property to process
      */
-    def evalSupportParentIsArrayNoEntryId = { Property prop ->
+    def evalRestoreParentIsArrayNoEntryId = { Property prop ->
         // Example for parent property is array but has no entryId:
         /*
             final List<GeoPoint> sourceList0 = getGisRoutePoints(source);
@@ -242,7 +242,7 @@ class MaskExperiments {
                 }
             } else {
                 final String msg =
-                        "Target object missmatch for supplementing value associated with 'gis.route.points.lon'";
+                        "Target object missmatch for restoring value associated with 'gis.route.points.lon'";
                 throw new IllegalArgumentException(msg);
             }
             break;
@@ -265,7 +265,7 @@ class MaskExperiments {
                      }
                 } else {
                     final String msg =
-                        "Target object missmatch for supplementing value associated with '${key}'";
+                        "Target object missmatch for restoring value associated with '${key}'";
                     throw new IllegalArgumentException(msg);
                 }
                 break;/
@@ -274,11 +274,11 @@ class MaskExperiments {
     }
 
     /**
-     * Creates the case of the supplement method for properties of a complex or reference class
+     * Creates the case of the restore method for properties of a complex or reference class
      * Case: array property is before parent, array property has entryId
      * @param prop The property to process
      */
-    def evalSupportArrayBeforeParentHasEntryId = { Property prop, int idxEntryId ->
+    def evalRestoreArrayBeforeParentHasEntryId = { Property prop, int idxEntryId ->
         // Example for array property before parent, array property has entryId:
         /*
             case "address.persons.contact.email":
@@ -340,11 +340,11 @@ class MaskExperiments {
     }
 
     /**
-     * Creates the case of the supplement method for properties of a complex or reference class
+     * Creates the case of the restore method for properties of a complex or reference class
      * Case: has parent properties but is not an array
      * @param prop The property to process
      */
-    def evalSupportWithParentsNoArray = { Property prop ->
+    def evalRestoreWithParentsNoArray = { Property prop ->
         // Example for has parent properties but is not array:
         /*
         case "objectBase.gis.area":
@@ -354,7 +354,7 @@ class MaskExperiments {
                 } else {
                     // TODO Change to log message? Parent may have been removed intentionally!
                     final String msg =
-                            "Target object is missing mandatory parent object for supplementing value associated with 'objectBase.gis.area'";
+                            "Target object is missing mandatory parent object for restoring value associated with 'objectBase.gis.area'";
                     throw new IllegalArgumentException(msg);
 
                 }
@@ -379,7 +379,7 @@ class MaskExperiments {
                     } else {
                         \/\/ TODO Change to log message? Parent may have been removed intentionally!
                         final String msg =
-                                "Target object is missing mandatory parent object for supplementing value associated with '${key}'";
+                                "Target object is missing mandatory parent object for restoring value associated with '${key}'";
                         throw new IllegalArgumentException(msg);
                     }
                 } else {
@@ -393,10 +393,10 @@ class MaskExperiments {
     }
 
     /**
-     * Actually creates the case of the supplement method for properties of a complex or reference class.
+     * Actually creates the case of the restore method for properties of a complex or reference class.
      * @param prop The property to process
      */
-    def evalSupplementCaseSimple = { Property prop ->
+    def evalRestoreCaseSimple = { Property prop ->
         def lines
         def upperPropName = data.upperCamelCase.call(prop.name) // e.g. DomainId
         if (propStack.isEmpty()) {
@@ -426,17 +426,17 @@ class MaskExperiments {
             if (pProp.type.isArray) {
                 if (parentHasEntryId) {
                     // Parent property is array and has entryId:
-                    lines = evalSupportParentIsArrayHasEntryId.call(prop)
+                    lines = evalRestoreParentIsArrayHasEntryId.call(prop)
                 } else {
                     // Parent property is array but misses entryId:
-                    lines = evalSupportParentIsArrayNoEntryId.call(prop)
+                    lines = evalRestoreParentIsArrayNoEntryId.call(prop)
                 }
             } else {
                 int idxEntryId = propStack.findLastIndexOf { prop2 -> prop2.type.isArray && prop2.isRefTypeOrComplexType() &&
                                                                       prop2.type.type.properties.collect { prop3 -> prop3.name }.contains('entryId')}
                 if (idxEntryId > -1) {
                     //  Array property is before parent property, array property has entryId:
-                    lines = evalSupportArrayBeforeParentHasEntryId.call(prop, idxEntryId)
+                    lines = evalRestoreArrayBeforeParentHasEntryId.call(prop, idxEntryId)
                 } else {
                     // Array property is before parent property, array property misses entryId:
                     // GeoPoint?!?
@@ -451,7 +451,7 @@ class MaskExperiments {
             }
         } else {
             // has parent and no array
-            lines = evalSupportWithParentsNoArray.call(prop)
+            lines = evalRestoreWithParentsNoArray.call(prop)
         }
         println lines
         // allCaseLines.add(lines)
@@ -459,47 +459,47 @@ class MaskExperiments {
 
 
     /**
-     * Prints the case statements of the supplement method for a certain type, calls itself recursively for reference
+     * Prints the case statements of the restore method for a certain type, calls itself recursively for reference
      * and complex types!
      * @param type The type to process
      */
-    def evalSupplementCaseForType = { Type type ->
+    def evalRestoreCaseForType = { Type type ->
 //        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:false]).each { Property prop ->
-            // println "// evalSupplementCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
-            evalSupplementCaseSimple.call(prop)
+            // println "// evalRestoreCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
+            evalRestoreCaseSimple.call(prop)
         }
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
-            evalSupplementCaseSimple.call(prop)
+            evalRestoreCaseSimple.call(prop)
             // recursive call!
             putStacks.call(prop)
-            evalSupplementCaseComplex.call(prop)
+            evalRestoreCaseComplex.call(prop)
             popStacks.call()
         }
     }
 
     /**
-     * Code for continuing recursive case creation of supplement method for a complex property.
+     * Code for continuing recursive case creation of restore method for a complex property.
      * @param property The complex property to process.
      */
-    def evalSupplementCaseComplex = { Property property ->
+    def evalRestoreCaseComplex = { Property property ->
         Type type = property.type.type
-        evalSupplementCaseForType.call(type)
+        evalRestoreCaseForType.call(type)
     }
 
     /**
-     * Performs some preparations and then triggers printing of all switch cases of the supplement method.
+     * Performs some preparations and then triggers printing of all switch cases of the restore method.
      * @param type The top level type to process
      */
-    def evalAllSupplementCases = { Type currentType ->
+    def evalAllRestoreCases = { Type currentType ->
         // The data model is being altered: tune propLookup properties to loose suffix Id!!!
         tuneType.call(currentType)
         prepareStacks.call()
         allCaseLines = []
         idx = 0
-        evalSupplementCaseForType.call(currentType)
+        evalRestoreCaseForType.call(currentType)
     }
 
 
