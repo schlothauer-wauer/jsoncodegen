@@ -115,7 +115,7 @@ class MaskExperiments {
      * @param target The masked and potentially altered object, where the masked information is to be restored.
      * @param mask The mask defining the attributes, which are to be restored.
      */
-    public static void supplementMasked2(${targetType} source, ${targetType} target, PojoMask mask) {
+    public static void restoreMasked2(${targetType} source, ${targetType} target, PojoMask mask) {
         for (final String key : mask.hiddenKeys()) {
             switch(key) {
 """
@@ -183,10 +183,12 @@ class MaskExperiments {
                 final Map<String, JunctionLocationStreetsItem> targetMapping = getLocationStreets(target)
                         .stream()
                         .collect(Collectors.toMap(JunctionLocationStreetsItem::getEntryId, Function.identity()));
-                for (final Entry<String, JunctionLocationStreetsItem> entry : sourceMapping0.entrySet()) {
-                    final JunctionLocationStreetsItem targetItem = targetMapping.get(entry.getKey());
-                    if (targetItem != null) {
-                        targetItem.setClassification(entry.getValue().getClassification());
+                if (!targetMapping.isEmpty()) {
+                    for (final Entry<String, JunctionLocationStreetsItem> entry : sourceMapping0.entrySet()) {
+                        final JunctionLocationStreetsItem targetItem = targetMapping.get(entry.getKey());
+                        if (targetItem != null) {
+                            targetItem.setClassification(entry.getValue().getClassification());
+                        }
                     }
                 }
             }
@@ -209,7 +211,7 @@ class MaskExperiments {
                     final Map<Object, $parentJavaType> targetMapping =  get${methodName}(target)
                         .stream()
                         .collect(Collectors.toMap($parentJavaType::getEntryId, Function.identity()));
-                    if (targetMapping.isEmpty()) {
+                    if (!targetMapping.isEmpty()) {
                         for (final Entry<Object, $parentJavaType> entry : sourceMapping${idx}.entrySet()) {
                             final $parentJavaType targetItem = targetMapping.get(entry.getKey());
                             if (targetItem != null) {
@@ -289,7 +291,7 @@ class MaskExperiments {
                 final Map<Object, ContactData> targetMapping =  getAddressPersons(target)
                         .stream()
                         .collect(Collectors.toMap(p -> p.getEntryId(), p -> p.getContact()));
-                if (targetMapping.isEmpty()) {
+                if (!targetMapping.isEmpty()) {
                     for (final Entry<Object, ContactData> entry : sourceMapping7.entrySet()) {
                         final ContactData targetItem = targetMapping.get(entry.getKey());
                         if (targetItem != null) {
@@ -325,7 +327,7 @@ class MaskExperiments {
                     final Map<Object, $parentJavaType> targetMapping =  get${methodNameUntil}(target)
                         .stream()
                         .collect(Collectors.toMap(${objEntryId} -> ${objEntryId}.getEntryId(), ${objEntryId} -> ${objEntryId}.${methodNameAfter}));
-                    if (targetMapping.isEmpty()) {
+                    if (!targetMapping.isEmpty()) {
                         for (final Entry<Object, $parentJavaType> entry : sourceMapping${idx}.entrySet()) {
                             final $parentJavaType targetItem = targetMapping.get(entry.getKey());
                             if (targetItem != null) {
