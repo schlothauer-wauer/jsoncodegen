@@ -255,6 +255,7 @@ class MaskExperiments {
         propStack.add(prop)
         def key = propStack.collect{ it.name }.join('.')
         propStack.pop()
+        def getSetName = data.upperCamelCase.call(prop.name)
 
         def lines = /            case "${key}":
                 final List<$parentJavaType> sourceList${idx} = get${methodName}(source);
@@ -264,7 +265,7 @@ class MaskExperiments {
                     final Iterator<$parentJavaType> iterSource = sourceList${idx}.iterator();
                     final Iterator<$parentJavaType> iterTarget = targetList${idx}.iterator();
                     while(iterSource.hasNext()) {
-                        iterTarget.next().setLon(iterSource.next().getLon());
+                        iterTarget.next().set${getSetName}(iterSource.next().get${getSetName}());
                      }
                 } else {
                     final String msg =
