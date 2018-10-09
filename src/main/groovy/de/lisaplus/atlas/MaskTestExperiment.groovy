@@ -218,6 +218,7 @@ class MaskTestExperiment {
         }
 
         /* 3rd loop: find mapping of mask key to the number of deleted property occurrences triggered by actually masking that key. */
+        prepareStacks.call()
         int entryPerArray = 2
         Map<String,Map<String,Integer>> maskKey2propName2deleteCount = ['.': [:]]
         maskKeys.each { key -> maskKey2propName2deleteCount.put(key, [:]) }
@@ -251,6 +252,7 @@ class MaskTestExperiment {
 
         // 4th loop: Find complex properties / notes with child for checking that no NPE is thrown while masking that
         // node's children, even when the parent node is already masked / null!
+        prepareStacks.call()
         List<String> masksOfPropsWithChildren = []
         findMaskOfPropsWithChildren.call( type, masksOfPropsWithChildren)
 
@@ -847,7 +849,7 @@ public class TestMask${targetType} {
         /* mask key '${key}': */ 
         key = "${key}";
         valueBefore = getValue(source, key);
-        assertNotNull(valueBefore);
+        assertNotNull(key, valueBefore);
         target = random.nextObject(${targetType}.class);
         ensureMatchingEntryId(source, target);
         mask = new PojoMask(Collections.singletonList(key));
@@ -858,14 +860,14 @@ public class TestMask${targetType} {
 
         // Check that the attribute was restored successfully!
         Mask${targetType}.restoreMasked(source, target, mask);
-        assertEquals(valueBefore, getValue(target, key));
+        assertEquals(key, valueBefore, getValue(target, key));
 
         // Now check that except for the the masked attributes nothing was changed:
         // Remove restored values and compare to starting point JSON!
         // (Assumes that method mask is working correct!)
         Mask${targetType}.mask(target, mask);
         jsonRestored = mapper.writeValueAsString(target);
-        assertEquals(jsonMasked, jsonRestored);""" )
+        assertEquals(key, jsonMasked, jsonRestored);""" )
         popStacks.call()
     }
 
@@ -900,9 +902,12 @@ public class TestMask${targetType} {
         def propStackParent = []; propStackParent.addAll(propStack)
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
+        if (verbose)  println "key=${key} parentCollection=${parentCollection} parCollClass=${parentCollection.class.getName()}"
         if (propStack.size() == 1) {
+            // in case of normal type and tag 'prepLookup' add suffix Id to method name -> getObjectBaseId()!
+            def suffix = !joined && property.hasTag('prepLookup') ? 'Id' : ''
             lines.add("""        case "${key}":
-            return pojo.get${data.firstUpperCase.call(property.name)}();""" )
+            return pojo.get${data.firstUpperCase.call(property.name)}${suffix}();""" )
         } else if (parentCollection) {
             // parent is collection: stream collection, map to value, collect(Collectors.toList())
             /* Example
