@@ -469,14 +469,14 @@ class MaskExperiments {
      * @param type The type to process
      */
     def evalRestoreCaseForType = { Type type ->
-//        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() }.each { prop ->
-        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
+//        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() && !prop.hasTag('notDisplayed') }.each { prop ->
+        data.filterProps.call(type, [refComplex:false, withoutTag:'notDisplayed']).each { Property prop ->
             // println "// evalRestoreCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
             evalRestoreCaseSimple.call(prop)
         }
 
-//        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
-        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+//        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() && !prop.hasTag('notDisplayed') }.each { prop ->
+        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
             evalRestoreCaseSimple.call(prop)
             // recursive call!
             putStacks.call(prop)
@@ -654,14 +654,14 @@ class MaskExperiments {
      * @param type The type to process
      */
     def evalMaskCaseForType = { Type type ->
-//        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() }.each { prop ->
-        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
+//        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() && !prop.hasTag('notDisplayed') }.each { prop ->
+        data.filterProps.call(type, [refComplex:false, withoutTag:'notDisplayed']).each { Property prop ->
             println "// evalMaskCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
             evalMakCaseSimple.call(prop)
         }
 
-//        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
-        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+//        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() && !prop.hasTag('notDisplayed') }.each { prop ->
+        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
             evalMakCaseSimple.call(prop)
             // recursive call!
             putStacks.call(prop)

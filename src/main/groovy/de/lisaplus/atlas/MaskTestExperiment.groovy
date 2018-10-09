@@ -18,7 +18,7 @@ class MaskTestExperiment {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'JunctionContactJoined' // 'JunctionContact' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'JunctionContact' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
 
         def maskExp = new MaskTestExperiment(modelPath)
         maskExp.execute(typeName, typeName.endsWith('Joined'))
@@ -378,7 +378,7 @@ public class TestMask${targetType} {
         maskKey2propName2deleteCount = new HashMap<>();"""
 
         maskKeys.each { maskKey ->
-            println '        propName2Count.clear();  //' + maskKey
+            println '        propName2Count.clear();  // ' + maskKey
             Map<String, Integer> propName2Count = maskKey2propName2deleteCount.get(maskKey)
             sorted.each { key ->
                 println "        propName2Count.put(\"$key\", ${propName2Count.get(key)});"
@@ -613,8 +613,10 @@ public class TestMask${targetType} {
      * This method calls itself recursively if the type contains properties of complex or reference types.
      */
     def findNamesKeysForType = { Type type, Set<String> propNames, List<String> maskKeys ->
+        // for delete count evaluation all property names are necessary!
         type.properties.each { prop -> propNames.add(prop.name) }
-        type.properties.each { prop ->
+        // The mask keys associated with properties holding tag 'notDisplayed' are to be ignored!
+        type.properties.findAll{ prop -> !prop.hasTag('notDisplayed') }.each { prop ->
             propStack.add(prop)
             maskKeys.add(propStack.collect { prop2 -> prop2.name }.join('.'))
             propStack.pop()
@@ -623,7 +625,7 @@ public class TestMask${targetType} {
         // search property pairs for handling joined objects
         searchPrepLookupProps.call(type)
 
-        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
             // recursive call!
             putStacks.call(prop)
             findNamesKeysForType.call(prop.type.type, propNames, maskKeys)
@@ -680,7 +682,7 @@ public class TestMask${targetType} {
     Closure<Set<String>> findKeyAffectedParamsForType = { Type type, Map<String,Set<String>> maskKey2PropNames ->
         Set<String> affectedProps = []
         // process nodes with children
-        data.filterProps.call(type, [refComplex:true]).each { prop ->
+        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { prop ->
             // Type type = prop.isRefType() ? prop.implicitRef.type : prop.type.type
             putStacks.call(prop)
             affectedProps.add(prop.name)
@@ -688,7 +690,7 @@ public class TestMask${targetType} {
             popStacks.call()
         }
         // process nodes without children
-        data.filterProps.call(type, [refComplex:false]).each { prop ->
+        data.filterProps.call(type, [refComplex:false, withoutTag:'notDisplayed']).each { prop ->
             putStacks.call(prop)
             addAffected.call(Collections.singleton(prop.name), maskKey2PropNames)
             popStacks.call()
@@ -744,7 +746,7 @@ public class TestMask${targetType} {
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             putStacks.call(prop)
             countSum += findMaskKey2propName2CountForType.call(prop.type.type, propName, entryPerArray, childArrayCount, maskKey2propName2deleteCount)
-            popStacks.call(prop)
+            popStacks.call()
         }
         // process nodes without children
         data.filterProps.call(type, [refComplex:false]).each { Property prop ->
@@ -760,7 +762,7 @@ public class TestMask${targetType} {
             // Do add entries with mask keys associated with this node / property of simple type
             addCount2.call(propName, count, maskKey2propName2deleteCount)
             countSum += count
-            popStacks.call(prop)
+            popStacks.call()
         }
         addCount2.call(propName, countSum, maskKey2propName2deleteCount)
         return countSum
@@ -777,7 +779,13 @@ public class TestMask${targetType} {
                                 int count,
                                 Map<String, Map<String, Integer>> maskKey2propName2deleteCount ->
         String maskKey = propStack.isEmpty() ? '.' : propStack.collect { prop2 -> prop2.name }.join('.')
-        if (maskKey2propName2deleteCount.get(maskKey).put(propName, count) != null) {
+        Map propName2deleteCount = maskKey2propName2deleteCount.get(maskKey)
+        if (propName2deleteCount == null) {
+            if (verbose) println "addCount2: maskKey2propName2deleteCount misses entry for key ${maskKey}"
+            propName2deleteCount = [:]
+            maskKey2propName2deleteCount.put(maskKey, propName2deleteCount)
+        }
+        if (propName2deleteCount.put(propName, count) != null) {
             String msg = "Count already present: maskKey=$maskKey propName=$propName!"
             System.err.println msg
             throw new RuntimeException(msg)
@@ -792,7 +800,7 @@ public class TestMask${targetType} {
      * The masks key of the relevant nodes found in the deepest level of the tree come first.
      */
     Closure<Void> findMaskOfPropsWithChildren = { type, List masksOfPropsWithChildren ->
-        List<Property> complex = data.filterProps.call(type, [refComplex: true])
+        List<Property> complex = data.filterProps.call(type, [refComplex: true, withoutTag:'notDisplayed'])
         complex.each { prop ->
             putStacks.call(prop)
             def maskKey = propStack.collect { prop2 -> prop2.name }.join('.')
@@ -878,11 +886,11 @@ public class TestMask${targetType} {
      * @param lines Where the created lines of code are to be added.
      */
     def createTestRestoreForType = { Type type, List<String> lines ->
-        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
+        data.filterProps.call(type, [refComplex:false, withoutTag:'notDisplayed']).each { Property prop ->
             if (verbose) println "// createTestRestoreForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
             createTestRestoreSimple.call(prop, lines)
         }
-        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
             createTestRestoreSimple.call(prop, lines)
             // recursive call!
             putStacks.call(prop)
@@ -949,11 +957,11 @@ public class TestMask${targetType} {
      * @param lines Where the created lines of code are to be added.
      */
     def createGetValueForType = { Type type, List<String> lines ->
-        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
+        data.filterProps.call(type, [refComplex:false, withoutTag:'notDisplayed']).each { Property prop ->
             if (verbose)  println "// createGetValueForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
             createGetValueSimple.call(prop, lines)
         }
-        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
             createGetValueSimple.call(prop, lines)
             // recursive call!
             putStacks.call(prop)
