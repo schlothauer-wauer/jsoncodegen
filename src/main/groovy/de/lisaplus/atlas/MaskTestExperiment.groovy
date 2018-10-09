@@ -931,7 +931,7 @@ public class TestMask${targetType} {
             if (check${methodName}Exists(pojo)) {
                 return pojo.get${getChain}();
             } else {
-                 return null;
+                return null;
             }""" )
         }
         popStacks.call()
