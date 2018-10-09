@@ -877,7 +877,6 @@ public class TestMask${targetType} {
             Property pProp = propStack.last()
             boolean parentHasEntryId = pProp.isRefTypeOrComplexType() && pProp.type.type.properties.collect { prop2 -> prop2.name }.contains('entryId')
             if (parentHasEntryId) {
-                lines.add("        // found pProp=${pProp.name} type=${data.upperCamelCase.call(type.name)}")
                 /* Example
                 final Iterator<AddressPerson> sourceIter1 = getAddressPersons(source).iterator();
                 final Iterator<AddressPerson> targetIter1 = getAddressPersons(target).iterator();
@@ -885,6 +884,7 @@ public class TestMask${targetType} {
                     targetIter1.next().setEntryId(sourceIter1.next().getEntryId());
                 }
                 */
+                lines.add("        // found pProp=${pProp.name} type=${data.upperCamelCase.call(type.name)}")
                 def jType = data.upperCamelCase.call(type.name)
                 def methodName = propStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
                 idx+=1
@@ -897,14 +897,7 @@ public class TestMask${targetType} {
 
             }
         }
-        /*
-        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
-            if (verbose)  println "// createEnsureMatchingForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
-            createEnsureMatchingSimple.call(prop, lines)
-        }
-        */
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
-            // createEnsureMatchingSimple.call(prop, lines)
             // recursive call!
             putStacks.call(prop)
             createEnsureMatchingForType.call(prop.type.type, lines, idx)
