@@ -832,7 +832,16 @@ public class TestMask${targetType} {
 
     def createGetValueSimple = { Property property, List<String> lines ->
         putStacks.call(property)
-        lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}": return null; // TODO""" )
+        if (propStack.size() == 1) {
+            // FIXME handle objctBaseId!
+            lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}":
+            return pojo.get${data.firstUpperCase.call(property.name)}();""" )
+        } else {
+            // if parent not collection -> simple parent null check and return value
+            // else get collection of parents, stream, map to value, collect(Collectors.toList())
+            // see class MaskXXX!
+            lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}": return null; // TODO""" )
+        }
         popStacks.call()
     }
 
