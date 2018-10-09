@@ -560,6 +560,16 @@ public class TestMask${targetType} {
     }
 
     /**
+     * Prepares the stacks for running the next loop over the model
+     */
+    def prepareStacks = {
+        propStack.clear()
+        propIsArrayStack.clear()
+        // avoid extra case for handling empty stack!
+        propIsCollectionStack = [false]
+    }
+
+    /**
      * Adds new elements to the stacks
      * @param property The property, which is to be visited
      */
@@ -778,15 +788,6 @@ public class TestMask${targetType} {
     }
 
     /**
-     * Prepares the stacks for running the next loop over the model
-     */
-    def prepareStacks = {
-        propStack = []
-        // avoid extra case for handling empty stack!
-        propIsCollectionStack = [false]
-    }
-
-    /**
      * Actually creates the  case statements of the method testRestoreOne for a property.
      * @param prop The property to process
      * @param lines Where the created lines of code are to be added.
@@ -890,6 +891,26 @@ public class TestMask${targetType} {
     }
 
     /**
+     * Creates the case statements of the getValue method for a certain type, calls itself recursively for reference
+     * and complex types!
+     * @param type The type to process
+     * @param lines Where the created lines of code are to be added.
+     */
+    def createGetValueForType = { Type type, List<String> lines ->
+        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
+            if (verbose)  println "// createGetValueForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
+            createGetValueSimple.call(prop, lines)
+        }
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            createGetValueSimple.call(prop, lines)
+            // recursive call!
+            putStacks.call(prop)
+            createGetValueForType.call(prop.type.type, lines)
+            popStacks.call()
+        }
+    }
+
+    /**
      * Creates the content of the method ensureMatchingEntryId for a certain type, calls itself recursively for reference
      * and complex types!
      * @param type The type to process
@@ -924,26 +945,6 @@ public class TestMask${targetType} {
             // recursive call!
             putStacks.call(prop)
             createEnsureMatchingForType.call(prop.type.type, lines, idx)
-            popStacks.call()
-        }
-    }
-
-    /**
-     * Creates the case statements of the getValue method for a certain type, calls itself recursively for reference
-     * and complex types!
-     * @param type The type to process
-     * @param lines Where the created lines of code are to be added.
-     */
-    def createGetValueForType = { Type type, List<String> lines ->
-        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
-            if (verbose)  println "// createGetValueForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
-            createGetValueSimple.call(prop, lines)
-        }
-        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
-            createGetValueSimple.call(prop, lines)
-            // recursive call!
-            putStacks.call(prop)
-            createGetValueForType.call(prop.type.type, lines)
             popStacks.call()
         }
     }
