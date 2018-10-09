@@ -37,6 +37,8 @@ class MaskTestExperiment {
     String targetType
     /** This stack holds the property (names) visited while traversing the object hierarchy.*/
     List<Property> propStack = []
+    /** Indicates that this property is an array. This sack is build while traversing the object hierarchy. */
+    List<Boolean> propIsArrayStack = []
     /**
      *  Indicates that this property or any of its parents was an array and that we therefore have to process an collection.
      *  This sack is build while traversing the object hierarchy.
@@ -255,6 +257,7 @@ class MaskTestExperiment {
         String npeMaskKeySequence = masksOfPropsWithChildren.collect { key -> /"$key"/ }.join(', ') // e.g. "address.persons.contact", "address.persons", "address.contact", "address"
 
         String fileHead = """
+/*********start*********/
 package de.lisaplus.lisa.junction.mask;
 
 /**
@@ -264,7 +267,6 @@ package de.lisaplus.lisa.junction.mask;
 
 import static java.nio.charset.Charset.forName;
 import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -290,9 +292,9 @@ import org.junit.Test;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.lisaplus.lisa.junction.mask.api.PojoMask;
-import de.lisaplus.lisa.junction.mask.internal.PojoMaskImpl;
-import de.lisaplus.lisa.junction.model.${targetType};
+
+import de.lisaplus.lisa.junction.model.*;
+import de.lisaplus.util.mask.PojoMask;
 import de.lisaplus.util.serialization.MapperFactory;
 import io.github.benas.randombeans.EnhancedRandomBuilder;
 import io.github.benas.randombeans.api.EnhancedRandom;
@@ -382,7 +384,6 @@ public class TestMask${targetType} {
     @Test
     public void testMaskOne() throws Exception {
         final Map<String,Integer> emptyMap = Collections.emptyMap();
-        final Integer zero = Integer.valueOf(0);
         final Map<String, Integer> expDelta = new HashMap<>(allProps.size());
         for (final String maskKey : allMaskKeys) {
             final $targetType t = random.nextObject(${targetType}.class);
@@ -390,10 +391,10 @@ public class TestMask${targetType} {
             final String jsonBefore = mapper.writeValueAsString(t); // JSON Output
             assertNotNull(jsonBefore);
             final Map<String, Integer> occurrencesBefore = countOccurences(jsonBefore);
-            final PojoMask mask = new PojoMaskImpl(Collections.singleton(maskKey));
+            final PojoMask mask = new PojoMask(Collections.singleton(maskKey));
             Mask${targetType}.mask(t, mask);
             final String jsonAfter= mapper.writeValueAsString(t); // JSON Output
-            assertNotNull(jsonAfter);
+            assertNotNull(jsonAfter); 
             final Map<String, Integer> occurrencesAfter = countOccurences(jsonAfter);
             expDelta.clear();
             expDelta.putAll(maskKey2propName2deleteCount.getOrDefault(maskKey, emptyMap));
@@ -417,74 +418,15 @@ public class TestMask${targetType} {
             System.out.format("Perform NPE checks: parent maskKey=%s childrenMaskKeys=%s%n", parentMaskKey, childrenMaskKeys);
             final ${targetType} t = random.nextObject(${targetType}.class);
             assertNotNull(t);
-            Mask${targetType}.mask(t, new PojoMaskImpl(Collections.singleton(parentMaskKey)));
+            Mask${targetType}.mask(t, new PojoMask(Collections.singleton(parentMaskKey)));
             for (final String childMaskKey : childrenMaskKeys) {
                 try {
-                    Mask${targetType}.mask(t, new PojoMaskImpl(Collections.singleton(childMaskKey)));
+                    Mask${targetType}.mask(t, new PojoMask(Collections.singleton(childMaskKey)));
                 } catch (final Exception exception) {
                     final String msg = String.format("Encountered %s: parent maskKey=%s childMaskKey=%s", exception.toString(), parentMaskKey, childMaskKey);
                     fail(msg);
                 }
             }
-        }
-    }
-
-    @Test
-    public void testRestoreOne() throws Exception {
-        ${targetType} source, target;
-        Object valueBefore;
-        PojoMask mask;
-        String key, jsonMasked, jsonRestored;
-        source = random.nextObject(${targetType}.class);
-        assertNotNull(source);
-        
-        // TODO loop over mask keys"""
-        allLines.clear()
-        prepareStacks.call()
-        // TODO  create code block per mask key!
-        createTestRestoreForType.call(type, allLines)
-        allLines.each { line -> println line }
-        println """
-    }
-    
-    /**
-     * For restoring of array properties with entryId attributes these entryId values need to match.
-     * This method assumes that array dimension of objects <i>source</i> and <i>target</i> match!
-     * @param source The object, which defines the entryId values
-     * @param target The object, which is to inherit the entryId values.
-     */
-    private void ensureMatchingEntryId(${targetType} source, ${targetType} target) {
-        // TODO loop over model and copy over entryId for array properties of complex types, which contain entryId!
-        // e.g. 
-        /*final Iterator<AddressPerson> sourceIter1 = source.getPersons().iterator();
-        final Iterator<AddressPerson> targetIter1 = target.getPersons().iterator();
-        while(sourceIter1.hasNext()) {
-            targetIter1.next().setEntryId(sourceIter1.next().getEntryId());
-        }*/
-    }
-
-    /**
-     * Returns the value(s) associated with a mask key.
-     * @param pojo The object to process
-     * @param maskKey The mask key to process.
-     * @return The value(s) associated with a mask key.
-     */
-    private Object getValue(${targetType} pojo, String maskKey) {
-        switch(maskKey) {
-        // TODO loop over model and create method, which return value(s) associated with mask key
-        // e.g. 
-        /*case "city":
-            return pojo.getCity();
-        case "persons.firstName":
-            return pojo.getPersons().stream().map(p -> p.getFirstName()).collect(Collectors.toList());*/"""
-        allLines.clear()
-        prepareStacks.call()
-        // TODO  create cases
-        createGetValueForType.call(type, allLines)
-        allLines.each { line -> println line }
-        println """
-        default:
-            throw new RuntimeException(String.format("Unsupported mask key '%s'!", maskKey));
         }
     }
 
@@ -559,9 +501,74 @@ public class TestMask${targetType} {
         final Object jsonObject = mapper.readValue(json, Object.class);
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
     }
-}
-"""
+/*********snip**********/
+    @Test
+    public void testRestoreOne() throws Exception {
+        ${targetType} source, target;
+        Object valueBefore;
+        PojoMask mask;
+        String key, jsonMasked, jsonRestored;
+        source = random.nextObject(${targetType}.class);
+        assertNotNull(source);
+        
+        // TODO loop over mask keys"""
+        allLines.clear()
+        prepareStacks.call()
+        // TODO  create code block per mask key!
+        createTestRestoreForType.call(type, allLines)
+        allLines.each { line -> println line }
+        println """
+    }
+    
+    /**
+     * For restoring of array properties with entryId attributes these entryId values need to match.
+     * This method assumes that array dimension of objects <i>source</i> and <i>target</i> match!
+     * @param source The object, which defines the entryId values
+     * @param target The object, which is to inherit the entryId values.
+     */
+    private void ensureMatchingEntryId(${targetType} source, ${targetType} target) {
+        // TODO loop over model and copy over entryId for array properties of complex types, which contain entryId!
+        // e.g. 
+        /*final Iterator<AddressPerson> sourceIter1 = source.getPersons().iterator();
+        final Iterator<AddressPerson> targetIter1 = target.getPersons().iterator();
+        while(sourceIter1.hasNext()) {
+            targetIter1.next().setEntryId(sourceIter1.next().getEntryId());
+        }*/
+    }
 
+    /**
+     * Returns the value(s) associated with a mask key.
+     * @param pojo The object to process
+     * @param maskKey The mask key to process.
+     * @return The value(s) associated with a mask key.
+     */
+    private Object getValue(${targetType} pojo, String maskKey) {
+        switch(maskKey) {
+        // TODO loop over model and create method, which return value(s) associated with mask key
+        // e.g. 
+        /*case "city":
+            return pojo.getCity();
+        case "persons.firstName":
+            return pojo.getPersons().stream().map(p -> p.getFirstName()).collect(Collectors.toList());*/"""
+        allLines.clear()
+        prepareStacks.call()
+        // TODO  create cases
+        createGetValueForType.call(type, allLines)
+        allLines.each { line -> println line }
+        println """
+        default:
+            throw new RuntimeException(String.format("Unsupported mask key '%s'!", maskKey));
+        }
+    }"""
+        /* Second loop: method checkXXXExists() */
+        prepareStacks.call()
+        printCheckExistsForType.call(type)
+
+        /* Third loop: method getXXX() */
+        prepareStacks.call()
+        printGetForType.call(type)
+
+        println '}'
     }
 
     /**
@@ -570,6 +577,7 @@ public class TestMask${targetType} {
      */
     def putStacks = { Property property ->
         propStack.add(property)
+        propIsArrayStack.add(property.type.isArray)
         // If either already collection of if this property is an collection.
         propIsCollectionStack.add(propIsCollectionStack.last() || property.type.isArray)
     }
@@ -579,6 +587,7 @@ public class TestMask${targetType} {
      */
     def popStacks = {
         propStack.pop()
+        propIsArrayStack.pop()
         propIsCollectionStack.pop()
     }
 
@@ -831,16 +840,45 @@ public class TestMask${targetType} {
     }
 
     def createGetValueSimple = { Property property, List<String> lines ->
+        def parentCollection = propIsCollectionStack.last()
+        def parentProp = propStack.empty ? null : propStack.last()
+        def propStackParent = []; propStackParent.addAll(propStack)
         putStacks.call(property)
         if (propStack.size() == 1) {
             // FIXME handle objctBaseId!
             lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}":
             return pojo.get${data.firstUpperCase.call(property.name)}();""" )
-        } else {
-            // if parent not collection -> simple parent null check and return value
-            // else get collection of parents, stream, map to value, collect(Collectors.toList())
+        } else if (parentCollection) {
+            // parent is collection: stream collection, map to value, collect(Collectors.toList())
             // see class MaskXXX!
-            lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}": return null; // TODO""" )
+            /* Example
+                case "objectBase.gis.area.points.lon":
+                    return getObjectBaseGisAreaPoints(target).stream().map(p -> p.getLon()).collect(Collectors.toList());
+             */
+            String methodName = propStackParent.collect{ prop -> data.upperCamelCase.call(prop.name) }.join('')
+            String parentChar = parentProp.name.take(1)
+            lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}":
+            return get${methodName}(pojo).stream().map(${parentChar} -> ${parentChar}.get${data.upperCamelCase.call(property.name)}()).collect(Collectors.toList());""")
+            // lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}": return null; // TODO""" )
+        } else {
+            // parent not a collection: simple parent null check and return value
+            /* Example:
+                case "objectBase.gis.area.projection":
+                    if (checkObjectBaseGisAreaExists(pojo)) {
+                        return pojo.getObjectBase().getGis().getArea().getProjection();
+                    } else {
+                        return null;
+                    }
+             */
+            String methodName = propStackParent.collect{ prop -> data.upperCamelCase.call(prop.name) }.join('')
+            String getChain = propStack.collect{ prop -> data.upperCamelCase.call(prop.name) }.join('().get')
+
+            lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}":
+            if (check${methodName}Exists(pojo)) {
+                return pojo.get${getChain}();
+            } else {
+                 return null;
+            }""" )
         }
         popStacks.call()
     }
@@ -855,6 +893,130 @@ public class TestMask${targetType} {
             // recursive call!
             putStacks.call(prop)
             createGetValueForType.call(prop.type.type, lines)
+            popStacks.call()
+        }
+    }
+
+    /**
+     * Prints the methods checkXXX(target) for a certain type, calls itself recursively for reference and complex types!
+     * @param type The type to process
+     */
+    def printCheckExistsForType = { Type type ->
+        int size = propIsCollectionStack.size()
+        if ( size > 2 && propIsCollectionStack.get(size-2)) {
+            // can not check for null in children of array property -> stop creating more methods checkXXXExists()!
+            return
+        }
+        if (!propStack.isEmpty()) {
+            /*
+                private static boolean checkObjectBaseGisArea(JunctionNumberJoined target) {
+                    return target.getObjectBase() != null
+                            && target.getObjectBase().getGis() != null
+                            && target.getObjectBase().getGis().getArea() != null;
+                }
+             */
+            def checkMethodPart = propStack.collect{ data.upperCamelCase.call(it.name) }.join('')       // e.g. AddressPersonsContact
+            // create longest getter call chain and then process it from one to all elements.
+            List lines = []
+            List getCalls = propStack.collect { "get${data.upperCamelCase.call(it.name)}()"}
+            for (int i = 0; i < getCalls.size(); i++) {
+                def cond = getCalls.subList(0, i+1).join('.')
+                lines.add("target.${cond} != null")
+            }
+            def conditions = lines.join('\n                && ')
+            def output = "\n    private static boolean check${checkMethodPart}Exists(${targetType} target) {\n        return ${conditions};\n    }"
+            println output
+        }
+
+//        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            // recursive call!
+            putStacks.call(prop)
+            printCheckExistsForType.call(prop.type.type)
+            popStacks.call()
+        }
+    }
+
+    /**
+     * Prints the methods checkXXX(target) for a certain type, calls itself recursively for reference and complex types!
+     * @param type The type to process
+     */
+    def printGetForType = { Type type ->
+        if (propIsCollectionStack.last()) {
+            // Example for key address.persons.contact where persons is the only array type
+            // In case of multiple array types use .flatMap() for 2. to last array type!
+            // We can not check for null references for objects in the object tree after hitting the first array property.
+            // ->
+            // A: the method checkXXXExists only checks for null references up to the first array property.
+            // B: do use Stream.filter() with a predicate for filtering out the null references!
+            /*
+                private static List<ContactData> getAddressPersonsContact(JunctionContactJoined target) {
+                    if (checkAddressPersonsExists(target)) {
+                        return target.getAddress().getPersons().stream()
+                                                               .filter(p -> p.getContact() != null)
+                                                               .map(p -> p.getContact())
+                                                               .collect(Collectors.toList());
+                    }
+                    return Collections.emptyList();
+                }
+             */
+            def methodName = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
+            int maxCheckProp = propIsCollectionStack.last() ? propIsCollectionStack.indexOf(Boolean.TRUE) : propStack.size() // The index of the first entry of propIsCollectionStack indicating value collection
+            def checkName = propStack.subList(0, maxCheckProp).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersons
+
+            // iterate through propStack and propIsArrayStack
+            // Before first array type is encountered, add getter calls
+            // When first array type is encountered, add .stream() and switch mode to .map(...)
+            // Whenever another array type is encountered, use .flatMap(...) instead of .map(...)
+            List parts = []
+            boolean useGetter = true
+            for (int i = 0; i < propStack.size(); i++) {
+                def currUpper = data.upperCamelCase.call(propStack[i].name)
+                if (useGetter) {
+                    // getXXX()
+                    parts.add("get${currUpper}()")
+                } else {
+                    // TODO Teach Eiko and Stephan
+                    def parentProp = propStack[i-1].name.take(1)
+                    if (propIsArrayStack[i]) {
+                        // flatMap(), e.g. flatMap(contact -> contact.getEmail().stream())
+                        parts.add("filter(${parentProp} -> ${parentProp}.get${currUpper}() != null)")
+                        parts.add("flatMap(${parentProp} -> ${parentProp}.get${currUpper}().stream())")
+                    } else {
+                        // map(), e.g. map(person -> person.getContact())
+                        parts.add("filter(${parentProp} -> ${parentProp}.get${currUpper}() != null)")
+                        parts.add("map(${parentProp} -> ${parentProp}.get${currUpper}())")
+                    }
+                }
+                if (useGetter && propIsArrayStack[i]) {
+                    parts.add("stream()")
+                    useGetter = false
+                }
+            }
+            parts.add('collect(Collectors.toList())')
+
+            // If the very last entry is the first array type, then these is no need to appending
+            // .stream() and .collect(Collectors.toList()) -> just discard these two entries!
+            if (parts[parts.size()-2] == "stream()") {
+                parts = parts.subList(0, parts.size() - 2)
+            }
+            def retType = data.upperCamelCase.call(type.name)
+            def stream = parts[0] + parts.subList(1,parts.size()).collect {"\n                    .$it"}.join('')
+            def output = """
+    private static List<${retType}> get${methodName}(${targetType} target) {
+        if (check${checkName}Exists(target)) {
+            return target.${stream};
+        }
+        return Collections.emptyList();
+    }"""
+            println output
+        }
+
+//        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            // recursive call!
+            putStacks.call(prop)
+            printGetForType.call(prop.type.type)
             popStacks.call()
         }
     }
