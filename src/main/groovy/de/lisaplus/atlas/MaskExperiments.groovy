@@ -533,7 +533,7 @@ class MaskExperiments {
     def tuneType = { Type type ->
         Closure<Void> action
         if (joined) {
-            action = {  Property prop ->
+            action = { Property prop ->
                 println "// ATTENTION: Removing lookup property ${prop.name}"
                 type.properties.remove(prop)
             }
