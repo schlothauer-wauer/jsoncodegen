@@ -18,7 +18,7 @@ class MaskTestExperiment {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'JunctionContact' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'JunctionContactJoined' // 'JunctionContact' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
 
         def maskExp = new MaskTestExperiment(modelPath)
         maskExp.execute(typeName, typeName.endsWith('Joined'))
@@ -74,6 +74,7 @@ class MaskTestExperiment {
         GeneratorBase generator = new DummyGenerator()
         data = generator.createTemplateDataMap(model)
         for(Type type : model.types) {
+            // if (!type.name.endsWith('Joined')) continue
             executeForType(type, type.name.endsWith('Joined'))
         }
     }
@@ -828,11 +829,6 @@ public class TestMask${targetType} {
     def createTestRestoreSimple = { Property property, List<String> lines ->
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
-        /*
-        if (property.hasTag('prepLookup') && property.name.endsWith('Id')) {
-            key = key.substring(0, key.length()-2)
-        }
-        */
         lines.add("""
         /* mask key '${key}': */ 
         key = "${key}";
@@ -890,18 +886,11 @@ public class TestMask${targetType} {
         def propStackParent = []; propStackParent.addAll(propStack)
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
-        /*
-        // FIXME handle objctBaseId!
-        if (property.hasTag('prepLookup') && property.name.endsWith('Id')) {
-            key = key.substring(0, key.length()-2)
-        }
-        */
         if (propStack.size() == 1) {
             lines.add("""        case "${key}":
             return pojo.get${data.firstUpperCase.call(property.name)}();""" )
         } else if (parentCollection) {
             // parent is collection: stream collection, map to value, collect(Collectors.toList())
-            // see class MaskXXX!
             /* Example
                 case "objectBase.gis.area.points.lon":
                     return getObjectBaseGisAreaPoints(target).stream().map(p -> p.getLon()).collect(Collectors.toList());
