@@ -523,15 +523,12 @@ public class TestMask${targetType} {
      * @param source The object, which defines the entryId values
      * @param target The object, which is to inherit the entryId values.
      */
-    private void ensureMatchingEntryId(${targetType} source, ${targetType} target) {
-        // TODO loop over model and copy over entryId for array properties of complex types, which contain entryId!
-        // e.g. 
-        /*final Iterator<AddressPerson> sourceIter1 = source.getPersons().iterator();
-        final Iterator<AddressPerson> targetIter1 = target.getPersons().iterator();
-        while(sourceIter1.hasNext()) {
-            targetIter1.next().setEntryId(sourceIter1.next().getEntryId());
-        }*/
-    }
+    private void ensureMatchingEntryId(${targetType} source, ${targetType} target) {"""
+        allLines.clear()
+        prepareStacks.call()
+        createEnsureMatchingForType.call(type, allLines, 0)
+        allLines.each { line -> println line }
+        println """    }
 
     /**
      * Returns the value(s) associated with a mask key.
@@ -873,6 +870,56 @@ public class TestMask${targetType} {
             }""" )
         }
         popStacks.call()
+    }
+
+    def createEnsureMatchingForType = { Type type, List<String> lines, int idx ->
+        if (propIsCollectionStack.last()) {
+            Property pProp = propStack.last()
+            boolean parentHasEntryId = pProp.isRefTypeOrComplexType() && pProp.type.type.properties.collect { prop2 -> prop2.name }.contains('entryId')
+            if (parentHasEntryId) {
+                lines.add("        // found pProp=${pProp.name} type=${data.upperCamelCase.call(type.name)}")
+                /* Example
+                final Iterator<AddressPerson> sourceIter1 = getAddressPersons(source).iterator();
+                final Iterator<AddressPerson> targetIter1 = getAddressPersons(target).iterator();
+                while(sourceIter1.hasNext()) {
+                    targetIter1.next().setEntryId(sourceIter1.next().getEntryId());
+                }
+                */
+                def jType = data.upperCamelCase.call(type.name)
+                def methodName = propStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+                idx+=1
+                lines.add(
+"""        final Iterator<${jType}> sourceIter${idx} = get${methodName}(source).iterator();
+        final Iterator<${jType}> targetIter${idx} = get${methodName}(target).iterator();
+        while(sourceIter${idx}.hasNext()) {
+            targetIter${idx}.next().setEntryId(sourceIter1.next().getEntryId());
+        }""")
+
+            }
+        }
+        /*
+        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
+            if (verbose)  println "// createEnsureMatchingForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
+            createEnsureMatchingSimple.call(prop, lines)
+        }
+        */
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            // createEnsureMatchingSimple.call(prop, lines)
+            // recursive call!
+            putStacks.call(prop)
+            createEnsureMatchingForType.call(prop.type.type, lines, idx)
+            popStacks.call()
+        }
+    }
+
+    def createEnsureMatchingSimple = { Property prop, List<String> lines ->
+        if (propIsCollectionStack.last()) {
+            Property pProp = propStack.last()
+            boolean parentHasEntryId = pProp.isRefTypeOrComplexType() && pProp.type.type.properties.collect { prop2 -> prop2.name }.contains('entryId')
+            if (parentHasEntryId) {
+                lines.add("// found prop=${prop.name} pProp=${pProp.name}")
+            }
+        }
     }
 
     def createGetValueForType = { Type type, List<String> lines ->
