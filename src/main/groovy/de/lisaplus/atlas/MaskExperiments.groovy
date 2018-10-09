@@ -198,6 +198,7 @@ class MaskExperiments {
                 }
                 break;
          */
+        def upperPropName = data.upperCamelCase.call(prop.name) // e.g. DomainId
         def parentJavaType = data.typeToJavaForceSingle.call(propStack.last().type)
         def methodName = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
         propStack.add(prop)
@@ -310,6 +311,7 @@ class MaskExperiments {
         def debugAfter = chainAfterEntryId.collect{ prop2 -> prop2.name}.join('.')
         println "// chainUntill=${debugUntil} chainAfter=${debugAfter} propId=${propEntryId.name}"
         */
+        def upperPropName = data.upperCamelCase.call(prop.name) // e.g. DomainId
         def parentJavaType = data.typeToJavaForceSingle.call(propStack.last().type)
         def objEntryId = propEntryId.name.take(1)
         def methodNameUntil = chainUntilEntryId.collect {data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersons
