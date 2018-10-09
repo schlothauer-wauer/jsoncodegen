@@ -786,6 +786,11 @@ public class TestMask${targetType} {
         propIsCollectionStack = [false]
     }
 
+    /**
+     * Actually creates the  case statements of the method testRestoreOne for a property.
+     * @param prop The property to process
+     * @param lines Where the created lines of code are to be added.
+     */
     def createTestRestoreSimple = { Property property, List<String> lines ->
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
@@ -815,6 +820,12 @@ public class TestMask${targetType} {
         popStacks.call()
     }
 
+    /**
+     * Creates the case statements of the method testRestoreOne for a certain type, calls itself recursively for reference
+     * and complex types!
+     * @param type The type to process
+     * @param lines Where the created lines of code are to be added.
+     */
     def createTestRestoreForType = { Type type, List<String> lines ->
         data.filterProps.call(type, [refComplex:false]).each { Property prop ->
             if (verbose) println "// createTestRestoreForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
@@ -829,6 +840,11 @@ public class TestMask${targetType} {
         }
     }
 
+    /**
+     * Actually creates the case of the getValue method for properties of a complex or reference class.
+     * @param prop The property to process
+     * @param lines Where the created lines of code are to be added.
+     */
     def createGetValueSimple = { Property property, List<String> lines ->
         def parentCollection = propIsCollectionStack.last()
         def parentProp = propStack.empty ? null : propStack.last()
@@ -873,6 +889,12 @@ public class TestMask${targetType} {
         popStacks.call()
     }
 
+    /**
+     * Creates the content of the method ensureMatchingEntryId for a certain type, calls itself recursively for reference
+     * and complex types!
+     * @param type The type to process
+     * @param lines Where the created lines of code are to be added.
+     */
     def createEnsureMatchingForType = { Type type, List<String> lines, int idx ->
         if (propIsCollectionStack.last()) {
             Property pProp = propStack.last()
@@ -906,16 +928,12 @@ public class TestMask${targetType} {
         }
     }
 
-    def createEnsureMatchingSimple = { Property prop, List<String> lines ->
-        if (propIsCollectionStack.last()) {
-            Property pProp = propStack.last()
-            boolean parentHasEntryId = pProp.isRefTypeOrComplexType() && pProp.type.type.properties.collect { prop2 -> prop2.name }.contains('entryId')
-            if (parentHasEntryId) {
-                lines.add("// found prop=${prop.name} pProp=${pProp.name}")
-            }
-        }
-    }
-
+    /**
+     * Creates the case statements of the getValue method for a certain type, calls itself recursively for reference
+     * and complex types!
+     * @param type The type to process
+     * @param lines Where the created lines of code are to be added.
+     */
     def createGetValueForType = { Type type, List<String> lines ->
         data.filterProps.call(type, [refComplex:false]).each { Property prop ->
             if (verbose)  println "// createGetValueForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
