@@ -511,6 +511,8 @@ public class TestMask${targetType} {
         String key, jsonMasked, jsonRestored;
         source = random.nextObject(${targetType}.class);
         assertNotNull(source);"""
+        // handle objctBaseId
+        tuneType.call(type)
         allLines.clear()
         prepareStacks.call()
         createTestRestoreForType.call(type, allLines)
@@ -613,7 +615,7 @@ public class TestMask${targetType} {
     }
 
     /**
-     * Use the assumption, that ll properties with tag "prepLookup" have a suffix "Id" and have a associated mask key
+     * Use the assumption, that all properties with tag "prepLookup" have a suffix "Id" and have a associated mask key
      * without that suffix, to populate maskKeyOverwrites!
      */
     def searchPrepLookupProps = { Type type  ->
@@ -788,6 +790,37 @@ public class TestMask${targetType} {
     }
 
     /**
+     * <b>THIS METHOD ALTERS THE MODEL!!!</b>
+     * This method tunes the properties of a (complex or reference) type and calls itself recursively if the type
+     * itself holds properties of other (complex or reference) types.
+     * Checks for properties with the tag <i>prepLookup</i> and
+     * <ul>
+     * <li>joined==true: removes the property completely</li>
+     * <li>joined==false: removes the suffix Id</li>
+     * @param type The type to process.
+     */
+    def tuneType = { Type type ->
+        Closure<Void> action
+        if (joined) {
+            action = {  Property prop ->
+                println "// ATTENTION: Removing lookup property ${prop.name}"
+                type.properties.remove(prop)
+            }
+        } else {
+            action = { Property prop ->
+                def orig = prop.name
+                def shorten = prop.name.take(prop.name.length() - 2)
+                println "// ATTENTION: Renaming lookup property from $orig to $shorten"
+                prop.setName(shorten)
+            }
+        }
+        Collection<Property> lookupProps = type.properties.findAll { Property prop -> prop.hasTag('prepLookup') && prop.name.endsWith('Id') }
+        type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   } each { Property prop -> tuneType.call(prop.implicitRef.type) }
+        type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() } each { Property prop -> tuneType.call(prop.type.type) }
+        lookupProps.each(action)
+    }
+
+    /**
      * Actually creates the  case statements of the method testRestoreOne for a property.
      * @param prop The property to process
      * @param lines Where the created lines of code are to be added.
@@ -795,6 +828,11 @@ public class TestMask${targetType} {
     def createTestRestoreSimple = { Property property, List<String> lines ->
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
+        /*
+        if (property.hasTag('prepLookup') && property.name.endsWith('Id')) {
+            key = key.substring(0, key.length()-2)
+        }
+        */
         lines.add("""
         /* mask key '${key}': */ 
         key = "${key}";
@@ -851,9 +889,15 @@ public class TestMask${targetType} {
         def parentProp = propStack.empty ? null : propStack.last()
         def propStackParent = []; propStackParent.addAll(propStack)
         putStacks.call(property)
+        def key = propStack.collect {prop -> prop.name}.join('.')
+        /*
+        // FIXME handle objctBaseId!
+        if (property.hasTag('prepLookup') && property.name.endsWith('Id')) {
+            key = key.substring(0, key.length()-2)
+        }
+        */
         if (propStack.size() == 1) {
-            // FIXME handle objctBaseId!
-            lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}":
+            lines.add("""        case "${key}":
             return pojo.get${data.firstUpperCase.call(property.name)}();""" )
         } else if (parentCollection) {
             // parent is collection: stream collection, map to value, collect(Collectors.toList())
@@ -864,7 +908,7 @@ public class TestMask${targetType} {
              */
             String methodName = propStackParent.collect{ prop -> data.upperCamelCase.call(prop.name) }.join('')
             String parentChar = parentProp.name.take(1)
-            lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}":
+            lines.add("""        case "${key}":
             return get${methodName}(pojo).stream().map(${parentChar} -> ${parentChar}.get${data.upperCamelCase.call(property.name)}()).collect(Collectors.toList());""")
             // lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}": return null; // TODO""" )
         } else {
@@ -880,7 +924,7 @@ public class TestMask${targetType} {
             String methodName = propStackParent.collect{ prop -> data.upperCamelCase.call(prop.name) }.join('')
             String getChain = propStack.collect{ prop -> data.upperCamelCase.call(prop.name) }.join('().get')
 
-            lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}":
+            lines.add("""        case "${key}":
             if (check${methodName}Exists(pojo)) {
                 return pojo.get${getChain}();
             } else {
