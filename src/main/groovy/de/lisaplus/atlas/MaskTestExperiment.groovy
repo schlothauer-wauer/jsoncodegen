@@ -509,12 +509,9 @@ public class TestMask${targetType} {
         PojoMask mask;
         String key, jsonMasked, jsonRestored;
         source = random.nextObject(${targetType}.class);
-        assertNotNull(source);
-        
-        // TODO loop over mask keys"""
+        assertNotNull(source);"""
         allLines.clear()
         prepareStacks.call()
-        // TODO  create code block per mask key!
         createTestRestoreForType.call(type, allLines)
         allLines.each { line -> println line }
         println """
@@ -542,17 +539,10 @@ public class TestMask${targetType} {
      * @param maskKey The mask key to process.
      * @return The value(s) associated with a mask key.
      */
-    private Object getValue(${targetType} pojo, String maskKey) {
-        switch(maskKey) {
-        // TODO loop over model and create method, which return value(s) associated with mask key
-        // e.g. 
-        /*case "city":
-            return pojo.getCity();
-        case "persons.firstName":
-            return pojo.getPersons().stream().map(p -> p.getFirstName()).collect(Collectors.toList());*/"""
+    private Object getValue(final ${targetType} pojo, final String maskKey) {
+        switch(maskKey) {"""
         allLines.clear()
         prepareStacks.call()
-        // TODO  create cases
         createGetValueForType.call(type, allLines)
         allLines.each { line -> println line }
         println """
@@ -800,8 +790,10 @@ public class TestMask${targetType} {
 
     def createTestRestoreSimple = { Property property, List<String> lines ->
         putStacks.call(property)
+        def key = propStack.collect {prop -> prop.name}.join('.')
         lines.add("""
-        key = "${propStack.collect {prop -> prop.name}.join('.')}";
+        /* mask key '${key}': */ 
+        key = "${key}";
         valueBefore = getValue(source, key);
         assertNotNull(valueBefore);
         target = random.nextObject(${targetType}.class);
