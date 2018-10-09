@@ -536,7 +536,7 @@ public class TestMask${targetType} {
         allLines.each { line -> println line }
         println """
     }
-    
+
     /**
      * For restoring of array properties with entryId attributes these entryId values need to match.
      * This method assumes that array dimension of objects <i>source</i> and <i>target</i> match!
@@ -846,7 +846,7 @@ public class TestMask${targetType} {
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
         lines.add("""
-        /* mask key '${key}': */ 
+        /* mask key '${key}': */
         key = "${key}";
         valueBefore = getValue(source, key);
         assertNotNull(key, valueBefore);

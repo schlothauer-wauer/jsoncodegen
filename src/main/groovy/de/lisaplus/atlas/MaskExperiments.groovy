@@ -600,7 +600,7 @@ class MaskExperiments {
             def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
             lines = /            case "${key}":
-                for(${parentJavaType} ${parent} : get${methodName}(target)){
+                for (final ${parentJavaType} ${parent} : get${methodName}(target)) {
                     ${parent}.set${data.upperCamelCase.call(prop.name)}(null);
                 }
                 break;/
