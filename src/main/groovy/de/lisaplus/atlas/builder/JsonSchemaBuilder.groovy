@@ -501,8 +501,12 @@ class JsonSchemaBuilder implements IModelBuilder {
                 if (propObjMap.items.type) {
                     BaseType ret = getBaseTypeFromString(model,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item',false)
                     ret.isArray = true
+                    // the attrib has an _t_tags entry ...
                     if (propObjMap.'__tags') {
-                        ret.type.tags=propObjMap.'__tags'
+                        if (! (ret instanceof UUIDType)) {
+                            // ... so set it also for complex inner types
+                            ret.type.tags=propObjMap.'__tags'
+                        }
                     }
                     return ret
                 }

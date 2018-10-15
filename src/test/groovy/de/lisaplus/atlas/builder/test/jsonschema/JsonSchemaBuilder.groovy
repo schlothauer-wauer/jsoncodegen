@@ -144,7 +144,29 @@ class JsonSchemaBuilder {
         }.each { type ->
             println(type.name)
         }
+        // test for tags in attributes
+        def foundReferences=0
+        def foundInnerReferences=false
+        model.types.find {
+            return (it.name == 'Incident')
+        }.each { type ->
+            type.properties.findAll { it.name=='references' || it.name=='innerReferences' }.each { prop ->
+                    assertEquals(1,prop.tags.size())
+                    assertEquals('recursion',prop.tags.get(0))
+                    foundReferences++
+            }
+        }
+        model.types.find {
+            return (it.name == 'IncidentInnerReferencesItem')
+        }.each { type ->
+            assertEquals(1,type.tags.size())
+            assertEquals('recursion',type.tags.get(0))
+            foundInnerReferences=true
+        }
+        assertTrue(foundInnerReferences)
+        assertEquals(2,foundReferences)
     }
+
 
     @Test
     void testRecursion_1() {
