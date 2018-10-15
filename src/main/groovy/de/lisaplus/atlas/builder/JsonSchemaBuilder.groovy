@@ -183,6 +183,9 @@ class JsonSchemaBuilder implements IModelBuilder {
                 newType.properties.addAll(tmp.type.properties)
                 newType.baseTypes.add(tmp.type.name)
             }
+            else if (typeObj.value.'__tags') {
+                newType.tags=typeObj.value.'__tags'
+            }
             else {
                 newType.properties = getProperties(model,typeObj.value,typeName,currentSchemaPath)
             }
