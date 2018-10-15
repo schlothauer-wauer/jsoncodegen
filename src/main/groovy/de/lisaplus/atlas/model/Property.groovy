@@ -24,6 +24,13 @@ class Property {
      */
     int sinceVersion
 
+    // true if prop contains object of same type as property host
+    boolean selfContainment=false;
+
+    // true if prop is implicit reference of same type as property host
+    boolean selfReference=false;
+
+
     /**
      * array of free definable strings to add keywords to types and attributes.
      * This keywords can be used to select or deselect types or attributes while code generation

@@ -153,6 +153,9 @@ class JsonSchemaBuilder {
             type.properties.findAll { it.name=='references' || it.name=='innerReferences' }.each { prop ->
                     assertEquals(1,prop.tags.size())
                     assertEquals('recursion',prop.tags.get(0))
+                    if (prop.name=='references') {
+                        assertTrue(prop.selfReference)
+                    }
                     foundReferences++
             }
         }

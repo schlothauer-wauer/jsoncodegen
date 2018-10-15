@@ -129,8 +129,7 @@ class JsonSchemaBuilder implements IModelBuilder {
         // TODO initialize extra stuff
         addNewType(newType,model)
         addExternalTypesToModel(model)
-        model.initRefOwnerForTypes()
-        model.checkModelForErrors()
+        model.postProcess()
         return model
     }
 
@@ -191,8 +190,7 @@ class JsonSchemaBuilder implements IModelBuilder {
             addNewType(newType,model)
         }
         addExternalTypesToModel(model)
-        model.initRefOwnerForTypes()
-        model.checkModelForErrors()
+        model.postProcess()
         return model
     }
 

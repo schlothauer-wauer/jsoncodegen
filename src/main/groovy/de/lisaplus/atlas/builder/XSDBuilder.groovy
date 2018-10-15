@@ -48,8 +48,7 @@ class XSDBuilder implements IModelBuilder {
         // two interations needed because to replace pure restriction types they must be known
         collectPureRestrictionTypes(model,globalTypes)
         collectNormalTypes(model,globalTypes)
-        model.initRefOwnerForTypes()
-        model.checkModelForErrors()
+        model.postProcess()
         return model
     }
 

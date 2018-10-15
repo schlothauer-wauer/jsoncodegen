@@ -52,6 +52,44 @@ class Model {
     }
 
     /**
+     * looking for properties that contain objects of the same type as the property host
+     * @param model
+     */
+    void setPropertySelfContainmentFlag() {
+        types.each { type ->
+            type.properties.each { prop ->
+                if (prop.isRefTypeOrComplexType() && type.class==prop.type.type) {
+                    prop.selfContainment = true
+                }
+            }
+        }
+    }
+
+    /**
+     * looking for properties that are implicit reference on objects of the same type as the property host
+     * @param model
+     */
+    void setPropertySelfReferenceFlag() {
+        types.each { type ->
+            type.properties.each { prop ->
+                if (prop.type instanceof UUIDType && prop.implicitRef && prop.implicitRef.type.class==type.class) {
+                    prop.selfReference = true
+                }
+            }
+        }
+    }
+
+    /**
+     * final process step after loading of the model
+     */
+    void postProcess() {
+        initRefOwnerForTypes()
+        setPropertySelfContainmentFlag()
+        setPropertySelfReferenceFlag()
+        checkModelForErrors()
+    }
+
+    /**
      * checks whether the model has some errors
      */
     void checkModelForErrors() {
