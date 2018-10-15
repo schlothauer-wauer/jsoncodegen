@@ -86,6 +86,9 @@ class XSDBuilder implements IModelBuilder {
             extendsStr = " extends $baseTypeName"
         }
         println "new type: ${newType.name}$extendsStr"
+        if (newType.name=='IntervalDetection') {
+            newType.name = newType.name
+        }
         addProperties(type,model,newType)
         addNewType(newType,model)
         //println "added type: ${newType.name}, contentType: ${type.contentType}"

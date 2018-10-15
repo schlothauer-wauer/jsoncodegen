@@ -123,6 +123,13 @@
               "items": {
                 "$ref": "./shared/comment.json"
               }
+            },
+            "objectGroupIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+              }
             }
           }
         },

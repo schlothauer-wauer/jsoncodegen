@@ -23,6 +23,19 @@ class PlantUml {
     }
 
     @Test
+    void createIncidentModel() {
+        def destFile = 'tmp/incident.puml'
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/incident.json'
+        doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add('destFileName=incident.puml')
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
+
+    @Test
     void createLicenseModel() {
         def destFile = 'tmp/license.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()

@@ -1,5 +1,6 @@
 package de.lisaplus.atlas.codegen
 
+import de.lisaplus.atlas.codegen.helper.java.DotnetTypeConvert
 import de.lisaplus.atlas.codegen.helper.java.JavaTypeConvert
 import de.lisaplus.atlas.codegen.helper.java.JsonTypeConvert
 import de.lisaplus.atlas.codegen.helper.java.SwaggerTypeConvert
@@ -18,8 +19,8 @@ class TypeStringManipulation {
      */
     Map getClosures() {
         return [
-            DOLLAR:'$',
-            printIndent: printIndent,
+                DOLLAR:'$',
+                printIndent: printIndent,
             toLowerCase: toLowerCase,
             toUpperCase: toUpperCase,
             firstLowerCase: firstLowerCase,
@@ -31,6 +32,7 @@ class TypeStringManipulation {
             isInnerType: isInnerType,
             isPropComplexType: isPropComplexType,
             typeToJava: JavaTypeConvert.convert,
+            typeToDotnet: DotnetTypeConvert.convert,
             typeToJavaForceSingle: JavaTypeConvert.convertForceSingle,
             typeToSwagger: SwaggerTypeConvert.convert,
             typeToJson: JsonTypeConvert.convert,
@@ -41,11 +43,11 @@ class TypeStringManipulation {
             containsTag: containsTag,
             missingTag: missingTag,
             containsPropName: containsPropName,
-            missingPropName: missingPropName,
-            propsContainsTag: propsContainsTag,
-            filterProps: filterProps,
-            filterPropsPerform: filterPropsPerform,
-            printLines: printLines
+                missingPropName: missingPropName,
+                propsContainsTag: propsContainsTag,
+                filterProps: filterProps,
+                filterPropsPerform: filterPropsPerform,
+                printLines: printLines
         ]
     }
 

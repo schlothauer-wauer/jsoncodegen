@@ -151,9 +151,7 @@ class JsonSchemaBuilder implements IModelBuilder {
     }
 
 
-//    private Model modelFromMultiTypeSchema(def objectModel,String currentSchemaPath) {
       private Model loadSchemaTypes(def objectModel,String currentSchemaPath,Model model) {
-//        Model model = initModel(objectModel)
         if (model==null)
             model = initModel(objectModel)
         objectModel.definitions.each { typeObj ->
@@ -179,12 +177,9 @@ class JsonSchemaBuilder implements IModelBuilder {
             }
             else if (typeObj.value.'$ref') {
                 // this type refers to an external definition
-                RefType tmp = initRefType(typeObj.value.'$ref',currentSchemaPath)
+                RefType tmp = initRefType(typeObj.value.'$ref', currentSchemaPath)
                 newType.properties.addAll(tmp.type.properties)
                 newType.baseTypes.add(tmp.type.name)
-            }
-            else if (typeObj.value.'__tags') {
-                newType.tags=typeObj.value.'__tags'
             }
             else {
                 newType.properties = getProperties(model,typeObj.value,typeName,currentSchemaPath)

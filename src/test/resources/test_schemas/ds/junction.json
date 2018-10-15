@@ -41,6 +41,7 @@
             },
             "streets": {
               "type": "array",
+              "__tags": ["recursion"],
               "items": {
                 "type": "object",
                 "properties": {
