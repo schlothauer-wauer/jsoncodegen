@@ -18,13 +18,13 @@ class MaskTestExperiment {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'JunctionContact' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'Junction' // 'JunctionContact' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
 
         def maskExp = new MaskTestExperiment(modelPath)
         maskExp.execute(typeName, typeName.endsWith('Joined'))
 
         // Check for exception while running code generation for all available types
-        maskExp.generateAll()
+//         maskExp.generateAll()
     }
 
     /** The path to the model definition file */
@@ -262,6 +262,8 @@ class MaskTestExperiment {
                 println "Check that there are no NPE while masking children of the property associated with the mask key '${it}', even when that value is already masked / null!"
             }
         }
+
+        createUpdateMaskForType.call(type)
 
         // start printing JUnit
 
@@ -948,6 +950,121 @@ public class TestMask${targetType} {
             }""" )
         }
         popStacks.call()
+    }
+
+    def createUpdateMaskForType = { Type type ->
+        def parentType = data.upperCamelCase(type.name)
+        List all = data.filterProps.call(type, [withoutTag:'notDisplayed'])
+        List mask = []
+        List alter = []
+        List delete = []
+        if (all.size() < 2) {
+            throw new IllegalArgumentException('Need some properties!')
+        } else {
+            for(int idx = 0; idx<all.size(); idx++) {
+                switch(idx%3) {
+                    case 0:
+                        mask += all[idx]
+                        break
+                    case 1:
+                        alter += all[idx]
+                        break
+                    case 2:
+                        delete += all[idx]
+                        break
+                }
+            }
+            println "mask=${mask.collect { it.name } } alter=${alter.collect { it.name} } delete=${delete.collect { it.name } } "
+            // save state before
+
+            println """
+        // Collect three lists of property names:
+        // List M: Property names got into mask. Assign altered values to DAOs (use alterValue(Object) and / or random.nextObject())
+        //         The changed values are not to be picked up / written to storage
+        // List A: Alter the values (use alterValue(Object) and / or random.nextObject())
+        //         The changed values are to be persisted / written to storage
+        // List D: Delete the values (setXXX(null))
+        //         The values are to be deleted from the storage
+
+        // Not recursive, just process the current type.
+        // Discard properties with tag notToDispaly, divide remaining properties into
+        // List M and A (n=2) or Lists M,A and D (n>=3)
+        try {
+            Dao${parentType} before = createInstance()
+
+            // save state before"""
+            for(Property prop : mask) {
+                def name = data.upperCamelCase.call(prop.name)
+                println "            def value${name}Before = before.get${name}()"
+            }
+
+            // create mask
+            println """
+            // request masking
+            def mask = new PojoMask([${ mask.collect{ "'$it.name'"}.join(", ") }])
+            de.lisaplus.lisa.junction.mask.Mask${parentType}.mask(before, mask)
+            
+            // setting altered values to masked field(s), to be ignored!"""
+            for (Property prop : mask) {
+                def name = data.upperCamelCase.call(prop.name)
+                if (prop.isRefTypeOrComplexType()) {
+                    def clazz = data.upperCamelCase.call(prop.type.type.name)
+                    println "            before.set$name(random.nextObject(${clazz}, 'tenantId', 'daoContext'))"
+                } else {
+                    println "            before.set$name(alterValue(value${name}Before))"
+                }
+            }
+            println """
+            // These changed values are to be persisted / written to storage"""
+            for (Property prop : alter) {
+                def name = data.upperCamelCase.call(prop.name)
+                if (prop.isRefTypeOrComplexType()) {
+                    def clazz = data.upperCamelCase.call(prop.type.type.name)
+                    println """            def value${name}Altered = random.nextObject(${clazz}, 'tenantId', 'daoContext')" +
+            before.set$name(value${name}Altered)"""
+                } else {
+                    println """            def value${name}Altered = alterValue(before.get$name())
+            before.set$name(value${name}Altered)"""
+                }
+            }
+
+            println """
+            // These values are to be deleted from the storage"""
+            for (Property prop : delete) {
+                def name = data.upperCamelCase.call(prop.name)
+                println "            before.set$name(null)"
+            }
+
+            println """
+            maskService.registerMask(${parentType}.class, mask)
+            Dao${parentType}.restoreMasked(before, testContext, true)
+
+            // get new state from storage back-end
+            ${parentType} after = Dao${parentType}.byId(before.getGuid(), before.getDaoContext())
+
+            // check that changed state of masked fields were not persisted in storage"""
+            for (Property prop : mask) {
+                def name = data.upperCamelCase.call(prop.name)
+                println "            assertEquals(value${name}Before, after.${prop.name})"
+            }
+            println """
+            // check that altered values were actually changed in the storage"""
+            for (Property prop : alter) {
+                def name = data.upperCamelCase.call(prop.name)
+                println "            assertEquals(value${name}Altered, after.${prop.name})"
+            }
+
+            println """
+            // check that deleted values were actually removed from the storage"""
+            for (Property prop : delete) {
+                println "            assertNull(after.${prop.name})"
+            }
+
+            println """
+        } finally {
+            maskService.clearMasks()
+        }"""
+        }
     }
 
     /**
