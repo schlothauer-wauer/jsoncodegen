@@ -247,6 +247,7 @@ class TypeStringManipulation {
         if (params.withoutTag != null) props = props.findAll { prop -> !prop.hasTag(params.withoutTag) }
         if (params.prepLookup) props = props.findAll { prop ->
             prop.hasTag('prepLookup') == params.prepLookup }
+        if (params.selfRef != null) props = props.findAll { prop -> prop.selfReference == params.selfRef }
         return props
     }
 
