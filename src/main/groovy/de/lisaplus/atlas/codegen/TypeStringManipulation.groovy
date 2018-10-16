@@ -19,8 +19,8 @@ class TypeStringManipulation {
      */
     Map getClosures() {
         return [
-                DOLLAR:'$',
-                printIndent: printIndent,
+            DOLLAR:'$',
+            printIndent: printIndent,
             toLowerCase: toLowerCase,
             toUpperCase: toUpperCase,
             firstLowerCase: firstLowerCase,
@@ -43,11 +43,11 @@ class TypeStringManipulation {
             containsTag: containsTag,
             missingTag: missingTag,
             containsPropName: containsPropName,
-                missingPropName: missingPropName,
-                propsContainsTag: propsContainsTag,
-                filterProps: filterProps,
-                filterPropsPerform: filterPropsPerform,
-                printLines: printLines
+            missingPropName: missingPropName,
+            propsContainsTag: propsContainsTag,
+            filterProps: filterProps,
+            filterPropsPerform: filterPropsPerform,
+            printLines: printLines
         ]
     }
 
