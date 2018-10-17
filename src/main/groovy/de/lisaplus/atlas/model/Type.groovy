@@ -29,7 +29,7 @@ class Type {
     /**
      *  List of required properties, String list with property names
      */
-    List<String> requiredProps=[];
+    List<String> requiredProps=[]
 
     /**
      * List of inheritance base types - currently only used for nice plantuml diagramms
@@ -58,6 +58,24 @@ class Type {
      * This keywords can be used to select or deselect types or attributes while code generation
      */
     List<String> tags=[]
+
+    Type() {}
+
+    Type(Type type) {
+        this.name = type.name
+        this.color = type.color
+        this.tags = type.tags == null ? null : new ArrayList<>(type.tags)
+        this.properties = type.properties == null ? null : type.properties.collect { p -> new Property(p) }
+        // Assumes immutable!
+        this.description = type.description
+        this.requiredProps = type.requiredProps == null ? null : new ArrayList<>(type.requiredProps)
+        this.baseTypes = type.baseTypes == null ? null : new ArrayList<>(type.baseTypes)
+        this.sinceVersion = type.sinceVersion
+        // In case of cycles we have to switch to deep cloning using serialization!
+        this.refOwner = type.refOwner == null ? null : type.refOwner.collect { owner -> Type.copyOf(owner)}
+        this.onlyBaseType = type.onlyBaseType
+        this.tags = type.tags== null ? null : new ArrayList<>(type.tags)
+    }
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);
@@ -99,6 +117,22 @@ class Type {
             return name == prop.name
         } != null
     }
+
+    static <T extends Type> T copyOf(T type) {
+        Objects.requireNonNull(type)
+        switch (type) {
+            case DummyType:
+                return new DummyType(type)
+            case ExternalType:
+                return new ExternalType(type)
+            case InnerType:
+                return new InnerType(type)
+            case Type:
+                return new Type(type)
+            default:
+                throw new RuntimeException("Add handling for type ${type.class}")
+        }
+    }
 }
 
 /**
@@ -110,6 +144,17 @@ class DummyType  extends Type {
      * List of RefType objects. After the real Type is created, it's needed to set the right references
      */
     def referencesToChange=[]
+    // List<BaseType> referencesToChange=[]
+
+    DummyType() {
+        super()
+    }
+
+    DummyType(DummyType type) {
+        super(type)
+        referencesToChange = type.referencesToChange == null ? null : type.referencesToChange.collect { ref -> ref instanceof BaseType ? BaseType.copyOf(ref) : ref }
+        // referencesToChange = type.referencesToChange == null ? null : type.referencesToChange.collect { ref -> BaseType.copyOf(ref) }
+    }
 }
 
 /**
@@ -117,4 +162,13 @@ class DummyType  extends Type {
  */
 class ExternalType extends Type {
     String refStr
+
+    ExternalType() {
+        super()
+    }
+
+    ExternalType(ExternalType type) {
+        super(type)
+        refStr = type.refStr
+    }
 }

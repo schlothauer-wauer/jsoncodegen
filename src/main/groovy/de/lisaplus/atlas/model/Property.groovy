@@ -36,6 +36,24 @@ class Property {
      */
     List<String> tags=[]
 
+    Property() {
+    }
+
+    Property(Property prop) {
+        // Assume Strings / immutable
+        description = prop.description
+        name = prop.name
+        format = prop.format
+
+        implicitRef = prop.implicitRef == null ? null : BaseType.copyOf(prop.implicitRef)
+        aggregationType = prop.aggregationType
+        type = prop.type == null ? null : BaseType.copyOf(prop.type)
+
+        sinceVersion = prop.sinceVersion
+        selfContainment = prop.selfContainment
+        selfReference = prop.selfReference
+        tags = prop.tags==null ? null : new ArrayList<>(prop.tags)
+    }
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);

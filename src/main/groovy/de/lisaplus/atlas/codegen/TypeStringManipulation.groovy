@@ -222,7 +222,7 @@ class TypeStringManipulation {
     }
 
     // Closure<List<Property>> filterProps = { Type type, Map params ->
-    def filterProps = { type, params ->
+        def filterProps = { type, params ->
         List props = type.properties
         if (params.filterCls!= null) props = props.findAll { params.get('filterCls') }
         if (params.name != null) props = props.findAll { prop -> prop.name == params.name }
