@@ -36,6 +36,30 @@ class Property {
      */
     List<String> tags=[]
 
+    /**
+     * Initializes the fields of this Property to equal to that of the source
+     * @param source The object to copy from
+     * @param typeCopies The types, which were already copied (mapping of type name to the copy of the corresponding Type)
+     */
+    void initCopy(Property source, Map<String, Type> typeCopies) {
+        // Assume Strings / immutable
+        description = source.description
+        name = source.name
+        format = source.format
+        if (source.implicitRef == null) {
+            implicitRef = null
+        } else {
+            // reuse existing copies or create new ones if they are missing
+            implicitRef = BaseType.copyOf(source.type, typeCopies)
+        }
+        aggregationType = source.aggregationType
+        type = source.type == null ? null : BaseType.copyOf(source.type, typeCopies)
+
+        sinceVersion = source.sinceVersion
+        selfContainment = source.selfContainment
+        selfReference = source.selfReference
+        tags = source.tags==null ? null : new ArrayList<>(source.tags)
+    }
 
     String toString() {
         return ToStringBuilder.reflectionToString(this);

@@ -29,7 +29,7 @@ class Type {
     /**
      *  List of required properties, String list with property names
      */
-    List<String> requiredProps=[];
+    List<String> requiredProps=[]
 
     /**
      * List of inheritance base types - currently only used for nice plantuml diagramms
@@ -59,11 +59,41 @@ class Type {
      */
     List<String> tags=[]
 
+    Type() {}
+
+    /**
+     * Initializes the fields of this Type to equal to that of the source
+     * @param source The object to copy from
+     * @param typeCopies The types, which were already copied (mapping of type name to corresponding Type object)
+     */
+    void initCopy(Type source, Map<String, Type> typeCopies) {
+        this.name = source.name
+        this.color = source.color
+        this.tags = source.tags == null ? null : new ArrayList<>(source.tags)
+        def propCopy = { Property pSource ->
+            if (pSource == null)
+                return null
+            Property copy = new Property()
+            copy.initCopy(pSource, typeCopies)
+            return copy
+        }
+        this.properties = source.properties == null ? null : source.properties.collect { p -> /*println "type=${source.name} selfRef=${p.selfReference} prop=${p.name}"; return*/ propCopy.call(p) }
+        // Assumes immutable!
+        this.description = source.description
+        this.requiredProps = source.requiredProps == null ? null : new ArrayList<>(source.requiredProps)
+        this.baseTypes = source.baseTypes == null ? null : new ArrayList<>(source.baseTypes)
+        this.sinceVersion = source.sinceVersion
+        this.refOwner = source.refOwner == null ? null : source.refOwner.collect { owner -> Type.copyOf(owner, typeCopies)}
+        this.onlyBaseType = source.onlyBaseType
+        this.tags = source.tags== null ? null : new ArrayList<>(source.tags)
+    }
+
     String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
 
     void initFromType (Type t) {
+        // TODO Check whether incomplete initialization is necessary / intended!
         this.name = t.name
         this.tags = t.tags
         this.properties = t.properties
@@ -99,17 +129,56 @@ class Type {
             return name == prop.name
         } != null
     }
+
+    /**
+     * Reuse existing copies or create new ones if they are missing
+     * @param type The type to copy
+     * @param typeCopies The types, which were already copied (mapping of type name to the copy of the corresponding Type)
+     * @return The copy of the type
+     */
+    static <T extends Type> T copyOf(T type, Map<String,Type> typeCopies) {
+        Objects.requireNonNull(type)
+        T copy = (T) typeCopies.get(type.name)
+        if (copy == null) {
+            // println "Copying ${type.name}"
+            switch (type) {
+                case DummyType:
+                    copy = DummyType()
+                    break
+                case ExternalType:
+                    copy = new ExternalType()
+                    break
+                case InnerType:
+                    copy = new InnerType()
+                    break
+                case Type:
+                    copy = new Type()
+                    break
+                default:
+                    throw new RuntimeException("Add handling for type ${type.class}")
+            }
+            typeCopies.put(type.name, copy)
+            copy.initCopy(type, typeCopies)
+        }
+        return copy
+    }
 }
 
 /**
  * This type is used to handle the use of schema types before they are declared in a schema.
  * This could happen with references
  */
-class DummyType  extends Type {
+class DummyType extends Type {
     /**
-     * List of RefType objects. After the real Type is created, it's needed to set the right references
+     * List of BaseType or RefType objects. After the real Type is created, it's needed to set the right references
      */
-    def referencesToChange=[]
+    List<BaseType> referencesToChange=[]
+
+    @Override
+    void initCopy(Type source, Map<String, Type> typeCopies) {
+        super.initCopy(source, typeCopies)
+        referencesToChange = source.referencesToChange == null ? null : source.referencesToChange.collect { ref -> BaseType.copyOf(ref, typeCopies) }
+    }
 }
 
 /**
@@ -117,4 +186,10 @@ class DummyType  extends Type {
  */
 class ExternalType extends Type {
     String refStr
+
+    @Override
+    void initCopy(Type source, Map<String, Type> typeCopies) {
+        super.initCopy(source, typeCopies)
+        this.refStr = source.refStr
+    }
 }
