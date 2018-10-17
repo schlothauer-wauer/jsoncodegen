@@ -78,18 +78,4 @@ class SimpleXsdBuilder {
         assertTrue(new File(destFile).exists())
     }
 
-    @Test
-    void plantuml_4() {
-        def fileName = 'plantuml_from_xsd4.puml'
-        def destFile = "tmp/$fileName"
-        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/xsd/swarco.com/scs/detection/0.2.xsd'
-        doCodeGen.generators.add('plantuml')
-        doCodeGen.generator_parameters.add("destFileName=$fileName")
-        doCodeGen.outputBaseDir = 'tmp'
-        doCodeGen.generator_parameters.add('removeEmptyLines=true')
-        doCodeGen.run()
-        assertTrue(new File(destFile).exists())
-    }
-
 }
