@@ -62,6 +62,24 @@ class JavaTypeConvert {
                 return type.isArray? "java.util.List<${prefix}${firstUpperCamelCase(type.type.name)}>" : "${prefix}${firstUpperCamelCase(type.type.name)}"
             case ComplexType.NAME:
                 return type.isArray? "java.util.List<${prefix}${firstUpperCamelCase(type.type.name)}>" : "${prefix}${firstUpperCamelCase(type.type.name)}"
+            case ArrayType.NAME:
+                String base = "java.util.List<%s>";
+                BaseType aktType = type;
+                String ret = base;
+                String baseTypeStr = convert.call (type.baseType)
+                return String.format(base,baseTypeStr)
+            /*
+                while (aktType instanceof ArrayType) {
+                    if (aktType.baseType instanceof ArrayType ) {
+                        ret = String.format(ret,base)
+                    }
+                    else {
+                        ret = String.format(ret,"${prefix}${firstUpperCamelCase(aktType.baseType.type.name)}")
+                    }
+                    aktType = aktType.baseType
+                }
+                return ret
+                */
             case UnsupportedType.NAME:
                 return BaseType.UNSUPPORTED_TYPE+type
             case VoidType.NAME:

@@ -107,3 +107,7 @@ basic design.
 
 ## Usage
 [see here](src/main/resources/docs/usage.md)
+
+## Releases
+[see here](Releases.md)
+

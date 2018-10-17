@@ -28,6 +28,8 @@ class DotnetTypeConvert {
                 return type.isArray? 'List<DateTime>' : 'DateTime'
             case RefType.NAME:
                 return type.type.name
+            case ArrayType.NAME:
+                return List
             case ComplexType.NAME: // ?
                 return type.type.name
             case UnsupportedType.NAME:

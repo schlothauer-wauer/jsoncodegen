@@ -73,6 +73,10 @@ class Property {
         return type && ( type instanceof RefType)
     }
 
+    boolean isArrayType() {
+        return type && ( type instanceof ArrayType)
+    }
+
     boolean isComplexType() {
         return type && ( type instanceof ComplexType )
     }

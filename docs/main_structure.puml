@@ -86,6 +86,7 @@ MinMaxType <|-- IntType
 MinMaxType <|-- NumberType
 BaseType <|-- RefType
 BaseType <|-- StringType
+BaseType <|-- ArrayType
 BaseType <|-- UnsupportedType
 
 Property o-- BaseType
