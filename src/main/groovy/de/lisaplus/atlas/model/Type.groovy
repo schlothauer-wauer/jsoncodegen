@@ -62,28 +62,6 @@ class Type {
     Type() {}
 
     /**
-     * Copy constructor
-     * @param type The object to copy from
-     * @deprecated To avoid issues with circles in the type hierarchy use #initCopy(Property, Map)
-     */
-    @Deprecated
-    Type(Type type) {
-        this.name = type.name
-        this.color = type.color
-        this.tags = type.tags == null ? null : new ArrayList<>(type.tags)
-        this.properties = type.properties == null ? null : type.properties.collect { p -> println "type=${type.name} selfRef=${p.selfReference} prop=${p.name}"; return new Property(p) }
-        // Assumes immutable!
-        this.description = type.description
-        this.requiredProps = type.requiredProps == null ? null : new ArrayList<>(type.requiredProps)
-        this.baseTypes = type.baseTypes == null ? null : new ArrayList<>(type.baseTypes)
-        this.sinceVersion = type.sinceVersion
-        // In case of cycles we have to switch to deep cloning using serialization!
-        this.refOwner = type.refOwner == null ? null : new ArrayList<>(type.refOwner) // type.refOwner.collect { owner -> Type.copyOf(owner)} // triggers loop!
-        this.onlyBaseType = type.onlyBaseType
-        this.tags = type.tags== null ? null : new ArrayList<>(type.tags)
-    }
-
-    /**
      * Initializes the fields of this Type to equal to that of the source
      * @param source The object to copy from
      * @param typeCopies The types, which were already copied (mapping of type name to corresponding Type object)
@@ -162,27 +140,6 @@ class Type {
     }
 
     /**
-     * @deprecated o avoid issues with circles in the type hierarchy use Type#copyOf(T,Map)
-     */
-    @Deprecated
-    static <T extends Type> T copyOf(T type) {
-        Objects.requireNonNull(type)
-        switch (type) {
-            case DummyType:
-                return new DummyType(type)
-            case ExternalType:
-                return new ExternalType(type)
-            case InnerType:
-                return new InnerType(type)
-            case Type:
-                println "Copying ${type.name}"
-                return new Type(type)
-            default:
-                throw new RuntimeException("Add handling for type ${type.class}")
-        }
-    }
-
-    /**
      * Reuse existing copies or create new ones if they are missing
      * @param type The type to copy
      * @param typeCopies The types, which were already copied (mapping of type name to the copy of the corresponding Type)
@@ -226,21 +183,6 @@ class DummyType extends Type {
      */
     List<BaseType> referencesToChange=[]
 
-    DummyType() {
-        super()
-    }
-
-    /**
-     * Copy constructor
-     * @param type The object to copy from
-     * @deprecated To avoid issues with circles in the type hierarchy use #initCopy(Property, Map)
-     */
-    @Deprecated
-    DummyType(DummyType type) {
-        super(type)
-        referencesToChange = type.referencesToChange == null ? null : type.referencesToChange.collect { ref -> BaseType.copyOf(ref) }
-    }
-
     @Override
     void initCopy(Type source, Map<String, Type> typeCopies) {
         super.initCopy(source, typeCopies)
@@ -253,21 +195,6 @@ class DummyType extends Type {
  */
 class ExternalType extends Type {
     String refStr
-
-    ExternalType() {
-        super()
-    }
-
-    /**
-     * Copy constructor
-     * @param type The object to copy from
-     * @deprecated To avoid issues with circles in the type hierarchy use #initCopy(Property, Map)
-     */
-    @Deprecated
-    ExternalType(ExternalType type) {
-        super(type)
-        refStr = type.refStr
-    }
 
     @Override
     void initCopy(Type source, Map<String, Type> typeCopies) {

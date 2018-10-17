@@ -36,38 +36,6 @@ class Property {
      */
     List<String> tags=[]
 
-    Property() {}
-
-    /**
-     * Copy constructor
-     * @param prop The object to copy from
-     * @deprecated To avoid issues with circles in the type hierarchy use #initCopy(Property, Map)
-     */
-    @Deprecated
-    Property(Property prop) {
-        // Assume Strings / immutable
-        description = prop.description
-        name = prop.name
-        format = prop.format
-
-        if (prop.implicitRef == null) {
-            implicitRef = null
-        } else if (prop.selfReference) {
-            implicitRef = prop.implicitRef
-        } else {
-            println "prop=${prop.name} selfRef=${prop.selfReference} -> copy ${prop.implicitRef.typeName}"
-            implicitRef = BaseType.copyOf(prop.implicitRef)
-        }
-        // implicitRef = prop.implicitRef == null ? null : (prop.selfReference ? prop.implicitRef : BaseType.copyOf(prop.implicitRef))
-        aggregationType = prop.aggregationType
-        type = prop.type == null ? null : BaseType.copyOf(prop.type)
-
-        sinceVersion = prop.sinceVersion
-        selfContainment = prop.selfContainment
-        selfReference = prop.selfReference
-        tags = prop.tags==null ? null : new ArrayList<>(prop.tags)
-    }
-
     /**
      * Initializes the fields of this Property to equal to that of the source
      * @param source The object to copy from
