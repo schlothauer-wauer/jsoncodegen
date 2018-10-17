@@ -140,12 +140,11 @@ class Type {
  * This type is used to handle the use of schema types before they are declared in a schema.
  * This could happen with references
  */
-class DummyType  extends Type {
+class DummyType extends Type {
     /**
-     * List of RefType objects. After the real Type is created, it's needed to set the right references
+     * List of BaseType or RefType objects. After the real Type is created, it's needed to set the right references
      */
-    def referencesToChange=[]
-    // List<BaseType> referencesToChange=[]
+    List<BaseType> referencesToChange=[]
 
     DummyType() {
         super()
@@ -153,8 +152,7 @@ class DummyType  extends Type {
 
     DummyType(DummyType type) {
         super(type)
-        referencesToChange = type.referencesToChange == null ? null : type.referencesToChange.collect { ref -> ref instanceof BaseType ? BaseType.copyOf(ref) : ref }
-        // referencesToChange = type.referencesToChange == null ? null : type.referencesToChange.collect { ref -> BaseType.copyOf(ref) }
+        referencesToChange = type.referencesToChange == null ? null : type.referencesToChange.collect { ref -> BaseType.copyOf(ref) }
     }
 }
 
