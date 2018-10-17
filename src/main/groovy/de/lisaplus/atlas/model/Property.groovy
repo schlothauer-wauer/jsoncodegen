@@ -36,8 +36,7 @@ class Property {
      */
     List<String> tags=[]
 
-    Property() {
-    }
+    Property() {}
 
     Property(Property prop) {
         // Assume Strings / immutable
