@@ -47,7 +47,8 @@ class TypeStringManipulation {
             propsContainsTag: propsContainsTag,
             filterProps: filterProps,
             filterPropsPerform: filterPropsPerform,
-            printLines: printLines
+            printLines: printLines,
+            copyType: copyType
         ]
     }
 
@@ -274,6 +275,14 @@ class TypeStringManipulation {
         def prefix = ''
         level.times { prefix += by}
         lists.flatten().each { line -> out << "${prefix}${line}\n" }
+    }
+
+    /**
+     * Returns a copy of the provided type.
+     * @param type the type to copy
+     */
+    def copyType = { type ->
+        return Type.copyOf(type, [:])
     }
 
     private final static String EMPTY=''

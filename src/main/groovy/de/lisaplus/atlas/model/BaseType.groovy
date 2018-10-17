@@ -1,7 +1,5 @@
 package de.lisaplus.atlas.model
 
-import com.sun.org.apache.xpath.internal.operations.Or
-
 /**
  * Type used in meta model
  * Created by eiko on 01.06.17.
@@ -31,15 +29,32 @@ abstract class BaseType {
         switch(type) {
             // handle immutable by just returning them
             case BooleanType:
+                BooleanType copyB = new BooleanType()
+                copyB.isArray = type.isArray
+                return copyB
             case VoidType:
+                VoidType copyV = new VoidType()
+                copyV.isArray = type.isArray
+                return copyV
             case UnsupportedType:
+                UnsupportedType copyU = new UnsupportedType()
+                copyU.isArray = type.isArray
+                return copyU
             case UUIDType:
-            case BooleanType:
+                UUIDType copyUU = new UUIDType()
+                copyUU.isArray = type.isArray
+                return copyUU
             case DateType:
+                DateType copyD = new DateType()
+                copyD.isArray = type.isArray
+                return copyD
             case DateTimeType:
-                return type
+                DateTimeType copyDT = new DateTimeType()
+                copyDT.isArray = type.isArray
+                return copyDT
             case StringType:
                 StringType copyS = new StringType()
+                copyS.isArray = type.isArray
                 // Assume immutable!
                 copyS.minLength = type.minLength
                 copyS.maxLength = type.maxLength
@@ -47,6 +62,7 @@ abstract class BaseType {
                 return copyS
             case IntType:
                 IntType copyI = new IntType()
+                copyI.isArray = type.isArray
                 // Assume immutable!
                 copyI.min = type.min
                 copyI.max = type.max
@@ -55,6 +71,7 @@ abstract class BaseType {
                 return copyI
             case NumberType:
                 NumberType copyN = new NumberType()
+                copyN.isArray = type.isArray
                 // Assume immutable!
                 copyN.min = type.min
                 copyN.max = type.max
@@ -63,6 +80,7 @@ abstract class BaseType {
                 return copyN
             case RefType:
                 RefType copyR = new RefType()
+                copyR.isArray = type.isArray
                 // Assume immutable!
                 copyR.typeName = type.typeName
                 // if (type.type != null) println "RefType triggers copy of type ${type.type.name}"
@@ -70,6 +88,7 @@ abstract class BaseType {
                 return copyR
             case ComplexType:
                 ComplexType copyC = new ComplexType()
+                copyC.isArray = type.isArray
                 // if (type.type != null) println "ComplexType triggers copy of type ${type.type.name}"
                 copyC.type = type.type == null ? null : Type.copyOf(type.type, typeCopies)
                 return copyC
