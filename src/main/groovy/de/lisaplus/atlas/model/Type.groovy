@@ -82,6 +82,7 @@ class Type {
     }
 
     void initFromType (Type t) {
+        // TODO Check whether incomplete initialization is necessary / intended!
         this.name = t.name
         this.tags = t.tags
         this.properties = t.properties
