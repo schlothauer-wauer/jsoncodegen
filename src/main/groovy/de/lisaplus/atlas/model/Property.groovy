@@ -38,13 +38,27 @@ class Property {
 
     Property() {}
 
+    /**
+     * Copy constructor
+     * @param prop The object to copy from
+     * @deprecated To avoid issues with circles in the type hierarchy use #initCopy(Property, Map)
+     */
+    @Deprecated
     Property(Property prop) {
         // Assume Strings / immutable
         description = prop.description
         name = prop.name
         format = prop.format
 
-        implicitRef = prop.implicitRef == null ? null : BaseType.copyOf(prop.implicitRef)
+        if (prop.implicitRef == null) {
+            implicitRef = null
+        } else if (prop.selfReference) {
+            implicitRef = prop.implicitRef
+        } else {
+            println "prop=${prop.name} selfRef=${prop.selfReference} -> copy ${prop.implicitRef.typeName}"
+            implicitRef = BaseType.copyOf(prop.implicitRef)
+        }
+        // implicitRef = prop.implicitRef == null ? null : (prop.selfReference ? prop.implicitRef : BaseType.copyOf(prop.implicitRef))
         aggregationType = prop.aggregationType
         type = prop.type == null ? null : BaseType.copyOf(prop.type)
 
@@ -52,6 +66,48 @@ class Property {
         selfContainment = prop.selfContainment
         selfReference = prop.selfReference
         tags = prop.tags==null ? null : new ArrayList<>(prop.tags)
+    }
+
+    /**
+     * Initializes the fields of this Property to equal to that of the source
+     * @param source The object to copy from
+     * @param typeCopies The types, which were already copied (mapping of type name to the copy of the corresponding Type)
+     */
+    void initCopy(Property source, Map<String, Type> typeCopies) {
+        // Assume Strings / immutable
+        description = source.description
+        name = source.name
+        format = source.format
+
+        // version 3
+        if (source.implicitRef == null) {
+            implicitRef = null
+        } else {
+            // reuse existing copies or create new ones if they are missing
+            implicitRef = BaseType.copyOf(source.type, typeCopies)
+        }
+
+        /* version 2
+        if (source.implicitRef == null) {
+            implicitRef = null
+        } else if (source.selfReference) {
+            implicitRef = source.implicitRef
+        } else {
+            println "prop=${source.name} selfRef=${source.selfReference} -> copy ${source.implicitRef.typeName}"
+            implicitRef = BaseType.copyOf(source.implicitRef)
+        }
+        */
+
+        /* version 1
+        implicitRef = source.implicitRef == null ? null : (source.selfReference ? source.implicitRef : BaseType.copyOf(source.implicitRef))
+        */
+        aggregationType = source.aggregationType
+        type = source.type == null ? null : BaseType.copyOf(source.type, typeCopies)
+
+        sinceVersion = source.sinceVersion
+        selfContainment = source.selfContainment
+        selfReference = source.selfReference
+        tags = source.tags==null ? null : new ArrayList<>(source.tags)
     }
 
     String toString() {

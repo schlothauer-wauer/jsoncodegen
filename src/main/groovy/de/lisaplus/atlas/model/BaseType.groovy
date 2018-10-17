@@ -23,7 +23,9 @@ abstract class BaseType {
      * Returns a copy of the BaseType. If the object is immutable, then the object itself is being returned.
      * @param type The type to process, not null!
      * @return The copy of the BaseType.
+     * @deprecated To avoid issues with circles in the type hierarchy use BaseType#copyOf(T,Map)
      */
+    @Deprecated
     static <T extends BaseType> T copyOf(T type) {
         Objects.requireNonNull(type)
         switch(type) {
@@ -64,11 +66,81 @@ abstract class BaseType {
                 RefType copyR = new RefType()
                 // Assume immutable!
                 copyR.typeName = type.typeName
+                if (type.type != null) println "RefType triggers copy of type ${type.type.name}"
                 copyR.type = type.type == null ? null : Type.copyOf(type.type)
                 return copyR
             case ComplexType:
                 ComplexType copyC = new ComplexType()
+                if (type.type != null) println "ComplexType triggers copy of type ${type.type.name}"
                 copyC.type = type.type == null ? null : Type.copyOf(type.type)
+                return copyC
+            default:
+                throw new RuntimeException("Add handling for type ${type.class}")
+        }
+    }
+
+    /**
+     * Reuse existing copies or create new ones if they are missing. If the object is immutable, then the object itself
+     * is being returned.
+     * @param type The type to process, not null!
+     * @param typeCopies The types, which were already copied (mapping of type name to the copy of the corresponding Type)
+     * @return The copy of the BaseType
+     */
+    static <T extends BaseType> T copyOf(T type, Map<String, Type> typeCopies) {
+        Objects.requireNonNull(type)
+        switch(type) {
+            // handle immutable by just returning them
+            case BooleanType:
+            case VoidType:
+            case UnsupportedType:
+            case UUIDType:
+            case BooleanType:
+            case DateType:
+            case DateTimeType:
+                return type
+            case StringType:
+                StringType copyS = new StringType()
+                // Assume immutable!
+                copyS.minLength = type.minLength
+                copyS.maxLength = type.maxLength
+                copyS.pattern = type.pattern
+                return copyS
+            case IntType:
+                IntType copyI = new IntType()
+                // Assume immutable!
+                copyI.min = type.min
+                copyI.max = type.max
+                copyI.exclusiveMin = type.exclusiveMin
+                copyI.exclusiveMax = type.exclusiveMax
+                return copyI
+            case NumberType:
+                NumberType copyN = new NumberType()
+                // Assume immutable!
+                copyN.min = type.min
+                copyN.max = type.max
+                copyN.exclusiveMin = type.exclusiveMin
+                copyN.exclusiveMax = type.exclusiveMax
+                return copyN
+            case RefType:
+                RefType copyR = new RefType()
+                // Assume immutable!
+                copyR.typeName = type.typeName
+                /* version 1 & 2
+                if (type.type != null) println "RefType triggers copy of type ${type.type.name}"
+                copyR.type = type.type == null ? null : Type.copyOf(type.type)
+                */
+                // version 3
+                if (type.type != null) println "RefType triggers copy of type ${type.type.name}"
+                copyR.type = type.type == null ? null : Type.copyOf(type.type, typeCopies)
+                return copyR
+            case ComplexType:
+                ComplexType copyC = new ComplexType()
+                /* versions 1 and 2
+                copyC.type = type.type == null ? null : Type.copyOf(type.type)
+                */
+                // version 3
+                if (type.type != null) println "ComplexType triggers copy of type ${type.type.name}"
+                copyC.type = type.type == null ? null : Type.copyOf(type.type, typeCopies)
                 return copyC
             default:
                 throw new RuntimeException("Add handling for type ${type.class}")
