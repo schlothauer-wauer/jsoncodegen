@@ -65,21 +65,12 @@ abstract class BaseType {
                 RefType copyR = new RefType()
                 // Assume immutable!
                 copyR.typeName = type.typeName
-                /* version 1 & 2
-                if (type.type != null) println "RefType triggers copy of type ${type.type.name}"
-                copyR.type = type.type == null ? null : Type.copyOf(type.type)
-                */
-                // version 3
-                if (type.type != null) println "RefType triggers copy of type ${type.type.name}"
+                // if (type.type != null) println "RefType triggers copy of type ${type.type.name}"
                 copyR.type = type.type == null ? null : Type.copyOf(type.type, typeCopies)
                 return copyR
             case ComplexType:
                 ComplexType copyC = new ComplexType()
-                /* versions 1 and 2
-                copyC.type = type.type == null ? null : Type.copyOf(type.type)
-                */
-                // version 3
-                if (type.type != null) println "ComplexType triggers copy of type ${type.type.name}"
+                // if (type.type != null) println "ComplexType triggers copy of type ${type.type.name}"
                 copyC.type = type.type == null ? null : Type.copyOf(type.type, typeCopies)
                 return copyC
             default:

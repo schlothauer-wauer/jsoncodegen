@@ -70,28 +70,19 @@ class Type {
         this.name = source.name
         this.color = source.color
         this.tags = source.tags == null ? null : new ArrayList<>(source.tags)
-        /* version 1 and 2
-        this.properties = type.properties == null ? null : type.properties.collect { p -> println "type=${type.name} selfRef=${p.selfReference} prop=${p.name}"; return new Property(p) }
-        */
-        // version 3
         def propCopy = { Property pSource ->
             if (pSource == null)
-                return pSource
+                return null
             Property copy = new Property()
             copy.initCopy(pSource, typeCopies)
             return copy
         }
-        this.properties = source.properties == null ? null : source.properties.collect { p -> println "type=${source.name} selfRef=${p.selfReference} prop=${p.name}"; return propCopy.call(p) }
+        this.properties = source.properties == null ? null : source.properties.collect { p -> /*println "type=${source.name} selfRef=${p.selfReference} prop=${p.name}"; return*/ propCopy.call(p) }
         // Assumes immutable!
         this.description = source.description
         this.requiredProps = source.requiredProps == null ? null : new ArrayList<>(source.requiredProps)
         this.baseTypes = source.baseTypes == null ? null : new ArrayList<>(source.baseTypes)
         this.sinceVersion = source.sinceVersion
-        /* version 1 and 2
-        // In case of cycles we have to switch to deep cloning using serialization!
-        this.refOwner = type.refOwner == null ? null : new ArrayList<>(type.refOwner) // type.refOwner.collect { owner -> Type.copyOf(owner)} triggers loop!
-        */
-        // version 3
         this.refOwner = source.refOwner == null ? null : source.refOwner.collect { owner -> Type.copyOf(owner, typeCopies)}
         this.onlyBaseType = source.onlyBaseType
         this.tags = source.tags== null ? null : new ArrayList<>(source.tags)
@@ -149,6 +140,7 @@ class Type {
         Objects.requireNonNull(type)
         T copy = (T) typeCopies.get(type.name)
         if (copy == null) {
+            // println "Copying ${type.name}"
             switch (type) {
                 case DummyType:
                     copy = DummyType()
@@ -160,7 +152,6 @@ class Type {
                     copy = new InnerType()
                     break
                 case Type:
-                    println "Copying ${type.name}"
                     copy = new Type()
                     break
                 default:

@@ -46,29 +46,12 @@ class Property {
         description = source.description
         name = source.name
         format = source.format
-
-        // version 3
         if (source.implicitRef == null) {
             implicitRef = null
         } else {
             // reuse existing copies or create new ones if they are missing
             implicitRef = BaseType.copyOf(source.type, typeCopies)
         }
-
-        /* version 2
-        if (source.implicitRef == null) {
-            implicitRef = null
-        } else if (source.selfReference) {
-            implicitRef = source.implicitRef
-        } else {
-            println "prop=${source.name} selfRef=${source.selfReference} -> copy ${source.implicitRef.typeName}"
-            implicitRef = BaseType.copyOf(source.implicitRef)
-        }
-        */
-
-        /* version 1
-        implicitRef = source.implicitRef == null ? null : (source.selfReference ? source.implicitRef : BaseType.copyOf(source.implicitRef))
-        */
         aggregationType = source.aggregationType
         type = source.type == null ? null : BaseType.copyOf(source.type, typeCopies)
 
