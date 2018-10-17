@@ -4,7 +4,7 @@ package de.lisaplus.atlas.model
  * Created by eiko on 01.06.17.
  */
 class ArrayType extends BaseType {
-    Type type
+    BaseType baseType
     String name () {
         return NAME
     }

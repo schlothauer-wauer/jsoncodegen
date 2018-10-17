@@ -3,6 +3,7 @@ package de.lisaplus.atlas.builder
 import de.lisaplus.atlas.codegen.helper.java.TypeToColor
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.AggregationType
+import de.lisaplus.atlas.model.ArrayType
 import de.lisaplus.atlas.model.BaseType
 import de.lisaplus.atlas.model.BooleanType
 import de.lisaplus.atlas.model.ComplexType
@@ -491,22 +492,35 @@ class JsonSchemaBuilder implements IModelBuilder {
                 else
                     return initComplexType(model,propObjMap,innerTypeBaseName,currentSchemaPath)
             case 'array':
+                /*
                 if (!isArrayAllowed) {
-                    def errorMsg = "detect not allowed sub array type"
+                    def errorMsg = "detect not allowed sub array type - use array types instead"
                     log.error(errorMsg)
                     throw new Exception(errorMsg)
                 }
+                */
                 if (propObjMap.items.type) {
-                    BaseType ret = getBaseTypeFromString(model,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item',false)
-                    ret.isArray = true
-                    // the attrib has an _t_tags entry ...
-                    if (propObjMap.'__tags') {
-                        if (! (ret instanceof UUIDType)) {
-                            // ... so set it also for complex inner types
-                            ret.type.tags=propObjMap.'__tags'
-                        }
+                    // test - eiko
+                    // BaseType ret = getBaseTypeFromString(model,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item',false)
+                    if (propObjMap.items.type=='array') {
+                        BaseType tmp = getBaseTypeFromString(model,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item')
+                        ArrayType ret = new ArrayType()
+                        ret.isArray = true
+                        ret.baseType = tmp
+                        return ret
                     }
-                    return ret
+                    else {
+                        BaseType ret = getBaseTypeFromString(model,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item')
+                        ret.isArray = true
+                        // the attrib has an _t_tags entry ...
+                        if (propObjMap.'__tags') {
+                            if (! (ret instanceof UUIDType)) {
+                                // ... so set it also for complex inner types
+                                ret.type.tags=propObjMap.'__tags'
+                            }
+                        }
+                        return ret
+                    }
                 }
                 else if (propObjMap.items['$ref']) {
                     BaseType ret = initRefType(propObjMap.items['$ref'],currentSchemaPath)
