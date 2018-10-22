@@ -74,6 +74,37 @@ class PlantUml {
         assertTrue(domainFound)
     }
 
+    @Test
+    void createIncidentModelRemoveTags() {
+        def destFile = 'tmp/incident.puml'
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/incident.json'
+        doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add('destFileName=incident.puml')
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.typeRemoveTagList.add('Incident=mongodb')
+        doCodeGen.typeRemoveTagList.add('Incident=rest')
+        doCodeGen.typeRemoveTagList.add('Incident=joined')
+        doCodeGen.typeRemoveTagList.add('IncidentTag=rest')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+        boolean incidentFound=false
+        boolean incidentTagFound=false
+        doCodeGen.dataModel.types.each { type ->
+            if (type.name=='Incident') {
+                incidentFound=true
+                assertEquals(0,type.tags.size())
+            }
+            else if (type.name=='IncidentTag') {
+                incidentTagFound=true
+                assertEquals(1,type.tags.size())
+                assertTrue(type.tags.contains('mongodb'))
+            }
+        }
+        assertTrue(incidentFound)
+        assertTrue(incidentTagFound)
+    }
 
     @Test
     void createLicenseModel() {
