@@ -27,17 +27,17 @@ class MultiTypeSchema {
         def typeName = 'Action'
         ModelTestHelper.checkPropertySize(model,typeName,3)
         ModelTestHelper.compareProperty (new Property(
-                name: 'default_title',
+                name: 'defaultTitle',
                 description: 'Tooltip for the main toolbar icon.',
                 type: new StringType()
         ),model,typeName)
         ModelTestHelper.compareProperty (new Property(
-                name: 'default_popup',
+                name: 'defaultPopup',
                 description: 'The popup appears when the user clicks the icon.',
                 type: new RefType(typeName: 'Icon')
         ),model,typeName)
         ModelTestHelper.compareProperty (new Property(
-                name: 'default_icon',
+                name: 'defaultIcon',
                 description: 'Icon for the main toolbar.',
                 type: new ComplexType()
         ),model,typeName)
@@ -50,7 +50,7 @@ class MultiTypeSchema {
                 type: new StringType()
         ),model,typeName)
         ModelTestHelper.compareProperty (new Property(
-                name: 'suggested_key',
+                name: 'suggestedKey',
                 description: null,
                 type: new UnsupportedType()
         ),model,typeName)

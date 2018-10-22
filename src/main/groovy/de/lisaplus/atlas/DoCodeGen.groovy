@@ -31,20 +31,59 @@ import org.slf4j.LoggerFactory
  * Created by eiko on 30.05.17.
  */
 class DoCodeGen {
+    /**
+     * model file
+     */
     @Parameter(names = [ '-m', '--model' ], description = "Path to JSON schema to parse", required = true)
     String model
 
+    /**
+     * Base directory for the output
+     */
     @Parameter(names = [ '-o', '--outputBase' ], description = "Base directory for the output", required = true)
     String outputBaseDir
 
+    /**
+     * Generator to use
+     */
     @Parameter(names = ['-g', '--generator'], description = "generator that are used with the model. This parameter can be used multiple times")
     List<String> generators = []
 
+    /**
+     * Generator parameter
+     */
     @Parameter(names = ['-gp', '--generator-parameter'], description = "special parameter that are passed to template via maps")
     List<String> generator_parameters = []
 
+    /**
+     * Type white list
+     */
+    @Parameter(names = ['-w', '--white-list'], description = "white listed type, multiple usage possible")
+    List<String> whiteListed = []
+
+    /**
+     * Type black list
+     */
+    @Parameter(names = ['-b', '--black-list'], description = "black listed type, multiple usage possible")
+    List<String> blackListed = []
+
+    /**
+     * Print help
+     */
     @Parameter(names = ['-h','--help'], help = true)
     boolean help = false
+
+    /**
+     * List of type-name tag-text tuple, The tags will be merged after initialization with the object tree
+     */
+    @Parameter(names = ['-at', '--add-tag'], description = "add a text as tag to a specific type, f.e. -at User=unused")
+    List<String> typeAddTagList = []
+
+    /**
+     * List of type-name tag-text tuple, after initialization the tags will be removed for the given types in the object tree
+     */
+    @Parameter(names = ['-rt', '--remove-tag'], description = "remove a tag from a specific type, f.e. -at User=unused")
+    List<String> typeRemoveTagList = []
 
     static void main(String ... args) {
         DoCodeGen doCodeGen = new DoCodeGen()
@@ -88,8 +127,11 @@ class DoCodeGen {
             System.exit(1)
         }
         Model dataModel = builder.buildModel(modelFile)
+        adjustTagsForModel(dataModel)
         // convert extra generator parameter to a map
         Map<String,String> extraParameters = getMapFromGeneratorParams(generator_parameters)
+        extraParameters['blackListed']=blackListed
+        extraParameters['whiteListed']=whiteListed
         if (generators==null || generators.isEmpty()) {
             log.warn('no generators configured - skip')
         }
@@ -290,6 +332,51 @@ class DoCodeGen {
         print (usageFile.getText())
     }
 
+    private void adjustTagsForModel(Model dataModel) {
+        Map<String, List<String>> typeAddTagMap = mapFromConfig(typeAddTagList)
+        Map<String, List<String>> typeRemoveTagMap = mapFromConfig(typeRemoveTagList)
+        dataModel.types.each { type ->
+            // remove undesired tags
+            List<String> tagsToRemove = typeRemoveTagMap[type.name]
+            if (tagsToRemove) {
+                // remove tags
+                tagsToRemove.each { tag ->
+                    type.tags.remove(tag)
+                }
+            }
+            List<String> tagsToAdd = typeAddTagMap[type.name]
+            if (tagsToAdd) {
+                // add tags
+                tagsToAdd.each { tag ->
+                    if (!type.tags.contains(tag)) {
+                        type.tags.add(tag)
+                    }
+                }
+            }
+        }
+    }
+
+    private Map<String, List<String>> mapFromConfig(List<String> config) {
+        Map<String, List<String>> ret = [:]
+        if (!config) return ret
+        config.each { typeTagStr ->
+            def typeTagArray = typeTagStr.split('=')
+            if (typeTagArray.length>2) {
+                println "[mapFromConfig] - wrong type/tag-tuple: $typeTagStr"
+                return
+            }
+            def typeName = typeTagArray[0].trim()
+            def tag = typeTagArray[1].trim()
+            List<String> alreadyExistingValues = ret.get[typeName]
+            if (alreadyExistingValues && (!alreadyExistingValues.contains(tag))) {
+                alreadyExistingValues.add(tag)
+            }
+            else {
+                ret[typeName] = [tag]
+            }
+        }
+        return ret
+    }
 
     private static final Logger log=LoggerFactory.getLogger(DoCodeGen.class)
 }

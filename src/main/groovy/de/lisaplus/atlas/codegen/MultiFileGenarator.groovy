@@ -32,6 +32,9 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
             data.extraParam = [:]
         }
 
+        def blackListed=data.extraParam['blackListed']
+        def whiteListed=data.extraParam['whiteListed']
+
         def shouldRemoveEmptyLines = extraParams['removeEmptyLines']
 
         def neededAttrib = extraParams['containsAttrib']
@@ -46,6 +49,16 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
                 return prop.name==missingAttrib
             } == null : true
 
+            boolean handleType=true;
+            if (whiteListed && (!whiteListed.contains(type.name))) {
+                handleType = false
+                println "ingnored by white-list: ${type.name}"
+            }
+            else if (blackListed && blackListed.contains(type.name)) {
+                handleType = false
+                println "ingnored by black-list: ${type.name}"
+            }
+
             boolean handleTag = neededTag ? type.tags.find { tag ->
                 return tag==neededTag
             } != null : true
@@ -56,7 +69,7 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
                 } == null
             }
 
-            if (handleNeeded && handleMissing && handleTag) {
+            if (handleType && handleNeeded && handleMissing && handleTag) {
                 data.put('currentType', type)
                 def ergebnis = template.make(data)
                 def destFileName = getDestFileName(model, extraParams, type)

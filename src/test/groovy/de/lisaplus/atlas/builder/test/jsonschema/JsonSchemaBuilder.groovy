@@ -52,7 +52,7 @@ class JsonSchemaBuilder {
         def model = builder.buildModel(modelFile)
         def timingPlanType = model.types.find { it.name=='TimingPlanType' }
         assertNotNull(timingPlanType)
-        def phases_idProp = timingPlanType.properties.find { it.name=='phases_id'}
+        def phases_idProp = timingPlanType.properties.find { it.name=='phasesId'}
         assertNotNull(phases_idProp)
         assertEquals(AggregationType.aggregation,phases_idProp.aggregationType)
 
@@ -75,7 +75,7 @@ class JsonSchemaBuilder {
         assertTrue(modelFile.isFile())
         def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
         def model = builder.buildModel(modelFile)
-        def mapObject = model.types.find { it.name=='Map_object' }
+        def mapObject = model.types.find { it.name=='MapObject' }
         assertNotNull(mapObject)
     }
 
@@ -85,7 +85,7 @@ class JsonSchemaBuilder {
         assertTrue(modelFile.isFile())
         def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
         def model = builder.buildModel(modelFile)
-        def mapObject = model.types.find { it.name=='GIS_object' }
+        def mapObject = model.types.find { it.name=='GISObject' }
         assertNotNull(mapObject)
         assertEquals(1,mapObject.properties.size())
         assertEquals('gis',mapObject.properties[0].name)
@@ -97,7 +97,7 @@ class JsonSchemaBuilder {
         assertTrue(modelFile.isFile())
         def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
         def model = builder.buildModel(modelFile)
-        def mapObject = model.types.find { it.name=='Map_object' }
+        def mapObject = model.types.find { it.name=='MapObject' }
         assertNotNull(mapObject)
         assertEquals(2,mapObject.properties.size())
         assertEquals('gis',mapObject.properties[0].name)
@@ -110,7 +110,7 @@ class JsonSchemaBuilder {
         assertTrue(modelFile.isFile())
         def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
         def model = builder.buildModel(modelFile)
-        def mapObject = model.types.find { it.name=='Map_object' }
+        def mapObject = model.types.find { it.name=='MapObject' }
         assertNotNull(mapObject)
         assertEquals(2,mapObject.properties.size())
         assertEquals('gis',mapObject.properties[0].name)
@@ -209,7 +209,7 @@ class JsonSchemaBuilder {
             it.properties.find {
                 if (it.tags) {
                     propsWithTags++
-                    assertTrue (it.name.equals('grant') || it.name.equals('module_grants'))
+                    assertTrue (it.name.equals('grant') || it.name.equals('moduleGrants'))
                 }
             }
         }
