@@ -85,6 +85,11 @@ class DoCodeGen {
     @Parameter(names = ['-rt', '--remove-tag'], description = "remove a tag from a specific type, f.e. -at User=unused")
     List<String> typeRemoveTagList = []
 
+    /**
+     * The datamodel parsed by the builder. It is public accessible for tests
+     */
+    Model dataModel
+
     static void main(String ... args) {
         DoCodeGen doCodeGen = new DoCodeGen()
         try {
@@ -126,7 +131,7 @@ class DoCodeGen {
             log.error("unknown file type, currently only jscon schema and xsd are supported: ${model}")
             System.exit(1)
         }
-        Model dataModel = builder.buildModel(modelFile)
+        dataModel = builder.buildModel(modelFile)
         adjustTagsForModel(dataModel)
         // convert extra generator parameter to a map
         Map<String,String> extraParameters = getMapFromGeneratorParams(generator_parameters)
@@ -367,7 +372,7 @@ class DoCodeGen {
             }
             def typeName = typeTagArray[0].trim()
             def tag = typeTagArray[1].trim()
-            List<String> alreadyExistingValues = ret.get[typeName]
+            List<String> alreadyExistingValues = ret[typeName]
             if (alreadyExistingValues && (!alreadyExistingValues.contains(tag))) {
                 alreadyExistingValues.add(tag)
             }

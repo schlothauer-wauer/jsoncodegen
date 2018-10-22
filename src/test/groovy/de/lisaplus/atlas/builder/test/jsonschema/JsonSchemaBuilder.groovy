@@ -247,5 +247,4 @@ class JsonSchemaBuilder {
         assertEquals(2,tagCount)
 
     }
-
 }
