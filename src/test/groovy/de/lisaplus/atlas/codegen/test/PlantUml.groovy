@@ -107,6 +107,37 @@ class PlantUml {
     }
 
     @Test
+    void createIncidentModelRemoveAllTags() {
+        def destFile = 'tmp/incident.puml'
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/incident.json'
+        doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add('destFileName=incident.puml')
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.generator_parameters.add('guidTypeColor=f9f6e0')
+        doCodeGen.generator_parameters.add('ignoreUnRefTypes=true')
+        doCodeGen.typeRemoveTagAllList.add('rest')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+        boolean incidentFound=false
+        boolean incidentTagFound=false
+        doCodeGen.dataModel.types.each { type ->
+            assertFalse(type.tags.contains('rest'))
+            if (type.name=='Incident') {
+                incidentFound=true
+                assertEquals(2,type.tags.size())
+            }
+            else if (type.name=='IncidentTag') {
+                incidentTagFound=true
+                assertEquals(1,type.tags.size())
+            }
+        }
+        assertTrue(incidentFound)
+        assertTrue(incidentTagFound)
+    }
+
+    @Test
     void createLicenseModel() {
         def destFile = 'tmp/license.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()

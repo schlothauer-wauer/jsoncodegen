@@ -82,8 +82,14 @@ class DoCodeGen {
     /**
      * List of type-name tag-text tuple, after initialization the tags will be removed for the given types in the object tree
      */
-    @Parameter(names = ['-rt', '--remove-tag'], description = "remove a tag from a specific type, f.e. -at User=unused")
+    @Parameter(names = ['-rt', '--remove-tag'], description = "remove a tag from a specific type, f.e. -rt User=unused")
     List<String> typeRemoveTagList = []
+
+    /**
+     * List of tags-text tuple, after initialization the tags will be removed for the given types in the object tree
+     */
+    @Parameter(names = ['-rta', '--remove-tag-all'], description = "remove a tag from all model types, f.e. -rta rest")
+    List<String> typeRemoveTagAllList = []
 
     /**
      * The datamodel parsed by the builder. It is public accessible for tests
@@ -341,6 +347,12 @@ class DoCodeGen {
         Map<String, List<String>> typeAddTagMap = mapFromConfig(typeAddTagList)
         Map<String, List<String>> typeRemoveTagMap = mapFromConfig(typeRemoveTagList)
         dataModel.types.each { type ->
+            // remove all tags
+            typeRemoveTagAllList.each { tag ->
+                if (type.tags.contains(tag)) {
+                    type.tags.remove(tag)
+                }
+            }
             // remove undesired tags
             List<String> tagsToRemove = typeRemoveTagMap[type.name]
             if (tagsToRemove) {
@@ -349,6 +361,7 @@ class DoCodeGen {
                     type.tags.remove(tag)
                 }
             }
+            // add new tags
             List<String> tagsToAdd = typeAddTagMap[type.name]
             if (tagsToAdd) {
                 // add tags
