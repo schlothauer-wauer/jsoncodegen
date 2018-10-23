@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertFalse
 import static org.junit.Assert.assertNotNull
 import static org.junit.Assert.assertNotNull
 import static org.junit.Assert.assertTrue
@@ -71,7 +72,7 @@ class JavaBeans {
         doCodeGen.generators.add('java_beans')
         doCodeGen.outputBaseDir = destDir
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
-        doCodeGen.generator_parameters.add('containsAttrib=domain_id')
+        doCodeGen.generator_parameters.add('containsAttrib=domainId')
         doCodeGen.generator_parameters.add('packageName=de.test2.jsoncodegen.impl')
         doCodeGen.run()
         assertTrue(new File('tmp/java_beans/de/test2/jsoncodegen/impl/Role.java').exists())
@@ -111,4 +112,53 @@ class JavaBeans {
             }
         }).size()==5
     }
+
+    @Test
+    void testBlackList() {
+        def destDir = 'tmp/java_beans_black_list'
+        FileHelper.removeDirectoryIfExists(destDir)
+        def modelFile = new File('src/test/resources/test_schemas/ds/user.json')
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = modelFile
+        doCodeGen.generators.add('java_beans')
+        doCodeGen.outputBaseDir = destDir
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.blackListed = ['Domain','Application','App_module','Role']
+        doCodeGen.generator_parameters.add('packageName=de.test')
+        doCodeGen.run()
+        assertTrue(new File('tmp/java_beans_black_list/de/test/RoleDataGrantsItem.java').exists())
+        assertTrue(new File('tmp/java_beans_black_list/de/test/RoleModuleGrantsItem.java').exists())
+        assertTrue(new File('tmp/java_beans_black_list/de/test/User.java').exists())
+        assertTrue(new File('tmp/java_beans_black_list/de/test/UserLog.java').exists())
+        new File('tmp/java_beans_black_list/de/test').listFiles(new FileFilter() {
+            @Override
+            boolean accept(File file) {
+                return file.isFile()
+            }
+        }).size()==4
+    }
+
+    @Test
+    void testWhiteList() {
+        def destDir = 'tmp/java_beans_white_list'
+        FileHelper.removeDirectoryIfExists(destDir)
+        def modelFile = new File('src/test/resources/test_schemas/ds/user.json')
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = modelFile
+        doCodeGen.generators.add('java_beans')
+        doCodeGen.outputBaseDir = destDir
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.whiteListed = ['User','Role']
+        doCodeGen.generator_parameters.add('packageName=de.test')
+        doCodeGen.run()
+        assertTrue(new File('tmp/java_beans_white_list/de/test/Role.java').exists())
+        assertTrue(new File('tmp/java_beans_white_list/de/test/User.java').exists())
+        new File('tmp/java_beans_white_list/de').listFiles(new FileFilter() {
+            @Override
+            boolean accept(File file) {
+                return file.isFile()
+            }
+        }).size()==2
+    }
+
 }

@@ -160,6 +160,12 @@
           "type": "string",
           "format": "uuid"
         },
+        "domain_id": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/domain.json"
+        },
         "active": {
           "description": "is this entry still active",
           "type": "boolean"
@@ -201,6 +207,12 @@
         },
         {
           "properties": {
+            "domain_id": {
+              "description": "what is the related domain",
+              "type": "string",
+              "format": "uuid",
+              "__ref": "./shared/domain.json"
+            },
             "guid": {
               "description": "object specific ID of that entry",
               "type": "string",

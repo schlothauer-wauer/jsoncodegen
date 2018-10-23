@@ -95,6 +95,7 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
 
 ### PlantUML
   - printTags - if set to true then plantuml prints also tags to the diagrams
+  - guidTypeColor - if given that color is used as background for the guid-types, f.e. -gp guidTypeColor=adadad
   
 ### Base generators
 * multifiles - creates multiple files from model and extra given template

@@ -30,7 +30,7 @@ class Model {
             assertEquals(0,type.refOwner.size())
         }
         assertTrue(found)
-        typeName='App_module'
+        typeName='AppModule'
         found=false
         model.types.find { it.name==typeName }.each { type ->
             found=true
@@ -52,7 +52,7 @@ class Model {
             assertEquals(0,type.refOwner.size())
         }
         assertTrue(found)
-        typeName='User_log'
+        typeName='UserLog'
         found=false
         model.types.find { it.name==typeName }.each { type ->
             found=true

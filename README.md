@@ -80,6 +80,38 @@ gradle myRun -PmyArgs="-o,/tmp/test_beans,-m,src/test/resources/test_schemas/mul
 -gp,destFileNameExt=java,-gp,packageName=de.sw.atlas.test"
 ```
 ### Usage of the release
+
+```bash
+./jsonCodeGen.sh
+Usage: de.lisaplus.atlas.DoCodeGen [options]
+  Options:
+    -at, --add-tag
+      add a text as tag to a specific type, f.e. -at User=unused
+      Default: []
+    -b, --black-list
+      black listed type, multiple usage possible
+      Default: []
+    -g, --generator
+      generator that are used with the model. This parameter can be used 
+      multiple times
+      Default: []
+    -gp, --generator-parameter
+      special parameter that are passed to template via maps
+      Default: []
+    -h, --help
+
+  * -m, --model
+      Path to JSON schema to parse
+  * -o, --outputBase
+      Base directory for the output
+    -rt, --remove-tag
+      remove a tag from a specific type, f.e. -at User=unused
+      Default: []
+    -w, --white-list
+      white listed type, multiple usage possible
+      Default: []
+```
+
 After you built a release with gradle or you download a release bundle you can start
 the program with the contained start script. If you start it with the help option you
 get a full description of the possible parameters
