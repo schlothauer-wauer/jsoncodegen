@@ -349,8 +349,11 @@ class DoCodeGen {
         dataModel.types.each { type ->
             // remove all tags
             typeRemoveTagAllList.each { tag ->
-                if (type.tags.contains(tag)) {
-                    type.tags.remove(tag)
+                def tagList = tag.indexOf(',')!=-1 ? tag.split(',') : tag.split(':')
+                tagList.each { t ->
+                    if (type.tags.contains(t)) {
+                        type.tags.remove(t)
+                    }
                 }
             }
             // remove undesired tags
@@ -379,18 +382,32 @@ class DoCodeGen {
         if (!config) return ret
         config.each { typeTagStr ->
             def typeTagArray = typeTagStr.split('=')
-            if (typeTagArray.length>2) {
+            if (typeTagArray.length!=2) {
                 println "[mapFromConfig] - wrong type/tag-tuple: $typeTagStr"
                 return
             }
             def typeName = typeTagArray[0].trim()
+            def typeNameList = typeName.indexOf(',')!=-1 ? typeName.split(',') : typeName.split(':')
             def tag = typeTagArray[1].trim()
-            List<String> alreadyExistingValues = ret[typeName]
-            if (alreadyExistingValues && (!alreadyExistingValues.contains(tag))) {
-                alreadyExistingValues.add(tag)
-            }
-            else {
-                ret[typeName] = [tag]
+            def tagList = tag.indexOf(',')!=-1 ? tag.split(',') :  tag.split(':')
+            typeNameList.each { name ->
+                List<String> alreadyExistingValues = ret[name]
+                if (alreadyExistingValues) {
+                    tagList.each { t ->
+                        if (!alreadyExistingValues.contains(t)) {
+                            alreadyExistingValues.add(t)
+                        }
+                    }
+                }
+                else {
+                    List<String> values = []
+                            tagList.each { t ->
+                        if (!values.contains(t)) {
+                            values.add(t)
+                        }
+                    }
+                    ret[name] = values
+                }
             }
         }
         return ret
