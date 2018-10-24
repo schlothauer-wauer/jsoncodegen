@@ -1,3 +1,8 @@
+## 0.8.1
+- add to types schemaPath and schemaFileName attributes (to finally detect what are the interesting main types of a model)
+- add a isMainType function to model type
+- add command line switches pro print only main types
+
 ## 0.8.0
 - command line switches for type black- and white-lists
 - command line switch to add tags to types

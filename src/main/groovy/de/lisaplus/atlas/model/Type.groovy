@@ -21,6 +21,16 @@ class Type {
     String color='#000000'
 
     /**
+     * path where the schema for that type was located
+     */
+    String schemaPath
+
+    /**
+     * path where the schema for that type was located
+     */
+    private String schemaFileName
+
+    /**
      * List of properties, type of PropertyType
      */
     List<Property> properties=[]
@@ -96,10 +106,22 @@ class Type {
         // TODO Check whether incomplete initialization is necessary / intended!
         this.name = t.name
         this.tags = t.tags
+        this.schemaPath = t.schemaPath
+        this.schemaFileName = t.schemaFileName
         this.properties = t.properties
         this.description = t.description
         this.requiredProps = t.requiredProps
         this.sinceVersion = t.sinceVersion
+    }
+
+    /**
+     *
+     * @param model string of the model file name: f.e. junction, junction.json
+     */
+    boolean isMainType(String model) {
+        if (model==null || this.schemaFileName==null) return false
+        String mStr = model.indexOf('.')!=-1 ? model.substring(0,model.lastIndexOf('.')) : model
+        return (!this.innerType) && this.schemaFileName==mStr
     }
 
     boolean equals(Object b) {
@@ -161,6 +183,20 @@ class Type {
             copy.initCopy(type, typeCopies)
         }
         return copy
+    }
+
+    String getSchemaFileName() {
+        return schemaFileName
+    }
+
+    void setSchemaFileName(String schemaFileName) {
+        this.schemaFileName = schemaFileName
+        if (this.schemaFileName!=null) {
+            this.schemaFileName = this.schemaFileName.replaceAll('\\.json','')
+            this.schemaFileName = this.schemaFileName.replaceAll('\\.xsd','')
+            this.schemaFileName = this.schemaFileName.replaceAll('\\.','')
+            this.schemaFileName = this.schemaFileName.replaceAll('/','')
+        }
     }
 }
 

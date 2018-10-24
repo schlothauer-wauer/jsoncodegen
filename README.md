@@ -102,10 +102,25 @@ Usage: de.lisaplus.atlas.DoCodeGen [options]
 
   * -m, --model
       Path to JSON schema to parse
-  * -o, --outputBase
+    -o, --outputBase
       Base directory for the output
+    -pmt, --print-main-types
+      don't do any code generation, simply loads the model and print the 
+      main-types of it
+      Default: false
+    -pmta, --print-main-types-attrib
+      don't do any code generation, simply loads the model and print the 
+      main-types of it
+    -pmti, --print-main-types-info
+      print with info header
+      Default: false
+    -pmts, --print-main-types-separator
+      separator to use for printing main types
     -rt, --remove-tag
-      remove a tag from a specific type, f.e. -at User=unused
+      remove a tag from a specific type, f.e. -rt User=unused
+      Default: []
+    -rta, --remove-tag-all
+      remove a tag from all model types, f.e. -rta rest
       Default: []
     -w, --white-list
       white listed type, multiple usage possible
