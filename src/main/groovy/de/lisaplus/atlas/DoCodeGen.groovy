@@ -197,7 +197,12 @@ class DoCodeGen {
             dataModel.types.each { type ->
                 if (type.isMainType(mfn)) {
                     if ((!mainTypeAttrib) || (type.hasPropertyWithName(mainTypeAttrib))) {
-                        outStr = "${outStr}${separator}${type.name}"
+                        if (outStr=='') {
+                            outStr = "${type.name}"
+                        }
+                        else {
+                            outStr = "${outStr}${separator}${type.name}"
+                        }
                     }
                 }
             }

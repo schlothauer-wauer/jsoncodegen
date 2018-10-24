@@ -1,3 +1,6 @@
+## 0.8.2
+- needed fix in -pmts switch
+
 ## 0.8.1
 - add to types schemaPath and schemaFileName attributes (to finally detect what are the interesting main types of a model)
 - add a isMainType function to model type
