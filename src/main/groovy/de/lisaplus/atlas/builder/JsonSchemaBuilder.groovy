@@ -62,7 +62,7 @@ class JsonSchemaBuilder implements IModelBuilder {
         Model model = initModel(objectModel)
         if (objectModel['definitions']) {
             // multi type schema
-            loadSchemaTypes(objectModel,currentSchemaPath,model)
+            loadSchemaTypes(objectModel,modelFile.getName(),currentSchemaPath,model)
         }
         if (objectModel['allOf']) {
             // single type schema
@@ -104,16 +104,18 @@ class JsonSchemaBuilder implements IModelBuilder {
         typeName = string2Name(typeName)
         Type newType = new Type()
         newType.name = typeName
+        newType.schemaPath = currentSchemaPath
+        newType.schemaFileName = modelFileName
         newType.description = strFromMap(objectModel,'description')
         if (objectModel.allOf) {
             // TODO - add allof Properties
             objectModel.allOf.each { allOfElem ->
                 if (allOfElem.properties) {
-                    newType.properties.addAll(getProperties(model,allOfElem,typeName,currentSchemaPath))
+                    newType.properties.addAll(getProperties(model,allOfElem,typeName,modelFileName,currentSchemaPath))
                 }
                 else {
                     if (allOfElem.'$ref') {
-                        RefType tmp = initRefType(allOfElem.'$ref',currentSchemaPath)
+                        RefType tmp = initRefType(allOfElem.'$ref',modelFileName,currentSchemaPath)
                         newType.properties.addAll(tmp.type.properties)
                         newType.baseTypes.add(tmp.type.name)
                     }
@@ -121,7 +123,7 @@ class JsonSchemaBuilder implements IModelBuilder {
             }
         }
         else {
-            newType.properties = getProperties(model,objectModel,typeName,currentSchemaPath)
+            newType.properties = getProperties(model,objectModel,typeName,modelFileName,currentSchemaPath)
         }
         if (objectModel.'__tags') {
             newType.tags=objectModel.'__tags'
@@ -150,25 +152,26 @@ class JsonSchemaBuilder implements IModelBuilder {
         }
     }
 
-
-      private Model loadSchemaTypes(def objectModel,String currentSchemaPath,Model model) {
+    private Model loadSchemaTypes(def objectModel, String schemaFileName,String currentSchemaPath,Model model) {
         if (model==null)
             model = initModel(objectModel)
         objectModel.definitions.each { typeObj ->
             def typeName = string2Name(typeObj.key)
             Type newType = new Type()
             newType.name = typeName
+            newType.schemaPath = currentSchemaPath
+            newType.schemaFileName = schemaFileName
             newType.description = strFromMap(typeObj.value,'description')
             newType.properties = []
             if (typeObj.value.allOf) {
                 // TODO - add allof Properties
                 typeObj.value.allOf.each { allOfElem ->
                     if (allOfElem.properties) {
-                        newType.properties.addAll(getProperties(model,allOfElem,typeName,currentSchemaPath))
+                        newType.properties.addAll(getProperties(model,allOfElem,typeName,schemaFileName,currentSchemaPath))
                     }
                     else {
                         if (allOfElem.'$ref') {
-                            RefType tmp = initRefType(allOfElem.'$ref',currentSchemaPath)
+                            RefType tmp = initRefType(allOfElem.'$ref',schemaFileName,currentSchemaPath)
                             newType.properties.addAll(tmp.type.properties)
                             newType.baseTypes.add(tmp.type.name)
                         }
@@ -177,12 +180,12 @@ class JsonSchemaBuilder implements IModelBuilder {
             }
             else if (typeObj.value.'$ref') {
                 // this type refers to an external definition
-                RefType tmp = initRefType(typeObj.value.'$ref', currentSchemaPath)
+                RefType tmp = initRefType(typeObj.value.'$ref', schemaFileName, currentSchemaPath)
                 newType.properties.addAll(tmp.type.properties)
                 newType.baseTypes.add(tmp.type.name)
             }
             else {
-                newType.properties = getProperties(model,typeObj.value,typeName,currentSchemaPath)
+                newType.properties = getProperties(model,typeObj.value,typeName,schemaFileName,currentSchemaPath)
             }
             if (typeObj.value.'__tags') {
                 newType.tags=typeObj.value.'__tags'
@@ -226,10 +229,10 @@ class JsonSchemaBuilder implements IModelBuilder {
         model.types.add(newType)
     }
 
-    private List<Property> getProperties(Model model,def propertyParent,def parentName,String currentSchemaPath) {
+    private List<Property> getProperties(Model model,def propertyParent,def parentName,String schemaFileName, String currentSchemaPath) {
         List<Property> propList = []
         propertyParent.properties.each { propObj ->
-            propList.add(creeateSimpleProperty(model, parentName,currentSchemaPath,propObj))
+            propList.add(creeateSimpleProperty(model, parentName,schemaFileName,currentSchemaPath,propObj))
         }
         // Dirty hack for enabling the usage of mongoDB Index2d:
         // For performing filtering on geo coordinates in Documents of the mongoDB (e.g. operation geoWithin), the Json
@@ -250,12 +253,12 @@ class JsonSchemaBuilder implements IModelBuilder {
         return propList
     }
 
-    private Property creeateSimpleProperty (Model model, def parentName,String currentSchemaPath,def propObj) {
+    private Property creeateSimpleProperty (Model model, def parentName,String schemaFileName,String currentSchemaPath, def propObj) {
         def newProp = new Property()
         newProp.name = string2Name(propObj.key, false)
         newProp.description = propObj.value['description']
         String key = makeCamelCase(propObj.key)
-        newProp.type = getPropertyType(model, propObj.value, parentName + string2Name(key), currentSchemaPath)
+        newProp.type = getPropertyType(model, propObj.value, parentName + string2Name(key),schemaFileName, currentSchemaPath)
         if (newProp.type instanceof RefType) {
             if (propObj.key.toLowerCase().endsWith('_id') || propObj.key.toLowerCase().endsWith('Id')) { // per convention
                 newProp.aggregationType = AggregationType.aggregation
@@ -276,16 +279,16 @@ class JsonSchemaBuilder implements IModelBuilder {
         // implicit refs for normal types and array types differ
         if (newProp.type.isArray) {
             if (propObj.value.items.'__ref') {
-                newProp.implicitRef = initRefType(propObj.value.items.'__ref', currentSchemaPath)
+                newProp.implicitRef = initRefType(propObj.value.items.'__ref', schemaFileName, currentSchemaPath)
             }
         }
         else {
             if (propObj.value.'__ref') {
-                newProp.implicitRef = initRefType(propObj.value.'__ref', currentSchemaPath)
+                newProp.implicitRef = initRefType(propObj.value.'__ref', schemaFileName, currentSchemaPath)
             }
         }
         if (propObj.value.'__ref') {
-            newProp.implicitRef = initRefType(propObj.value.'__ref', currentSchemaPath)
+            newProp.implicitRef = initRefType(propObj.value.'__ref', schemaFileName, currentSchemaPath)
         }
         if (propObj.value.'__tags') {
             newProp.tags=propObj.value.'__tags'
@@ -293,10 +296,10 @@ class JsonSchemaBuilder implements IModelBuilder {
         return newProp
     }
 
-    private BaseType getPropertyType(Model model,def propObjMap,def innerTypeBaseName,String currentSchemaPath) {
+    private BaseType getPropertyType(Model model,def propObjMap,def innerTypeBaseName, String schemaFileName,String currentSchemaPath) {
         if (propObjMap.'$ref') {
             // reference to an external type
-            return initRefType(propObjMap.'$ref',currentSchemaPath)
+            return initRefType(propObjMap.'$ref', schemaFileName,currentSchemaPath)
         }
         else if (! propObjMap.type) {
             def errorMsg = "property object w/o any type: ${propObjMap}"
@@ -304,11 +307,11 @@ class JsonSchemaBuilder implements IModelBuilder {
             throw new Exception(errorMsg)
         }
         else {
-            return getBaseTypeFromString(model,currentSchemaPath,propObjMap,innerTypeBaseName)
+            return getBaseTypeFromString(model,schemaFileName,currentSchemaPath,propObjMap,innerTypeBaseName)
         }
     }
 
-    private RefType initRefType(def refStr,String currentSchemaPath) {
+    private RefType initRefType(def refStr,String schemaFileName,String currentSchemaPath) {
         if (!refStr) {
             def errorMsg = "undefined refStr, so cancel init reference type"
             log.error(errorMsg)
@@ -323,6 +326,10 @@ class JsonSchemaBuilder implements IModelBuilder {
         if (refStr.startsWith(localDefStrBase)) {
             def schemaTypeName = refStr.substring(localDefStrBase.length())
             Type t = getLocalRefType(schemaTypeName)
+            if (!t.schemaPath) {
+                t.schemaPath = currentSchemaPath
+                t.schemaFileName = schemaFileName
+            }
             if (t instanceof DummyType) {
                 // the needed type isn't already in the model created. later a update to the
                 // right references is needed
@@ -337,6 +344,10 @@ class JsonSchemaBuilder implements IModelBuilder {
             // "$ref": "definitions.json#/address"
             // "$ref": "http: //json-schema.org/geo" - HTTP not supported (eiko)
             Type t = getExternalRefType(refStr,currentSchemaPath)
+            if (!t.schemaPath) {
+                t.schemaPath = currentSchemaPath
+                t.schemaFileName = schemaFileName
+            }
             refType.type=t
             refType.typeName=t.name
         }
@@ -368,6 +379,8 @@ class JsonSchemaBuilder implements IModelBuilder {
                 tmpModel.types.each { type ->
                     if ((type.name!=null) && (type.name.toLowerCase()==desiredName)) {
                         extT2 = type
+                        extT2.schemaPath = currentSchemaPath
+                        extT2.schemaFileName = fileName
                     }
                 }
                 if (extT2==null) {
@@ -393,6 +406,10 @@ class JsonSchemaBuilder implements IModelBuilder {
                 // because a single type model can contain multiple inner types
                 Type tmpT = tmpModel.types.find {
                     ! (it instanceof InnerType)
+                }
+                if (!tmpT.schemaPath) {
+                    tmpT.schemaPath = currentSchemaPath
+                    tmpT.schemaFileName = fileName
                 }
                 extT.refStr = refStr
                 extT.initFromType(tmpT)
@@ -445,7 +462,7 @@ class JsonSchemaBuilder implements IModelBuilder {
 
     }
 
-    private ComplexType initComplexType(Model model,def propertiesParent,def baseTypeName, String currentSchemaPath) {
+    private ComplexType initComplexType(Model model,def propertiesParent,def baseTypeName, String schemaFileName, String currentSchemaPath) {
         if (!propertiesParent) {
             def errorMsg = "undefined properties map, so cancel init complex type"
             log.error(errorMsg)
@@ -454,13 +471,15 @@ class JsonSchemaBuilder implements IModelBuilder {
         ComplexType complexType = new ComplexType()
         Type newType = new InnerType()
         newType.name = baseTypeName
-        newType.properties = getProperties(model,propertiesParent,baseTypeName,currentSchemaPath)
+        newType.schemaPath = currentSchemaPath
+        newType.schemaFileName = schemaFileName
+        newType.properties = getProperties(model,propertiesParent,baseTypeName,schemaFileName,currentSchemaPath)
         complexType.type = newType
         addNewType(newType,model)
         return complexType
     }
 
-    private BaseType getBaseTypeFromString(Model model,String currentSchemaPath,def propObjMap, def innerTypeBaseName, def isArrayAllowed=true) {
+    private BaseType getBaseTypeFromString(Model model,String schemaFileName, String currentSchemaPath,def propObjMap, def innerTypeBaseName, def isArrayAllowed=true) {
         switch (propObjMap.type) {
             case 'string':
                 if (propObjMap.format && propObjMap.format.toLowerCase()=="uuid") {
@@ -490,7 +509,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                     return new UnsupportedType()
                 }
                 else
-                    return initComplexType(model,propObjMap,innerTypeBaseName,currentSchemaPath)
+                    return initComplexType(model,propObjMap,innerTypeBaseName,schemaFileName,currentSchemaPath)
             case 'array':
                 /*
                 if (!isArrayAllowed) {
@@ -503,14 +522,14 @@ class JsonSchemaBuilder implements IModelBuilder {
                     // test - eiko
                     // BaseType ret = getBaseTypeFromString(model,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item',false)
                     if (propObjMap.items.type=='array') {
-                        BaseType tmp = getBaseTypeFromString(model,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item')
+                        BaseType tmp = getBaseTypeFromString(model,schemaFileName,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item')
                         ArrayType ret = new ArrayType()
                         ret.isArray = true
                         ret.baseType = tmp
                         return ret
                     }
                     else {
-                        BaseType ret = getBaseTypeFromString(model,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item')
+                        BaseType ret = getBaseTypeFromString(model,schemaFileName,currentSchemaPath,propObjMap.items,innerTypeBaseName+'Item')
                         ret.isArray = true
                         // the attrib has an _t_tags entry ...
                         if (propObjMap.'__tags') {
@@ -523,7 +542,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                     }
                 }
                 else if (propObjMap.items['$ref']) {
-                    BaseType ret = initRefType(propObjMap.items['$ref'],currentSchemaPath)
+                    BaseType ret = initRefType(propObjMap.items['$ref'],schemaFileName,currentSchemaPath)
                     ret.isArray = true
                     return ret
                 }

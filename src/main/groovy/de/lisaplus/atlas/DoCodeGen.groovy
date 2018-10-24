@@ -40,7 +40,7 @@ class DoCodeGen {
     /**
      * Base directory for the output
      */
-    @Parameter(names = [ '-o', '--outputBase' ], description = "Base directory for the output", required = true)
+    @Parameter(names = [ '-o', '--outputBase' ], description = "Base directory for the output")
     String outputBaseDir
 
     /**
@@ -72,6 +72,25 @@ class DoCodeGen {
      */
     @Parameter(names = ['-h','--help'], help = true)
     boolean help = false
+
+    /**
+     * Simply print main types
+     */
+    @Parameter(names = ['-pmt','--print-main-types'], description = "don't do any code generation, simply loads the model and print the main-types of it")
+    boolean printMainTypes = false
+
+    @Parameter(names = ['-pmts','--print-main-types-separator'], description = "separator to use for printing main types")
+    String printMainTypesSeparator
+
+    @Parameter(names = ['-pmti','--print-main-types-info'], description = "print with info header")
+    boolean printMainTypesInfo = false
+
+    /**
+     * an required type property to include into main types
+     */
+    @Parameter(names = ['-pmta','--print-main-types-attrib'], description = "don't do any code generation, simply loads the model and print the main-types of it")
+    String mainTypeAttrib
+
 
     /**
      * List of type-name tag-text tuple, The tags will be merged after initialization with the object tree
@@ -129,8 +148,6 @@ class DoCodeGen {
             log.info("use model file: ${model}")
         }
 
-        prepareOutputBaseDir(outputBaseDir)
-
         IModelBuilder builder = model.toLowerCase().endsWith('.json') ? new JsonSchemaBuilder() :
                 model.toLowerCase().endsWith('.xsd') ? new XSDBuilder() : null
         if (builder==null) {
@@ -138,7 +155,11 @@ class DoCodeGen {
             System.exit(1)
         }
         dataModel = builder.buildModel(modelFile)
+        printMainTypesIfNeeded(dataModel,modelFile.getName())
+
         adjustTagsForModel(dataModel)
+        prepareOutputBaseDir(outputBaseDir)
+
         // convert extra generator parameter to a map
         Map<String,String> extraParameters = getMapFromGeneratorParams(generator_parameters)
         extraParameters['blackListed']=blackListed
@@ -163,6 +184,25 @@ class DoCodeGen {
                     useBuiltInGenerator(pureGeneratorName,templateName,dataModel,extraParameters,outputBaseDir)
                 }
             }
+        }
+    }
+
+    void printMainTypesIfNeeded(Model dataModel, String fileName) {
+        if (printMainTypes) {
+            def mfn = fileName
+            String separator = printMainTypesSeparator ? printMainTypesSeparator : ' '
+            def attrib = mainTypeAttrib ? " - needed attrib: $mainTypeAttrib" : ''
+            def info = "mainTypes [$mfn$attrib]:"
+            def outStr = printMainTypesInfo ? info : ''
+            dataModel.types.each { type ->
+                if (type.isMainType(mfn)) {
+                    if ((!mainTypeAttrib) || (type.hasPropertyWithName(mainTypeAttrib))) {
+                        outStr = "${outStr}${separator}${type.name}"
+                    }
+                }
+            }
+            println (outStr)
+            System.exit(0)
         }
     }
 

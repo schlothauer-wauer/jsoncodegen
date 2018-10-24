@@ -6,6 +6,7 @@ import de.lisaplus.atlas.model.AggregationType
 import org.junit.Test
 
 import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertFalse
 import static org.junit.Assert.assertNotNull
 import static org.junit.Assert.assertTrue
 
@@ -247,4 +248,49 @@ class JsonSchemaBuilder {
         assertEquals(2,tagCount)
 
     }
+
+    @Test
+    void testSchemaPath() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/junction.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        assertNotNull(model)
+        model.types.each { type ->
+            assertNotNull(type.schemaPath)
+            assertNotNull(type.schemaFileName)
+            println "schema-path: ${type.schemaPath}, filename: ${type.schemaFileName}"
+        }
+    }
+
+    @Test
+    void testMainTypes() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/junction.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        assertNotNull(model)
+        model.types.each { type ->
+            println "type-name: ${type.name}"
+            if (type.name=='Junction') {
+                assertTrue (type.isMainType('junction'))
+            }
+            else if (type.name=='JunctionDocument') {
+                assertTrue (type.isMainType('junction'))
+            }
+            else if (type.name=='JunctionComment') {
+                assertTrue (type.isMainType('junction'))
+            }
+            else if (type.name=='JunctionState') {
+                assertTrue (type.isMainType('junction'))
+            }
+            else if (type.name=='JunctionType') {
+                assertTrue (type.isMainType('junction'))
+            }
+            else {
+                assertFalse (type.isMainType('junction'))
+            }
+        }
+    }
+
 }
