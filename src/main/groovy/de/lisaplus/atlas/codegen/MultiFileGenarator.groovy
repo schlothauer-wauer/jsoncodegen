@@ -40,7 +40,10 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
         def neededAttrib = extraParams['containsAttrib']
         def missingAttrib = extraParams['missingAttrib']
         def neededTag = extraParams['neededTag']
-        def ignoreTag = extraParams['ignoreTag']
+        def neededTagList = splitValueToArray(neededTag)
+
+        def ignoredTag = extraParams['ignoreTag']
+        def ignoredTagList = splitValueToArray(ignoredTag)
         model.types*.each { type ->
             boolean handleNeeded = neededAttrib ? type.properties.find { prop ->
                 return prop.name==neededAttrib
@@ -59,14 +62,14 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
                 println "ingnored by black-list: ${type.name}"
             }
 
-            boolean handleTag = neededTag ? type.tags.find { tag ->
-                return tag==neededTag
-            } != null : true
+            boolean handleTag = ignoredTagList ? type.tags.find { tag ->
+                return ignoredTagList.contains(tag)
+            } == null : true
 
-            if (handleTag && ignoreTag) {
+            if (handleTag && neededTagList) {
                 handleTag = type.tags.find { tag ->
-                    return tag==ignoreTag
-                } == null
+                    return neededTagList.contains(tag)
+                } != null
             }
 
             if (handleType && handleNeeded && handleMissing && handleTag) {
@@ -82,5 +85,10 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
                 println ("written: $pathToFile")
             }
         }
+    }
+
+    private List<String> splitValueToArray(String value) {
+        if (!value) return []
+        return value.indexOf(',')!=-1 ? value.split(',') : value.split(':')
     }
 }

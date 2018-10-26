@@ -1,5 +1,10 @@
+## 0.8.3
+- ignoreTag, neededTag are handled now as lists for multi-file-generators
+- rename 'pmta' command line switch to specify a required attribute for main types to 'mta'
+- add 'tmt' command line switch to add automatically a 'mainType' tag to all main types
+
 ## 0.8.2
-- needed fix in -pmts switch
+- needed fix in 'pmta' command line switch
 
 ## 0.8.1
 - add to types schemaPath and schemaFileName attributes (to finally detect what are the interesting main types of a model)

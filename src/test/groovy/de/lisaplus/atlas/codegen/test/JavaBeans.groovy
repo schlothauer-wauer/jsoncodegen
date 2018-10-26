@@ -114,6 +114,23 @@ class JavaBeans {
     }
 
     @Test
+    void testIgnoreTag() {
+        def destDir = 'tmp/java_beans2'
+        FileHelper.removeDirectoryIfExists(destDir)
+        def modelFile = new File('src/test/resources/test_schemas/ds/incident.json')
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = modelFile
+        doCodeGen.generators.add('java_beans')
+        doCodeGen.outputBaseDir = destDir
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.generator_parameters.add('ignoreTag=rest')
+        doCodeGen.generator_parameters.add('packageName=de.test3')
+        doCodeGen.run()
+
+        assertFalse(new File('tmp/java_beans2/de/test3/Incident.java').exists())
+    }
+
+    @Test
     void testBlackList() {
         def destDir = 'tmp/java_beans_black_list'
         FileHelper.removeDirectoryIfExists(destDir)

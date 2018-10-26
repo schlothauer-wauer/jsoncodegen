@@ -123,6 +123,7 @@ class PlantUml {
         boolean incidentFound=false
         boolean incidentTagFound=false
         doCodeGen.dataModel.types.each { type ->
+            assertFalse(type.tags.contains('mainType')) // could be implicit set with command line switch
             assertFalse(type.tags.contains('rest'))
             if (type.name=='Incident') {
                 incidentFound=true
@@ -135,6 +136,84 @@ class PlantUml {
         }
         assertTrue(incidentFound)
         assertTrue(incidentTagFound)
+    }
+
+    @Test
+    void addMainTypeTags() {
+        def destFile = 'tmp/incident_mainTypeTags.puml'
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/incident.json'
+        doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add('destFileName=incident_mainTypeTags.puml')
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.tagMainTypes = true
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+
+        int mainTypeCount=0
+        doCodeGen.dataModel.types.each { type ->
+            if (type.tags.contains('mainType')) {
+                mainTypeCount++
+            }
+            if (type.name=='Incident') {
+                assertTrue(type.tags.contains('mainType'))
+            }
+            if (type.name=='IncidentState') {
+                assertTrue(type.tags.contains('mainType'))
+            }
+            if (type.name=='IncidentStateType') {
+                assertTrue(type.tags.contains('mainType'))
+            }
+            if (type.name=='IncidentComment') {
+                assertTrue(type.tags.contains('mainType'))
+            }
+            if (type.name=='IncidentType') {
+                assertTrue(type.tags.contains('mainType'))
+            }
+            if (type.name=='IncidentTag') {
+                assertTrue(type.tags.contains('mainType'))
+            }
+        }
+        assertEquals(6,mainTypeCount)
+    }
+
+    @Test
+    void addMainTypeTags_attrib() {
+        def destFile = 'tmp/incident_mainTypeTags.puml'
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = 'src/test/resources/test_schemas/ds/incident.json'
+        doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add('destFileName=incident_mainTypeTags.puml')
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.tagMainTypes = true
+        doCodeGen.mainTypeAttrib = 'guid'
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+
+        int mainTypeCount=0
+        doCodeGen.dataModel.types.each { type ->
+            if (type.tags.contains('mainType')) {
+                mainTypeCount++
+            }
+            if (type.name=='Incident') {
+                assertTrue(type.tags.contains('mainType'))
+            }
+            if (type.name=='IncidentStateType') {
+                assertTrue(type.tags.contains('mainType'))
+            }
+            if (type.name=='IncidentComment') {
+                assertTrue(type.tags.contains('mainType'))
+            }
+            if (type.name=='IncidentType') {
+                assertTrue(type.tags.contains('mainType'))
+            }
+            if (type.name=='IncidentTag') {
+                assertTrue(type.tags.contains('mainType'))
+            }
+        }
+        assertEquals(5,mainTypeCount)
     }
 
     @Test

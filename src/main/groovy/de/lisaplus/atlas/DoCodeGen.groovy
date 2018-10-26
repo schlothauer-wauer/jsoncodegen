@@ -88,9 +88,14 @@ class DoCodeGen {
     /**
      * an required type property to include into main types
      */
-    @Parameter(names = ['-pmta','--print-main-types-attrib'], description = "don't do any code generation, simply loads the model and print the main-types of it")
+    @Parameter(names = ['-mta','--main-types-attrib'], description = "specify a needed attribute to be a maintype, used in addition to the schema location")
     String mainTypeAttrib
 
+    /**
+     * an required type property to include into main types
+     */
+    @Parameter(names = ['-tmt','--tag-main-types'], description = "if this flag is set all maintypes will be extended with a 'mainType' tag")
+    boolean tagMainTypes
 
     /**
      * List of type-name tag-text tuple, The tags will be merged after initialization with the object tree
@@ -109,6 +114,20 @@ class DoCodeGen {
      */
     @Parameter(names = ['-rta', '--remove-tag-all'], description = "remove a tag from all model types, f.e. -rta rest")
     List<String> typeRemoveTagAllList = []
+
+
+    /**
+     * List of tags-text tuple, after initialization the tags will be removed for the given types in the object tree
+     */
+    @Parameter(names = ['-rta2', '--remove-tag-all-if-not-main'], description = "remove a tag from all model types that are no main types, f.e. -rta rest")
+    List<String> typeRemoveTagAllList2 = []
+
+    /**
+     * an required type property to include into main types
+     */
+    @Parameter(names = ['-rta2a','--remove-tag-all-if-not-main-attrib'], description = "don't do any code generation, simply loads the model and print the main-types of it")
+    String mainTypeAttrib2
+
 
     /**
      * The datamodel parsed by the builder. It is public accessible for tests
@@ -156,8 +175,7 @@ class DoCodeGen {
         }
         dataModel = builder.buildModel(modelFile)
         printMainTypesIfNeeded(dataModel,modelFile.getName())
-
-        adjustTagsForModel(dataModel)
+        adjustTagsForModel(dataModel,modelFile.getName())
         prepareOutputBaseDir(outputBaseDir)
 
         // convert extra generator parameter to a map
@@ -388,16 +406,32 @@ class DoCodeGen {
         print (usageFile.getText())
     }
 
-    private void adjustTagsForModel(Model dataModel) {
+    private void adjustTagsForModel(Model dataModel, String modelFileName) {
         Map<String, List<String>> typeAddTagMap = mapFromConfig(typeAddTagList)
         Map<String, List<String>> typeRemoveTagMap = mapFromConfig(typeRemoveTagList)
         // remove all tags
         dataModel.types.each { type ->
+            boolean isMainType = type.isMainType(modelFileName) && ((!mainTypeAttrib) || type.hasPropertyWithName(mainTypeAttrib))
+            if(tagMainTypes && isMainType) {
+                type.tags.add('mainType')
+            }
+            // remove all tags
             typeRemoveTagAllList.each { tag ->
                 def tagList = tag.indexOf(',')!=-1 ? tag.split(',') : tag.split(':')
                 tagList.each { t ->
                     if (type.tags.contains(t)) {
                         type.tags.remove(t)
+                    }
+                }
+            }
+            // remove tags from not main types
+            typeRemoveTagAllList2.each { tag ->
+                def tagList = tag.indexOf(',')!=-1 ? tag.split(',') : tag.split(':')
+                if ((!isMainType) && ((!mainTypeAttrib2) || (type.hasPropertyWithName(mainTypeAttrib2)))) {
+                    tagList.each { t ->
+                        if (type.tags.contains(t)) {
+                            type.tags.remove(t)
+                        }
                     }
                 }
             }
