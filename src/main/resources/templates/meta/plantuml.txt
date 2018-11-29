@@ -1,4 +1,8 @@
 <%
+def ignoreAttribs = extraParam.ignoreAttribs=='true' ? true : false
+def ignoreRefs = extraParam.ignoreRefs=='true' ? true : false
+def ignoreImplicitRefs = extraParam.ignoreImplicitRefs=='true' ? true : false
+def ignoreCompositions = extraParam.ignoreCompositions=='true' ? true : false
 def printTypeTagsValue = extraParam.printTypeTags=='false' ? false : true
 def printPropTagsValue = extraParam.printPropTags=='true' ? true : false
 def ignoreUnRefTypes = extraParam.ignoreUnRefTypes=='true' ? true : false
@@ -87,6 +91,7 @@ if (ignoreUnRefTypes) {
 <% } else { %>
 @startuml
 <% } %>
+
 skinparam roundcorner 10
 
 skinparam class {
@@ -119,7 +124,8 @@ skinparam classAttribute {
     ! typesToIgnore.contains(type.name)
 }.each  { type -> %>
 class ${firstUpperCase.call(type.name)} ${printTypeTags(type) }${ printStereoType(type) } << ( ,${type.color}) >> {
-    <% def i=0; type.properties.each  { prop ->
+    <% if (!ignoreAttribs)  {
+        def i=0; type.properties.each  { prop ->
         def arrayStr = prop.type.isArray ? '[]' : ''
         i++
     if (i>1) { %>
@@ -131,7 +137,7 @@ class ${firstUpperCase.call(type.name)} ${printTypeTags(type) }${ printStereoTyp
         <% } else { %>
     -${prop.name}: ${typeToMeta.call(prop.type)}${arrayStr}
         <% } %>
-    <% } %>
+    <% } } %>
 }
     <% if (type.description) { %>
 note top of ${firstUpperCase.call(type.name)}
@@ -140,25 +146,29 @@ end note
     <% } %>
 <% } %>
 hide methods
+<% if ( ignoreAttribs ) {
+%>hide attributes
+<% } %>
 
 <% model.types.findAll { type ->
     ! typesToIgnore.contains(type.name)
 }.each  { type -> %>
     <% def linkedTypes=[] %>
     <% type.properties.each { prop -> %>
-        <% if (prop.isRefTypeOrComplexType()) { %>
+        <% if (prop.isRefTypeOrComplexType() && (!ignoreRefs) && (!typesToIgnore.contains(prop.type.type.name))) { %>
             <% def testStr="${type.name}-${prop.type.type.name}"%>
             <% if(!linkedTypes.contains(testStr)) { %>
                 <% if (prop.isAggregation()) { %>
 ${firstUpperCase.call(type.name)} o-- <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.type.type.name) } ${ prop.type.type.color }
-                <% } else { %>
+                <% } else { if (!ignoreCompositions) { %>
 ${firstUpperCase.call(type.name)} *-- <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.type.type.name) } ${ prop.type.type.color }
-                <% } %>
+                <% } } %>
                 <% linkedTypes.add(testStr) %>
             <% } %>
         <% } else if (printJoins && prop.implicitRef && prop.hasTag('join')) { %>
             ${firstUpperCase.call(type.name)} -- ${ firstUpperCase.call(prop.implicitRef.type.name) } ${ prop.implicitRef.type.color }: join
-        <% } else if (prop.implicitRef) { %>
+        <% }
+        if (prop.implicitRef && (!ignoreImplicitRefs) && (!typesToIgnore.contains(prop.implicitRef.type.name))) { %>
             ${firstUpperCase.call(type.name)} .. <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.implicitRef.type.name) } ${ prop.implicitRef.type.color }
         <% } %>
     <% } %>

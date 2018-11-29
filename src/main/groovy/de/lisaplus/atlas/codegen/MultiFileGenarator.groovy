@@ -67,9 +67,13 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
             } == null : true
 
             if (handleTag && neededTagList) {
-                handleTag = type.tags.find { tag ->
-                    return neededTagList.contains(tag)
-                } != null
+                boolean allTagsFound=true;
+                neededTagList.each { needed ->
+                    if (!type.tags.contains(needed)) {
+                        allTagsFound = false
+                    }
+                }
+                handleTag = allTagsFound
             }
 
             if (handleType && handleNeeded && handleMissing && handleTag) {

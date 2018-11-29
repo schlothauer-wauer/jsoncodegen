@@ -119,7 +119,7 @@ class Type {
      * @param model string of the model file name: f.e. junction, junction.json
      */
     boolean isMainType(String model) {
-        if (model==null || this.schemaFileName==null) return false
+        if (model==null || this.schemaFileName==null || (this instanceof InnerType)) return false
         String mStr = model.indexOf('.')!=-1 ? model.substring(0,model.lastIndexOf('.')) : model
         return (!this.innerType) && this.schemaFileName==mStr
     }

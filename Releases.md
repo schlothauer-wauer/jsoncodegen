@@ -1,3 +1,6 @@
+## 0.8.4
+- add additional generator parameters to improve plantuml view (ignoreAttribs,ignoreRefs,ignoreImplicitRefs, ignoreCompositions)
+
 ## 0.8.3
 - ignoreTag, neededTag are handled now as lists for multi-file-generators
 - rename 'pmta' command line switch to specify a required attribute for main types to 'mta'
