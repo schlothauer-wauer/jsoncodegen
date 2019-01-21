@@ -27,8 +27,6 @@ class FuzzyFilterExperiment {
         // fuzzyExp.generateAll()
     }
 
-    /** The name of the type, which is to be processed. */
-//    String typeName
     /** The path to the model definition file */
     String modelPath = modelPath
     /** The complete model with all types */
@@ -55,6 +53,120 @@ class FuzzyFilterExperiment {
     /** For enabling/disabling debug output */
     boolean verbose = false
 
+// Closures, which may end up at the start of the templates!
+    /**
+     * Prepares the stacks for running the next loop over the model
+     */
+    def prepareStacks = {
+        propStack.clear()
+        propIsArrayStack.clear()
+        // avoid extra case for handling empty stack!
+        propIsCollectionStack = [false]
+    }
+
+    /**
+     * Adds new elements to the stacks
+     * @param property The property, which is to be visited
+     */
+    def putStacks = { Property property ->
+        propStack.add(property)
+        propIsArrayStack.add(property.type.isArray)
+        // If either already collection of if this property is an collection.
+        propIsCollectionStack.add(propIsCollectionStack.last() || property.type.isArray)
+    }
+
+    /**
+     * Pops the latest elements from the stacks
+     */
+    def popStacks = {
+        propStack.pop()
+        propIsArrayStack.pop()
+        propIsCollectionStack.pop()
+    }
+
+    // findStringProps calls itself, needs forward declaration in template!
+    /**
+     * Finds the relevant String properties of the current type, calls itself for complex inner types!
+     */
+    def findStringProps = { Type type ->
+        // loop over string properties (not array!)
+        type.properties.findAll { prop -> prop.type instanceof StringType && ! prop.type.isArray } .each { prop ->
+            propStack.add(prop)
+            def key = propStack.collect { prop2 -> prop2.name }.join('.')
+            println "    // name=${prop.name} key=$key type=${prop.type.class.getSimpleName()} isArray=${prop.type.isArray}"
+            propStack.pop()
+            createFuzzyTest(prop, allLines)
+        }
+
+        // no recursive calls for now!
+        /*
+        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
+            // recursive call!
+            putStacks.call(prop)
+            findStringProps.call(prop.type.type)
+            popStacks.call()
+        }
+        */
+    }
+
+    /**
+     * Appends lines of a test method for a relevant String property to parameter lines!
+     */
+    def createFuzzyTest = { Property property, List<String> lines ->
+        putStacks.call(property)
+        def key = propStack.collect {prop -> prop.name}.join('.')
+        def upperProp = data.upperCamelCase.call(property.name)
+        def lowerProp = data.lowerCamelCase.call(property.name)
+        def propParentClass = targetTypeNotJoined   // FIXME
+        def prefix = '\n                        '
+        def mapLines = "${prefix}.map(${targetTypeNotJoined}::get${upperProp})" // FIXME
+        lines.add("""
+    @Test
+    public void testSearch${upperProp}() {
+        final List<Dao${targetTypeNotJoined}> daos =  createInsertDaos("${lowerProp}", String.class, ${propParentClass}.class);
+        final List<String> actValues1 = daos.stream()${mapLines}
+                        .collect(Collectors.toList());
+        assertEquals(values.length, actValues1.size());
+        assertTrue(actValues1.toString(), actValues1.containsAll(Arrays.asList(values)));
+
+        try {
+            final String sort = null;
+            final String key = "$key";
+            textPatter2Matches.entrySet().forEach( entry -> {
+                final String pattern = entry.getKey();
+                final List<String> expValues = entry.getValue();
+                final String filter = String.format(" { \\"%s\\" : { \\"text\\": \\"%s\\"}}", key, pattern);
+                final List<String> actValues = Dao${targetType}.list(testContext, 0, 0, filter, sort)
+                        .stream()${mapLines}
+                        .collect(Collectors.toList());
+                assertEquals(String.format("%s: %s", pattern, actValues), expValues.size(), actValues.size());
+                assertTrue(String.format("%s: %s", pattern, actValues), actValues.containsAll(expValues));
+            });
+            regexPatter2Matches.entrySet().forEach( entry -> {
+                final String pattern = entry.getKey();
+                final List<String> expValues = entry.getValue();
+                final String filter = String.format(" { \\"%s\\" : { \\"regex\\": \\"%s\\"}}", key, pattern);
+                final List<String>  actValues = Dao${targetType}.list(testContext, 0, 0, filter, sort)
+                        .stream()${mapLines}
+                        .collect(Collectors.toList());
+                assertEquals(String.format("%s: %s", pattern, actValues), expValues.size(), actValues.size());
+                assertTrue(String.format("%s: %s", pattern, actValues), actValues.containsAll(expValues));
+            });
+        } finally {
+            // clean up to avoid interfering with other tests!
+            for (Dao${targetTypeNotJoined} dao : daos) {
+                dao.delete();
+            }
+        }
+    }""")
+        /*
+        println lines
+        lines.clear()
+        */
+        popStacks.call()
+    }
+
+    // constructor and methods.
     FuzzyFilterExperiment(modelPath) {
         this.modelPath = modelPath
         this.model = readModel(modelPath)
@@ -115,14 +227,6 @@ class FuzzyFilterExperiment {
         println '###################################################################'
 
 
-        /* 1st loop: find names and keys of string properties. */
-        /*
-        prepareStacks.call()
-        // The names of the properties defined in the current type
-        Set<String> propNames = []
-        // The mask keys, which are available for the current type
-        List<String> maskKeys = []
-        */
         def extraParam = ['serviceBase' : 'opMessage']
 
         def daoImport = "import de.lisaplus.lisa.${extraParam.serviceBase}.dao.*;"
@@ -321,6 +425,7 @@ public class IT_Fuyyz_Search_Dao_$targetType {
         println fileHead
 
 
+        // Append tests for string properties (not array!)
         allLines.clear()
         prepareStacks.call()
         findStringProps(type)
@@ -329,126 +434,5 @@ public class IT_Fuyyz_Search_Dao_$targetType {
 
         println('}')    // last line, close class!
 
-        // loop over string properties (not array!)
-        /*
-        type.properties.findAll { prop -> prop.type instanceof StringType && ! prop.type.isArray } .each { prop ->
-            println "name=${prop.name} type=${prop.type} isArray=${prop.type.isArray}"
-        }
-        */
-        /*
-        data.filterProps.call(type, [refComplex:false]).findAll { Property prop -> prop.type.equals(StringType.class)  }  .each { Property prop ->
-        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
-            def use = prop.type instanceof StringType && ! prop.type.isArray
-            println "name=${prop.name} type=${prop.type} use=$use"
-        }
-        */
-
-
     }
-
-    def createFuzzyTest = { Property property, List<String> lines ->
-        putStacks.call(property)
-        def key = propStack.collect {prop -> prop.name}.join('.')
-        def upperProp = data.upperCamelCase.call(property.name)
-        def lowerProp = data.lowerCamelCase.call(property.name)
-        lines.add("""
-    @Test
-    public void testSearch${upperProp}() {
-        final List<Dao${targetTypeNotJoined}> daos =  createInsertDaos("${lowerProp}", String.class, ${targetTypeNotJoined}.class);  // FIXME
-        final List<String> actValues1 = daos.stream().map(${targetTypeNotJoined}::get${upperProp}).collect(Collectors.toList());    // FIXME
-        assertEquals(values.length, actValues1.size());
-        assertTrue(actValues1.toString(), actValues1.containsAll(Arrays.asList(values)));
-
-        try {
-            final String sort = null;
-            final String key = "$key";
-            textPatter2Matches.entrySet().forEach( entry -> {
-                final String pattern = entry.getKey();
-                final List<String> expValues = entry.getValue();
-                final String filter = String.format(" { \\"%s\\" : { \\"text\\": \\"%s\\"}}", key, pattern);
-                final List<String> actValues = Dao${targetType}.list(testContext, 0, 0, filter, sort)
-                        .stream()
-                        .map(${targetTypeNotJoined}::get${upperProp})   // FIXME
-                        .collect(Collectors.toList());
-                assertEquals(String.format("%s: %s", pattern, actValues), expValues.size(), actValues.size());
-                assertTrue(String.format("%s: %s", pattern, actValues), actValues.containsAll(expValues));
-            });
-            regexPatter2Matches.entrySet().forEach( entry -> {
-                final String pattern = entry.getKey();
-                final List<String> expValues = entry.getValue();
-                final String filter = String.format(" { \\"%s\\" : { \\"regex\\": \\"%s\\"}}", key, pattern);
-                final List<String>  actValues = Dao${targetType}.list(testContext, 0, 0, filter, sort)
-                        .stream()
-                        .map(${targetTypeNotJoined}::get${upperProp})   // FIXME
-                        .collect(Collectors.toList());
-                assertEquals(String.format("%s: %s", pattern, actValues), expValues.size(), actValues.size());
-                assertTrue(String.format("%s: %s", pattern, actValues), actValues.containsAll(expValues));
-            });
-        } finally {
-            // clean up to avoid interfering with other tests!
-            for (Dao${targetTypeNotJoined} dao : daos) {
-                dao.delete();
-            }
-        }
-    }""")
-        /*
-        println lines
-        lines.clear()
-        */
-        popStacks.call()
-    }
-
-    def findStringProps = { Type type ->
-        // loop over string properties (not array!)
-        type.properties.findAll { prop -> prop.type instanceof StringType && ! prop.type.isArray } .each { prop ->
-            propStack.add(prop)
-            def key = propStack.collect { prop2 -> prop2.name }.join('.')
-            println "    // name=${prop.name} key=$key type=${prop.type.class.getSimpleName()} isArray=${prop.type.isArray}"
-            propStack.pop()
-            createFuzzyTest(prop, allLines)
-        }
-
-        // no inner calls for now!
-        /*
-        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
-            // recursive call!
-            putStacks.call(prop)
-            findStringProps.call(prop.type.type)
-            popStacks.call()
-        }
-        */
-
-    }
-
-
-    /**
-     * Prepares the stacks for running the next loop over the model
-     */
-    def prepareStacks = {
-        propStack.clear()
-        propIsArrayStack.clear()
-        // avoid extra case for handling empty stack!
-        propIsCollectionStack = [false]
-    }
-
-    /**
-     * Adds new elements to the stacks
-     * @param property The property, which is to be visited
-     */
-    def putStacks = { Property property ->
-        propStack.add(property)
-        propIsArrayStack.add(property.type.isArray)
-        // If either already collection of if this property is an collection.
-        propIsCollectionStack.add(propIsCollectionStack.last() || property.type.isArray)
-    }
-
-    /**
-     * Pops the latest elements from the stacks
-     */
-    def popStacks = {
-        propStack.pop()
-        propIsArrayStack.pop()
-        propIsCollectionStack.pop()
-    }
-
 }
