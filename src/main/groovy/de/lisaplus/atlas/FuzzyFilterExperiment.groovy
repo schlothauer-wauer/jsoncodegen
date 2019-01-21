@@ -18,7 +18,7 @@ class FuzzyFilterExperiment {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'OpMessage' // 'OpMessageJoined'
+                : 'OpMessageJoined' // 'OpMessage' // 'OpMessageJoined'
 
         def fuzzyExp = new FuzzyFilterExperiment(modelPath)
         fuzzyExp.execute(typeName, typeName.endsWith('Joined'))
@@ -99,25 +99,29 @@ class FuzzyFilterExperiment {
         }
 
         // no recursive calls for now!
-        /*
         data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
             // recursive call!
             putStacks.call(prop)
             findStringProps.call(prop.type.type)
             popStacks.call()
         }
-        */
     }
 
     /**
      * Appends lines of a test method for a relevant String property to parameter lines!
      */
     def createFuzzyTest = { Property property, List<String> lines ->
+        def propParentClass
+        if (propStack.isEmpty()) {
+            propParentClass = targetTypeNotJoined
+        } else {
+            // propParentClass = propStack.last().type.type.name
+            propParentClass = data.upperCamelCase.call(propStack.last().type.typeName)
+        }
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
         def upperProp = data.upperCamelCase.call(property.name)
         def lowerProp = data.lowerCamelCase.call(property.name)
-        def propParentClass = targetTypeNotJoined   // FIXME
         def prefix = '\n                        '
         def mapLines = "${prefix}.map(${targetTypeNotJoined}::get${upperProp})" // FIXME
         lines.add("""
