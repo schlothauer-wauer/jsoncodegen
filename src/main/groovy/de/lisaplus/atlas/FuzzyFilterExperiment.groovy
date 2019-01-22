@@ -18,7 +18,7 @@ class FuzzyFilterExperiment {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'OpMessageJoined' // 'OpMessage' // 'OpMessageJoined'
+                : 'ObjectGroup' // 'OpMessage' // 'OpMessageJoined'
 
         def fuzzyExp = new FuzzyFilterExperiment(modelPath)
         fuzzyExp.execute(typeName, typeName.endsWith('Joined'))
@@ -252,7 +252,7 @@ class FuzzyFilterExperiment {
                 }
             }
         };
-        final List<DaoOpMessage> daos = createInsertDaos(valueSetter);
+        final List<Dao${targetTypeNotJoined}> daos = createInsertDaos(valueSetter);
         final List<String> actValues1 = daos.stream()${mapLinesNotJoined}
                         .collect(Collectors.toList());
         assertEquals(values.length, actValues1.size());
