@@ -24,7 +24,7 @@ class FuzzyFilterExperiment {
         fuzzyExp.execute(typeName, typeName.endsWith('Joined'))
 
         // Check for exception while running code generation for all available types
-         fuzzyExp.generateAll()
+         // fuzzyExp.generateAll()
     }
 
     /** The path to the model definition file */
@@ -114,7 +114,7 @@ class FuzzyFilterExperiment {
         }
 
         // no recursive calls for now!
-        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
+        data.filterProps.call(type, [refComplex:true, array:false, withoutTag:'notDisplayed']).each { Property prop ->
             // recursive call!
             putStacks.call(prop)
             findStringProps.call(prop.type.type, lines)
