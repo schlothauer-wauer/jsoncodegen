@@ -126,9 +126,15 @@ class FuzzyFilterExperiment {
      * Appends lines of a test method for a relevant String property to parameter lines!
      */
     def createFuzzyTest = { Property property, List<String> lines ->
+        // copy stacks before adding current property
+        def shortPropStack = propStack.clone()
+        def shortParentJavaClass = parentJavaClass.clone()
+
+
         def prefix = '\n                        '
         def mapLines = ''
         def mapLinesNotJoined = ''
+        def mapLinesParent = ''
         def propParentClass
         if (propStack.isEmpty()) {
             propParentClass = targetTypeNotJoined
@@ -143,6 +149,63 @@ class FuzzyFilterExperiment {
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
         def lowerProp = data.lowerCamelCase.call(property.name)
+        def upperProp = data.upperCamelCase.call(property.name)
+        def parentStart
+        if (key.startsWith('objectBase.')) {
+            parentStart = 'arrBaseDao'
+        } else {
+            parentStart = 'arrDao'
+
+        }
+        // case 1: DaoOpMessage (stack depth 1)
+        // case 2: DaoObjectBase (stack depth 2 and key starts with objectBase
+        // case 3: No prefix Dao - Use parentJavaClass.last() unchanged!
+        def parentClass = parentJavaClass.last()
+        switch (parentJavaClass.size()) {
+            case 1:
+                parentClass = 'Dao' + targetTypeNotJoined
+                /*
+                parentClass = 'Dao' + parentClass
+                if (parentClass.endsWith('Joined')) {
+                    parentClass = parentClass[0..-7]
+                }
+                */
+            break
+            case 2:
+                if (key.startsWith('objectBase.')) {
+                    parentClass = 'DaoObjectBase'
+                }
+            break
+        }
+        if (key.startsWith('objectBase.') && shortPropStack.size > 1) {
+            def propIter = shortPropStack.iterator()
+            def classIter = shortParentJavaClass.iterator()
+            def firstProp = propIter.next()
+            def firstClass = classIter.next()
+            assert firstProp.name == 'objectBase' && firstClass == targetType : "firstProp=${firstProp.name}, targetType=${targetType}"
+            assert targetType.endsWith('Joined') : targetType
+            while (propIter.hasNext()) {
+                def clazz = classIter.next()
+                def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
+                mapLinesParent += "${prefix}.map(${clazz}${getter})"
+            }
+        }
+        if (!key.startsWith('objectBase.') && shortPropStack.size > 0 ) {
+            def propIter = shortPropStack.iterator()
+            def classIter = shortParentJavaClass.iterator()
+            while (propIter.hasNext()) {
+                def clazz = classIter.next()
+                def clazzNotJoined = clazz.endsWith("Joined") ? clazz[0..-7] : clazz
+                def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
+                mapLinesParent += "${prefix}.map(${clazzNotJoined}${getter})"
+            }
+        }
+        /*
+        if (parentJavaClass.size() == 1 && parentClass.endsWith('Joined')) {
+            parentClass = 'Dao' + parentClass[0..-7]
+        }
+        */
+
         if (key.startsWith('objectBase.')) {
             // special case for string properties attached to inner ObjectBase!
             def propIter = propStack.iterator()
@@ -182,7 +245,21 @@ class FuzzyFilterExperiment {
         lines.add("""
     @Test
     public void testSearch${methodName}() {
-        final List<Dao${targetTypeNotJoined}> daos =  createInsertDaos("${lowerProp}", String.class, ${propParentClass}.class);
+        // final List<Dao${targetTypeNotJoined}> daos =  createInsertDaos("${lowerProp}", String.class, ${propParentClass}.class); // not specific enough!
+
+        final BiConsumer<Dao${targetTypeNotJoined}[], DaoObjectBase[]> valueSetter = (arrDao, arrBaseDao) -> {
+            final List<$parentClass> parents = Arrays.stream($parentStart)$mapLinesParent
+                    .collect(Collectors.toList());
+            assert parents.size() % values.length == 0;
+            int idx = 0;
+            for ($parentClass parent : parents) {
+                parent.set$upperProp(values[idx++]);
+                if (idx == values.length) {
+                    idx = 0;
+                }
+            }
+        };
+        final List<DaoOpMessage> daos = createInsertDaos(valueSetter);
         final List<String> actValues1 = daos.stream()${mapLinesNotJoined}
                         .collect(Collectors.toList());
         assertEquals(values.length, actValues1.size());
@@ -307,6 +384,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -337,7 +415,7 @@ import io.github.benas.randombeans.randomizers.range.LocalDateTimeRangeRandomize
  * Integration test for fuzzy search in class Dao$targetType.
  */
 public class IT_Fuyyz_Search_Dao_$targetType {
-    
+
     /** The values to use for the bean properties when generation beans with random beans. */
     private static final String[] values;
     /** Add mapping of text pattern to expected matches. Text query are case insensitive! */
@@ -348,6 +426,8 @@ public class IT_Fuyyz_Search_Dao_$targetType {
     static DaoContext testContext;
     /** PojoMaskService embedded into #testContext */
     static MockPojoMaskService maskService;
+    /** For creating random test objects. */
+    static EnhancedRandom random;
 
     static {
         values = new String[] { "aber", "Berlin", "Erlangen", "Jena", "Hans", "Mike", " 123456 ", " der hat Leerzeichen ", "", "   ", " Erhard", " niedErmitderIder ",
@@ -395,11 +475,65 @@ public class IT_Fuyyz_Search_Dao_$targetType {
         testContext = new DaoContext(tenantId, "Junit-Test");
         maskService = new MockPojoMaskService();
         testContext.setMaskService(maskService);
+
+        LocalDate minDate = LocalDate.parse("2000-01-01");
+        LocalDate endDate = LocalDate.parse("2017-12-31");
+        LocalDateTime minDateTime = minDate.atStartOfDay();
+        // Only values representing the start of the day are being generated when omitting .minusNanos(1L)!
+        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay().minusNanos(1L);
+        final Randomizer<LocalDateTime> randomizer1 = LocalDateTimeRangeRandomizer.aNewLocalDateTimeRangeRandomizer(minDateTime, endDateTime);
+        random = EnhancedRandomBuilder.aNewEnhancedRandomBuilder()
+                .charset(StandardCharsets.UTF_8)
+                .dateRange(minDate, endDate)
+                .randomize(LocalDateTime.class, randomizer1)
+                .collectionSizeRange(values.length, values.length)
+                .overrideDefaultInitialization(true)
+                .exclude(de.lisaplus.util.notify.ChangePublisher.class)
+                .exclude(DaoContext.class)
+                .exclude(FieldDefinitionBuilder.field().named("tenantId").ofType(String.class).get())
+                .stringLengthRange(5,10)
+                .build();
     }
 
     @AfterClass
     public static void after() {
         System.out.println("*********************** IT_Fuyyz_Search_Dao_$targetType - End ***********************");
+    }
+
+    /**
+     * Creates a collection of Dao instances and adds them to the storage back-end.
+     * @param valueSetter This object can be used to ensure that the values associated with one attribute of the object
+     *            will be forced to represent the {@link #values}.
+     * @return The new Dao instances
+     */
+    private List<Dao$targetTypeNotJoined> createInsertDaos(BiConsumer<Dao$targetTypeNotJoined[], DaoObjectBase[]> valueSetter) {
+        final DaoObjectBase[] arrBaseDao = IntStream.range(0, values.length)
+                .mapToObj(in -> random.nextObject(DaoObjectBase.class))
+                .toArray(DaoObjectBase[]::new);
+        final Dao$targetTypeNotJoined[] arrDao = IntStream.range(0, values.length)
+                .mapToObj(in -> random.nextObject(Dao${targetTypeNotJoined}.class))
+                .toArray(Dao$targetTypeNotJoined[]::new);
+        // set fixed values for a single string property
+        valueSetter.accept(arrDao, arrBaseDao);
+
+        // persist daos
+        IntStream.range(0, values.length).forEach(i -> {
+
+            DaoObjectBase objectBase = arrBaseDao[i];
+            objectBase.setDaoContext(testContext);
+            // When EnhancedRandom starts creating fraction of seconds, then all DateTimeType properties must be processed!
+            // objectBase.setXXX(toStartOfSecond(objectBase.getXXX()))
+            objectBase.insert();
+
+            // currently tenantId only gets overwritten in setDaoContext(DaoContext) when it is still null!
+            Dao$targetTypeNotJoined dao = arrDao[i];
+            dao.setDaoContext(testContext);
+            // When EnhancedRandom starts creating fraction of seconds, then all DateTimeType properties must be processed!
+            // x.setCreated(toStartOfSecond(x.getCreated()))
+            dao.setObjectBaseId(objectBase.getGuid());
+            dao.insert();
+        });
+        return Arrays.asList(arrDao);
     }
 
     /**
@@ -410,6 +544,7 @@ public class IT_Fuyyz_Search_Dao_$targetType {
      * @param beanClass The class, where the property is actually defined (so usually not the Dao subtype!)
      * @return The new Dao instances
      */
+    @Deprecated
     private List<Dao$targetTypeNotJoined> createInsertDaos(String propName, Class<?> propClass, Class<?> beanClass) {
         final EnhancedRandom random = getEnhancedRandom(propName, propClass, beanClass);
         return IntStream.range(0, values.length)
@@ -422,6 +557,7 @@ public class IT_Fuyyz_Search_Dao_$targetType {
      * @param random The object to use for generating objects.
      * @return The new Dao instance
      */
+    @Deprecated
     private Dao$targetTypeNotJoined createInstance(EnhancedRandom random) {
         DaoObjectBase objectBase = random.nextObject(DaoObjectBase.class);
         objectBase.setDaoContext(testContext);
@@ -448,6 +584,7 @@ public class IT_Fuyyz_Search_Dao_$targetType {
      * @param beanClass The class, where the property is actually defined (so usually not the subtype DaoXXX!)
      * @return An {@link EnhancedRandom} object for creating test objects.
      */
+    @Deprecated
     private EnhancedRandom getEnhancedRandom(String propName, Class<?> propClass, Class<?> beanClass) {
         LocalDate minDate = LocalDate.parse("2000-01-01");
         LocalDate endDate = LocalDate.parse("2017-12-31");
