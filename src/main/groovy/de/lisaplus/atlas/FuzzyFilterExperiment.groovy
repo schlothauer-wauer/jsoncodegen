@@ -24,7 +24,7 @@ class FuzzyFilterExperiment {
         fuzzyExp.execute(typeName, typeName.endsWith('Joined'))
 
         // Check for exception while running code generation for all available types
-         // fuzzyExp.generateAll()
+        // fuzzyExp.generateAll()
     }
 
     /** The path to the model definition file */
@@ -45,6 +45,8 @@ class FuzzyFilterExperiment {
     List<Boolean> propIsArrayStack = []
     /** The name of the Java class, which holds the property. This sack is build while traversing the object hierarchy. */
     List<String> parentJavaClass = []
+    /** Same as parentJavaClass, but the very first entry without suffix 'Joined' */
+    List<String> parentJavaClassNotJoined = []
     /**
      *  Indicates that this property or any of its parents was an array and that we therefore have to process an collection.
      *  This sack is build while traversing the object hierarchy.
@@ -65,6 +67,7 @@ class FuzzyFilterExperiment {
         // avoid extra case for handling empty stack!
         propIsCollectionStack = [false]
         parentJavaClass.clear()
+        parentJavaClassNotJoined.clear()
     }
 
     /**
@@ -74,12 +77,14 @@ class FuzzyFilterExperiment {
     def putStacks = { Property property ->
         if (propStack.empty) {
             parentJavaClass.add(targetType)
+            parentJavaClassNotJoined.add(targetTypeNotJoined)
         } else {
             if (verbose) {
                 def pClassName = propStack.last().type.type.name;
                 println "// prop=${property.name} parentClas=${pClassName}"
             }
             parentJavaClass.add(data.upperCamelCase.call(propStack.last().type.type.name))
+            parentJavaClassNotJoined.add(data.upperCamelCase.call(propStack.last().type.type.name))
         }
         propStack.add(property)
         propIsArrayStack.add(property.type.isArray)
@@ -95,6 +100,7 @@ class FuzzyFilterExperiment {
         propIsArrayStack.pop()
         propIsCollectionStack.pop()
         parentJavaClass.pop()
+        parentJavaClassNotJoined.pop()
     }
 
     // findStringProps calls itself, needs forward declaration in template!
@@ -129,6 +135,7 @@ class FuzzyFilterExperiment {
         // copy stacks before adding current property
         def shortPropStack = propStack.clone()
         def shortParentJavaClass = parentJavaClass.clone()
+        def shortParentJavaClassNotJoined = parentJavaClassNotJoined.clone()
 
 
         def prefix = '\n                        '
@@ -155,7 +162,6 @@ class FuzzyFilterExperiment {
             parentStart = 'arrBaseDao'
         } else {
             parentStart = 'arrDao'
-
         }
         // case 1: DaoOpMessage (stack depth 1)
         // case 2: DaoObjectBase (stack depth 2 and key starts with objectBase
@@ -185,13 +191,8 @@ class FuzzyFilterExperiment {
             }
         }
         if (!key.startsWith('objectBase.') && shortPropStack.size > 0 ) {
-            // remove suffix 'Joined' from first parentJavaClass!
-            def firstClazz = shortParentJavaClass[0]
-            if (firstClazz.endsWith('Joined')) {
-                shortParentJavaClass[0] = firstClazz[0..-7]
-            }
             def propIter = shortPropStack.iterator()
-            def classIter = shortParentJavaClass.iterator()
+            def classIter = shortParentJavaClassNotJoined.iterator()
             while (propIter.hasNext()) {
                 def clazz = classIter.next()
                 def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
@@ -203,9 +204,11 @@ class FuzzyFilterExperiment {
             // special case for string properties attached to inner ObjectBase!
             def propIter = propStack.iterator()
             def classIter = parentJavaClass.iterator()
+            def classNotJoinedIter = parentJavaClassNotJoined.iterator()
             def firstProp = propIter.next()
             def firstClass = classIter.next()
-            assert firstProp.name == 'objectBase' && firstClass == targetType : "firstProp=${firstProp.name}, targetType=${targetType}"
+            def firstClassNotJoined = classNotJoinedIter.next()
+            assert firstProp.name == 'objectBase' && firstClass == targetType && firstClassNotJoined == targetTypeNotJoined : "firstProp=${firstProp.name}, firstClass=${firstClass}, firstClassNotJoined=${firstClassNotJoined}"
             assert targetType.endsWith('Joined') : targetType
             // get corresponding XXXJoined object to be able to collect the string values residing in the ObjectBase!
             mapLinesNotJoined += "${prefix}.map(dao -> Dao${targetType}.byId(dao.getGuid(), testContext))"
@@ -213,7 +216,7 @@ class FuzzyFilterExperiment {
             mapLines += "${prefix}.map(${firstClass}::getObjectBase)"
             while (propIter.hasNext()) {
                 def clazz = classIter.next()
-                def clazzNotJoined = clazz.endsWith("Joined") ? clazz[0..-7] : clazz
+                def clazzNotJoined = classNotJoinedIter.next()
                 def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
                 mapLines += "${prefix}.map(${clazz}${getter})"
                 mapLinesNotJoined += "${prefix}.map(${clazzNotJoined}${getter})"
@@ -221,17 +224,14 @@ class FuzzyFilterExperiment {
         } else {
             def propIter = propStack.iterator()
             def classIter = parentJavaClass.iterator()
+            def classNotJoinedIter = parentJavaClassNotJoined.iterator()
             while (propIter.hasNext()) {
                 def clazz = classIter.next()
-                def clazzNotJoined = clazz.endsWith("Joined") ? clazz[0..-7] : clazz
+                def clazzNotJoined = classNotJoinedIter.next()
                 def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
                 mapLines += "${prefix}.map(${clazz}${getter})"
                 mapLinesNotJoined += "${prefix}.map(${clazzNotJoined}${getter})"
             }
-        }
-
-        if (verbose) {
-            println "/* mapLines=$mapLines */"
         }
         // ensure unique method names
         def methodName = propStack.collect {prop -> data.upperCamelCase.call(prop.name)}.join('')
@@ -308,13 +308,6 @@ class FuzzyFilterExperiment {
      */
     void generateAll() {
         GeneratorBase generator = new DummyGenerator()
-        /*
-        data = generator.createTemplateDataMap(model)
-        for(Type type : model.types) {
-            executeForType(type, type.name.endsWith('Joined'))
-        }
-        */
-
         // first process normal types
         this.model = readModel(modelPath)
         data = generator.createTemplateDataMap(model)
@@ -330,7 +323,6 @@ class FuzzyFilterExperiment {
             executeForType(type, true)
         }
     }
-
 
     /**
      * Execute code generation for one type
