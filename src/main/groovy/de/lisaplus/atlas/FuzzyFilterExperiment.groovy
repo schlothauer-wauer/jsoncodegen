@@ -24,7 +24,7 @@ class FuzzyFilterExperiment {
         fuzzyExp.execute(typeName, typeName.endsWith('Joined'))
 
         // Check for exception while running code generation for all available types
-        // fuzzyExp.generateAll()
+         fuzzyExp.generateAll()
     }
 
     /** The path to the model definition file */
@@ -55,7 +55,7 @@ class FuzzyFilterExperiment {
     /** For enabling/disabling debug output */
     boolean verbose = false
 
-// Closures, which may end up at the start of the templates!
+    // Closures, which will end up at the start of the templates!
     /**
      * Prepares the stacks for running the next loop over the model
      */
@@ -64,10 +64,6 @@ class FuzzyFilterExperiment {
         propIsArrayStack.clear()
         // avoid extra case for handling empty stack!
         propIsCollectionStack = [false]
-        /*
-        // avoid extra case for handling empty stack!
-        parentJavaClass = [targetTypeNotJoined]
-        */
         parentJavaClass.clear()
     }
 
@@ -89,7 +85,6 @@ class FuzzyFilterExperiment {
         propIsArrayStack.add(property.type.isArray)
         // If either already collection of if this property is an collection.
         propIsCollectionStack.add(propIsCollectionStack.last() || property.type.isArray)
-
     }
 
     /**
@@ -100,14 +95,13 @@ class FuzzyFilterExperiment {
         propIsArrayStack.pop()
         propIsCollectionStack.pop()
         parentJavaClass.pop()
-
     }
 
     // findStringProps calls itself, needs forward declaration in template!
     /**
      * Finds the relevant String properties of the current type, calls itself for complex inner types!
      */
-    def findStringProps = { Type type ->
+    def findStringProps = { Type type, List<String> lines ->
         // loop over string properties (not array!)
         type.properties.findAll { prop -> prop.type instanceof StringType && ! prop.type.isArray } .each { prop ->
             propStack.add(prop)
@@ -116,14 +110,14 @@ class FuzzyFilterExperiment {
                 println "    // name=${prop.name} key=$key type=${prop.type.class.getSimpleName()} isArray=${prop.type.isArray}"
             }
             propStack.pop()
-            createFuzzyTest(prop, allLines)
+            createFuzzyTest(prop, lines)
         }
 
         // no recursive calls for now!
         data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
             // recursive call!
             putStacks.call(prop)
-            findStringProps.call(prop.type.type)
+            findStringProps.call(prop.type.type, lines)
             popStacks.call()
         }
     }
@@ -143,7 +137,6 @@ class FuzzyFilterExperiment {
         }
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
-        def upperProp = data.upperCamelCase.call(property.name)
         def lowerProp = data.lowerCamelCase.call(property.name)
 
         def propIter = propStack.iterator()
@@ -158,8 +151,7 @@ class FuzzyFilterExperiment {
         if (verbose) {
             println "/* mapLines=$mapLines */"
         }
-        // Add final map
-        // mapLines += "${prefix}.map(${propParentClass}::get${upperProp})"
+        // ensure unique method names
         def methodName = propStack.collect {prop -> data.upperCamelCase.call(prop.name)}.join('')
         lines.add("""
     @Test
@@ -200,10 +192,6 @@ class FuzzyFilterExperiment {
             }
         }
     }""")
-        /*
-        println lines
-        lines.clear()
-        */
         popStacks.call()
     }
 
@@ -465,15 +453,14 @@ public class IT_Fuyyz_Search_Dao_$targetType {
     """
         println fileHead
 
-
-        // Append tests for string properties (not array!)
+        // Generate tests for string properties (not array!), storing them in allLines!
         allLines.clear()
         prepareStacks.call()
-        findStringProps(type)
+        findStringProps(type, allLines)
 
+        // Append tests to output
         allLines.each { println it }
 
         println('}')    // last line, close class!
-
     }
 }
