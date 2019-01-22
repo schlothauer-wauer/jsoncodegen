@@ -43,6 +43,8 @@ class FuzzyFilterExperiment {
     List<Property> propStack = []
     /** Indicates that this property is an array. This sack is build while traversing the object hierarchy. */
     List<Boolean> propIsArrayStack = []
+    /** The name of the Java class, which holds the property. This sack is build while traversing the object hierarchy. */
+    List<String> parentJavaClass = []
     /**
      *  Indicates that this property or any of its parents was an array and that we therefore have to process an collection.
      *  This sack is build while traversing the object hierarchy.
@@ -62,6 +64,11 @@ class FuzzyFilterExperiment {
         propIsArrayStack.clear()
         // avoid extra case for handling empty stack!
         propIsCollectionStack = [false]
+        /*
+        // avoid extra case for handling empty stack!
+        parentJavaClass = [targetTypeNotJoined]
+        */
+        parentJavaClass.clear()
     }
 
     /**
@@ -69,10 +76,20 @@ class FuzzyFilterExperiment {
      * @param property The property, which is to be visited
      */
     def putStacks = { Property property ->
+        if (propStack.empty) {
+            parentJavaClass.add(targetType)
+        } else {
+            if (verbose) {
+                def pClassName = propStack.last().type.type.name;
+                println "// prop=${property.name} parentClas=${pClassName}"
+            }
+            parentJavaClass.add(data.upperCamelCase.call(propStack.last().type.type.name))
+        }
         propStack.add(property)
         propIsArrayStack.add(property.type.isArray)
         // If either already collection of if this property is an collection.
         propIsCollectionStack.add(propIsCollectionStack.last() || property.type.isArray)
+
     }
 
     /**
@@ -82,6 +99,8 @@ class FuzzyFilterExperiment {
         propStack.pop()
         propIsArrayStack.pop()
         propIsCollectionStack.pop()
+        parentJavaClass.pop()
+
     }
 
     // findStringProps calls itself, needs forward declaration in template!
@@ -92,8 +111,10 @@ class FuzzyFilterExperiment {
         // loop over string properties (not array!)
         type.properties.findAll { prop -> prop.type instanceof StringType && ! prop.type.isArray } .each { prop ->
             propStack.add(prop)
-            def key = propStack.collect { prop2 -> prop2.name }.join('.')
-            println "    // name=${prop.name} key=$key type=${prop.type.class.getSimpleName()} isArray=${prop.type.isArray}"
+            if (verbose) {
+                def key = propStack.collect { prop2 -> prop2.name }.join('.')
+                println "    // name=${prop.name} key=$key type=${prop.type.class.getSimpleName()} isArray=${prop.type.isArray}"
+            }
             propStack.pop()
             createFuzzyTest(prop, allLines)
         }
@@ -111,24 +132,40 @@ class FuzzyFilterExperiment {
      * Appends lines of a test method for a relevant String property to parameter lines!
      */
     def createFuzzyTest = { Property property, List<String> lines ->
+        def prefix = '\n                        '
+        def mapLines = ''
+        def mapLinesNotJoined = ''
         def propParentClass
         if (propStack.isEmpty()) {
             propParentClass = targetTypeNotJoined
         } else {
-            // propParentClass = propStack.last().type.type.name
             propParentClass = data.upperCamelCase.call(propStack.last().type.typeName)
         }
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
         def upperProp = data.upperCamelCase.call(property.name)
         def lowerProp = data.lowerCamelCase.call(property.name)
-        def prefix = '\n                        '
-        def mapLines = "${prefix}.map(${targetTypeNotJoined}::get${upperProp})" // FIXME
+
+        def propIter = propStack.iterator()
+        def classIter = parentJavaClass.iterator()
+        while (propIter.hasNext()) {
+            def clazz = classIter.next()
+            def clazzNotJoined = clazz.endsWith("Joined") ? clazz[0..-7] : clazz
+            def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
+            mapLines += "${prefix}.map(${clazz}${getter})"
+            mapLinesNotJoined += "${prefix}.map(${clazzNotJoined}${getter})"
+        }
+        if (verbose) {
+            println "/* mapLines=$mapLines */"
+        }
+        // Add final map
+        // mapLines += "${prefix}.map(${propParentClass}::get${upperProp})"
+        def methodName = propStack.collect {prop -> data.upperCamelCase.call(prop.name)}.join('')
         lines.add("""
     @Test
-    public void testSearch${upperProp}() {
+    public void testSearch${methodName}() {
         final List<Dao${targetTypeNotJoined}> daos =  createInsertDaos("${lowerProp}", String.class, ${propParentClass}.class);
-        final List<String> actValues1 = daos.stream()${mapLines}
+        final List<String> actValues1 = daos.stream()${mapLinesNotJoined}
                         .collect(Collectors.toList());
         assertEquals(values.length, actValues1.size());
         assertTrue(actValues1.toString(), actValues1.containsAll(Arrays.asList(values)));
