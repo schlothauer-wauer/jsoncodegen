@@ -164,12 +164,6 @@ class FuzzyFilterExperiment {
         switch (parentJavaClass.size()) {
             case 1:
                 parentClass = 'Dao' + targetTypeNotJoined
-                /*
-                parentClass = 'Dao' + parentClass
-                if (parentClass.endsWith('Joined')) {
-                    parentClass = parentClass[0..-7]
-                }
-                */
             break
             case 2:
                 if (key.startsWith('objectBase.')) {
@@ -191,20 +185,19 @@ class FuzzyFilterExperiment {
             }
         }
         if (!key.startsWith('objectBase.') && shortPropStack.size > 0 ) {
+            // remove suffix 'Joined' from first parentJavaClass!
+            def firstClazz = shortParentJavaClass[0]
+            if (firstClazz.endsWith('Joined')) {
+                shortParentJavaClass[0] = firstClazz[0..-7]
+            }
             def propIter = shortPropStack.iterator()
             def classIter = shortParentJavaClass.iterator()
             while (propIter.hasNext()) {
                 def clazz = classIter.next()
-                def clazzNotJoined = clazz.endsWith("Joined") ? clazz[0..-7] : clazz
                 def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
-                mapLinesParent += "${prefix}.map(${clazzNotJoined}${getter})"
+                mapLinesParent += "${prefix}.map(${clazz}${getter})"
             }
         }
-        /*
-        if (parentJavaClass.size() == 1 && parentClass.endsWith('Joined')) {
-            parentClass = 'Dao' + parentClass[0..-7]
-        }
-        */
 
         if (key.startsWith('objectBase.')) {
             // special case for string properties attached to inner ObjectBase!
