@@ -135,6 +135,11 @@ class FuzzyFilterExperiment {
         } else {
             propParentClass = data.upperCamelCase.call(propStack.last().type.typeName)
         }
+        if (propParentClass == 'ListEntry' && property.name == 'refId') {
+            // Skip testing of ListEntry.refId: The properties values will be overwritten by DaoXXX.insert() with the
+            // GUID of referenced objects!
+            return
+        }
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
         def lowerProp = data.lowerCamelCase.call(property.name)
