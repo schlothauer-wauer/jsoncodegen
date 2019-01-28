@@ -109,7 +109,7 @@ class FuzzyFilterExperiment {
      */
     def findStringProps = { Type type, List<String> lines ->
         // loop over string properties (not array!)
-        type.properties.findAll { prop -> prop.type instanceof StringType && ! prop.type.isArray } .each { prop ->
+        type.properties.findAll { prop -> prop.type.class.getSimpleName() == 'StringType' && ! prop.type.isArray } .each { prop ->
             propStack.add(prop)
             if (verbose) {
                 def key = propStack.collect { prop2 -> prop2.name }.join('.')
@@ -598,7 +598,7 @@ public class IT_Fuyyz_Search_Dao_$targetType {
     public void dummyTest() {
         assertTrue("Dummy test", true);
     }
-    """
+"""
         println fileHead
 
         // Generate tests for string properties (not array!), storing them in allLines!
