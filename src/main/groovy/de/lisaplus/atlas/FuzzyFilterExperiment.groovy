@@ -328,7 +328,7 @@ class FuzzyFilterExperiment {
     }
 
     /**
-     * Execute code generation for one type
+     * Prepares and request code generation for one type
      * @param typeName The name of the type, which is to be processed
      * @param joined Indicates whether that type is a joined type
      */
@@ -339,9 +339,14 @@ class FuzzyFilterExperiment {
         executeForType(type, joined)
     }
 
-    private void executeForType(Type type, boolean joined) {
+    /**
+     * Execute code generation for one type
+     * @param currentType The type, which is to be processed
+     * @param joined Indicates whether that type is a joined type
+     */
+    private void executeForType(Type currentType, boolean joined) {
         this.joined = joined
-        targetType = data.upperCamelCase.call(type.name)
+        targetType = data.upperCamelCase.call(currentType.name)
         println '###################################################################'
         println "Start of $targetType:"
         println '###################################################################'
@@ -558,7 +563,7 @@ ${createInstanceDaos}
         // Generate tests for string properties (not array!), storing them in allLines!
         allLines.clear()
         prepareStacks.call()
-        findStringProps(type, allLines)
+        findStringProps(currentType, allLines)
 
         // Append tests to output
         allLines.each { println it }
