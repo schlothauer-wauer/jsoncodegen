@@ -24,7 +24,7 @@ class FuzzyFilterExperiment {
         fuzzyExp.execute(typeName, typeName.endsWith('Joined'))
 
         // Check for exception while running code generation for all available types
-        // fuzzyExp.generateAll()
+        fuzzyExp.generateAll()
     }
 
     /** The path to the model definition file */
@@ -311,15 +311,18 @@ class FuzzyFilterExperiment {
         // first process normal types
         this.model = readModel(modelPath)
         data = generator.createTemplateDataMap(model)
-        def normalTypes = model.types.findAll { type -> !type.name.endsWith('Joined')}.collect()
+        def relevantTypes = model.types.findAll { type -> data.containsTag.call(type, 'mongodb') || type.name.endsWith('Joined') }
+        def normalTypes = relevantTypes.findAll { type -> !type.name.endsWith('Joined')}.collect()
         for (Type type : normalTypes) {
+            if (verbose) println 'Not joined: ' + type.name
             executeForType(type, false)
         }
         // then reload model to erase effects of type tuning and process joined types
         this.model = readModel(modelPath)
         data = generator.createTemplateDataMap(model)
-        def joinedTypes = model.types.findAll { type -> type.name.endsWith('Joined')}.collect()
+        def joinedTypes = relevantTypes.findAll { type -> type.name.endsWith('Joined')}.collect()
         for (Type type : joinedTypes) {
+            if (verbose) println 'Joined: ' + type.name
             executeForType(type, true)
         }
     }
@@ -351,6 +354,56 @@ class FuzzyFilterExperiment {
             daoImport += "\nimport de.lisaplus.lisa.${extraParam.serviceBase}.dao.joined.*;"
         }
         targetTypeNotJoined = targetType.endsWith("Joined") ? targetType.replace('Joined', '') : targetType
+
+        String createInstanceDaosNoObjectBase= """        // $targetType is not associated with an ObjectBase!
+        final DaoObjectBase[] arrBaseDao = null;
+        final Dao$targetTypeNotJoined[] arrDao = IntStream.range(0, values.length)
+                .mapToObj(in -> random.nextObject(Dao${targetTypeNotJoined}.class))
+                .toArray(Dao$targetTypeNotJoined[]::new);
+        // set fixed values for a single string property
+        valueSetter.accept(arrDao, arrBaseDao);
+        
+        IntStream.range(0, values.length).forEach(i -> {
+
+            // currently tenantId only gets overwritten in setDaoContext(DaoContext) when it is still null!
+            Dao$targetTypeNotJoined dao = arrDao[i];
+            dao.setDaoContext(testContext);
+            // When EnhancedRandom starts creating fraction of seconds, then all DateTimeType properties must be processed!
+            // x.setCreated(toStartOfSecond(x.getCreated()))
+            dao.insert();
+        });
+        return Arrays.asList(arrDao);"""
+
+        String createInstanceDaosWithObjectBase= """        final DaoObjectBase[] arrBaseDao = IntStream.range(0, values.length)
+                .mapToObj(in -> random.nextObject(DaoObjectBase.class))
+                .toArray(DaoObjectBase[]::new);
+        final Dao$targetTypeNotJoined[] arrDao = IntStream.range(0, values.length)
+                .mapToObj(in -> random.nextObject(Dao${targetTypeNotJoined}.class))
+                .toArray(Dao$targetTypeNotJoined[]::new);
+        // set fixed values for a single string property
+        valueSetter.accept(arrDao, arrBaseDao);
+
+        // persist daos
+        IntStream.range(0, values.length).forEach(i -> {
+
+            DaoObjectBase objectBase = arrBaseDao[i];
+            objectBase.setDaoContext(testContext);
+            // When EnhancedRandom starts creating fraction of seconds, then all DateTimeType properties must be processed!
+            // objectBase.setXXX(toStartOfSecond(objectBase.getXXX()))
+            objectBase.insert();
+
+            // currently tenantId only gets overwritten in setDaoContext(DaoContext) when it is still null!
+            Dao$targetTypeNotJoined dao = arrDao[i];
+            dao.setDaoContext(testContext);
+            // When EnhancedRandom starts creating fraction of seconds, then all DateTimeType properties must be processed!
+            // x.setCreated(toStartOfSecond(x.getCreated()))
+            dao.setObjectBaseId(objectBase.getGuid());
+            dao.insert();
+        });
+        return Arrays.asList(arrDao);"""
+
+        // check for attribute objectBase or objectBaseId!
+        String createInstanceDaos = noObjectBase ? createInstanceDaosNoObjectBase : createInstanceDaosWithObjectBase
 
         String fileHead = """
 /*********start*********/
@@ -492,33 +545,7 @@ public class IT_Fuyyz_Search_Dao_$targetType {
      * @return The new Dao instances
      */
     private List<Dao$targetTypeNotJoined> createInsertDaos(BiConsumer<Dao$targetTypeNotJoined[], DaoObjectBase[]> valueSetter) {
-        final DaoObjectBase[] arrBaseDao = IntStream.range(0, values.length)
-                .mapToObj(in -> random.nextObject(DaoObjectBase.class))
-                .toArray(DaoObjectBase[]::new);
-        final Dao$targetTypeNotJoined[] arrDao = IntStream.range(0, values.length)
-                .mapToObj(in -> random.nextObject(Dao${targetTypeNotJoined}.class))
-                .toArray(Dao$targetTypeNotJoined[]::new);
-        // set fixed values for a single string property
-        valueSetter.accept(arrDao, arrBaseDao);
-
-        // persist daos
-        IntStream.range(0, values.length).forEach(i -> {
-
-            DaoObjectBase objectBase = arrBaseDao[i];
-            objectBase.setDaoContext(testContext);
-            // When EnhancedRandom starts creating fraction of seconds, then all DateTimeType properties must be processed!
-            // objectBase.setXXX(toStartOfSecond(objectBase.getXXX()))
-            objectBase.insert();
-
-            // currently tenantId only gets overwritten in setDaoContext(DaoContext) when it is still null!
-            Dao$targetTypeNotJoined dao = arrDao[i];
-            dao.setDaoContext(testContext);
-            // When EnhancedRandom starts creating fraction of seconds, then all DateTimeType properties must be processed!
-            // x.setCreated(toStartOfSecond(x.getCreated()))
-            dao.setObjectBaseId(objectBase.getGuid());
-            dao.insert();
-        });
-        return Arrays.asList(arrDao);
+${createInstanceDaos}
     }
 
     @Test
