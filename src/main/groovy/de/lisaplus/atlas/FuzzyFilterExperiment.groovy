@@ -5,7 +5,6 @@ import de.lisaplus.atlas.codegen.GeneratorBase
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Property
-import de.lisaplus.atlas.model.StringType
 import de.lisaplus.atlas.model.Type
 
 class FuzzyFilterExperiment {
@@ -408,6 +407,7 @@ class FuzzyFilterExperiment {
         return Arrays.asList(arrDao);"""
 
         // check for attribute objectBase or objectBaseId!
+        boolean noObjectBase = currentType.properties.findAll { prop -> prop.name == 'objectBase' || prop.name == 'objectBaseId'}.empty
         String createInstanceDaos = noObjectBase ? createInstanceDaosNoObjectBase : createInstanceDaosWithObjectBase
 
         String fileHead = """
