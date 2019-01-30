@@ -239,8 +239,8 @@ class FuzzyFilterNoBaseExperiment {
     public void testSearch${methodName}() {
         // final List<Dao${targetTypeNotJoined}> daos =  createInsertDaos("${lowerProp}", String.class, ${propParentClass}.class); // not specific enough!
 
-        final BiConsumer<Dao${targetTypeNotJoined}[], DaoObjectBase[]> valueSetter = (arrDao, arrBaseDao) -> {
-            final List<$parentClass> parents = Arrays.stream($parentStart)$mapLinesParent
+        final Consumer<Dao${targetTypeNotJoined}[]> valueSetter = arrDao -> {
+            final List<$parentClass> parents = Arrays.stream(arrDao)$mapLinesParent
                     .collect(Collectors.toList());
             assert parents.size() % values.length == 0;
             int idx = 0;
@@ -359,13 +359,12 @@ class FuzzyFilterNoBaseExperiment {
         }
         targetTypeNotJoined = targetType.endsWith("Joined") ? targetType.replace('Joined', '') : targetType
 
-        String createInstanceDaosNoObjectBase= """        // $targetType is not associated with an ObjectBase!
-        final DaoObjectBase[] arrBaseDao = null;
+        String createInstanceDaos= """        // $targetType is not associated with an ObjectBase!
         final Dao$targetTypeNotJoined[] arrDao = IntStream.range(0, values.length)
                 .mapToObj(in -> random.nextObject(Dao${targetTypeNotJoined}.class))
                 .toArray(Dao$targetTypeNotJoined[]::new);
         // set fixed values for a single string property
-        valueSetter.accept(arrDao, arrBaseDao);
+        valueSetter.accept(arrDao);
         
         IntStream.range(0, values.length).forEach(i -> {
 
@@ -378,37 +377,6 @@ class FuzzyFilterNoBaseExperiment {
         });
         return Arrays.asList(arrDao);"""
 
-        String createInstanceDaosWithObjectBase= """        final DaoObjectBase[] arrBaseDao = IntStream.range(0, values.length)
-                .mapToObj(in -> random.nextObject(DaoObjectBase.class))
-                .toArray(DaoObjectBase[]::new);
-        final Dao$targetTypeNotJoined[] arrDao = IntStream.range(0, values.length)
-                .mapToObj(in -> random.nextObject(Dao${targetTypeNotJoined}.class))
-                .toArray(Dao$targetTypeNotJoined[]::new);
-        // set fixed values for a single string property
-        valueSetter.accept(arrDao, arrBaseDao);
-
-        // persist daos
-        IntStream.range(0, values.length).forEach(i -> {
-
-            DaoObjectBase objectBase = arrBaseDao[i];
-            objectBase.setDaoContext(testContext);
-            // When EnhancedRandom starts creating fraction of seconds, then all DateTimeType properties must be processed!
-            // objectBase.setXXX(toStartOfSecond(objectBase.getXXX()))
-            objectBase.insert();
-
-            // currently tenantId only gets overwritten in setDaoContext(DaoContext) when it is still null!
-            Dao$targetTypeNotJoined dao = arrDao[i];
-            dao.setDaoContext(testContext);
-            // When EnhancedRandom starts creating fraction of seconds, then all DateTimeType properties must be processed!
-            // x.setCreated(toStartOfSecond(x.getCreated()))
-            dao.setObjectBaseId(objectBase.getGuid());
-            dao.insert();
-        });
-        return Arrays.asList(arrDao);"""
-
-        // check for attribute objectBase or objectBaseId!
-        boolean noObjectBase = currentType.properties.findAll { prop -> prop.name == 'objectBase' || prop.name == 'objectBaseId'}.empty
-        String createInstanceDaos = noObjectBase ? createInstanceDaosNoObjectBase : createInstanceDaosWithObjectBase
 
         String fileHead = """
 /*********start*********/
@@ -427,7 +395,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -442,7 +410,6 @@ import com.swarco.cip.utils.config.impl.PureVarConfig;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import de.lisaplus.FixedValuesRandomizer;
 $daoImport
 import de.lisaplus.lisa.${extraParam.serviceBase}.model.*;
 import de.lisaplus.util.dao.DaoContext;
@@ -549,7 +516,7 @@ public class IT_Fuyyz_Search_Dao_$targetType {
      *            will be forced to represent the {@link #values}.
      * @return The new Dao instances
      */
-    private List<Dao$targetTypeNotJoined> createInsertDaos(BiConsumer<Dao$targetTypeNotJoined[], DaoObjectBase[]> valueSetter) {
+    private List<Dao$targetTypeNotJoined> createInsertDaos(Consumer<Dao$targetTypeNotJoined[]> valueSetter) {
 ${createInstanceDaos}
     }
 
