@@ -133,7 +133,6 @@ class FuzzyFilterNoBaseExperiment {
     def createFuzzyTest = { Property property, List<String> lines ->
         // copy stacks before adding current property
         def shortPropStack = propStack.clone()
-        def shortParentJavaClass = parentJavaClass.clone()
         def shortParentJavaClassNotJoined = parentJavaClassNotJoined.clone()
 
 
@@ -156,72 +155,29 @@ class FuzzyFilterNoBaseExperiment {
         def key = propStack.collect {prop -> prop.name}.join('.')
         def lowerProp = data.lowerCamelCase.call(property.name)
         def upperProp = data.upperCamelCase.call(property.name)
-//        def parentStart
-//        if (key.startsWith('objectBase.')) {
-//            parentStart = 'arrBaseDao'
-//        } else {
-//            parentStart = 'arrDao'
-//        }
         // case 1: DaoOpMessage (stack depth 1)
         // case 2: No prefix Dao - Use parentJavaClass.last() unchanged!
         def parentClass = parentJavaClass.size() == 1 ?  'Dao' + targetTypeNotJoined : parentJavaClass.last()
 
-//        if (key.startsWith('objectBase.') && shortPropStack.size > 1) {
-//            def propIter = shortPropStack.iterator()
-//            def classIter = shortParentJavaClass.iterator()
-//            def firstProp = propIter.next()
-//            def firstClass = classIter.next()
-//            assert firstProp.name == 'objectBase' && firstClass == targetType : "firstProp=${firstProp.name}, targetType=${targetType}"
-//            assert targetType.endsWith('Joined') : targetType
-//            while (propIter.hasNext()) {
-//                def clazz = classIter.next()
-//                def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
-//                mapLinesParent += "${prefix}.map(${clazz}${getter})"
-//            }
-//        }
-//        if (!key.startsWith('objectBase.') && shortPropStack.size > 0 ) {
-            def propIter = shortPropStack.iterator()
-            def classIter = shortParentJavaClassNotJoined.iterator()
-            while (propIter.hasNext()) {
-                def clazz = classIter.next()
-                def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
-                mapLinesParent += "${prefix}.map(${clazz}${getter})"
-            }
-//        }
+        def propIter = shortPropStack.iterator()
+        def classIter = shortParentJavaClassNotJoined.iterator()
+        while (propIter.hasNext()) {
+            def clazz = classIter.next()
+            def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
+            mapLinesParent += "${prefix}.map(${clazz}${getter})"
+        }
 
-//        if (key.startsWith('objectBase.')) {
-//            // special case for string properties attached to inner ObjectBase!
-//            def propIter = propStack.iterator()
-//            def classIter = parentJavaClass.iterator()
-//            def classNotJoinedIter = parentJavaClassNotJoined.iterator()
-//            def firstProp = propIter.next()
-//            def firstClass = classIter.next()
-//            def firstClassNotJoined = classNotJoinedIter.next()
-//            assert firstProp.name == 'objectBase' && firstClass == targetType && firstClassNotJoined == targetTypeNotJoined : "firstProp=${firstProp.name}, firstClass=${firstClass}, firstClassNotJoined=${firstClassNotJoined}"
-//            assert targetType.endsWith('Joined') : targetType
-//            // get corresponding XXXJoined object to be able to collect the string values residing in the ObjectBase!
-//            mapLinesNotJoined += "${prefix}.map(dao -> Dao${targetType}.byId(dao.getGuid(), testContext))"
-//            mapLinesNotJoined += "${prefix}.map(${targetType}::getObjectBase)"
-//            mapLines += "${prefix}.map(${firstClass}::getObjectBase)"
-//            while (propIter.hasNext()) {
-//                def clazz = classIter.next()
-//                def clazzNotJoined = classNotJoinedIter.next()
-//                def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
-//                mapLines += "${prefix}.map(${clazz}${getter})"
-//                mapLinesNotJoined += "${prefix}.map(${clazzNotJoined}${getter})"
-//            }
-//        } else {
-            propIter = propStack.iterator()
-            classIter = parentJavaClass.iterator()
-            def classNotJoinedIter = parentJavaClassNotJoined.iterator()
-            while (propIter.hasNext()) {
-                def clazz = classIter.next()
-                def clazzNotJoined = classNotJoinedIter.next()
-                def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
-                mapLines += "${prefix}.map(${clazz}${getter})"
-                mapLinesNotJoined += "${prefix}.map(${clazzNotJoined}${getter})"
-            }
-//        }
+        propIter = propStack.iterator()
+        classIter = parentJavaClass.iterator()
+        def classNotJoinedIter = parentJavaClassNotJoined.iterator()
+        while (propIter.hasNext()) {
+            def clazz = classIter.next()
+            def clazzNotJoined = classNotJoinedIter.next()
+            def getter = '::get' + data.upperCamelCase.call(propIter.next().name)
+            mapLines += "${prefix}.map(${clazz}${getter})"
+            mapLinesNotJoined += "${prefix}.map(${clazzNotJoined}${getter})"
+        }
+
         // ensure unique method names
         def methodName = propStack.collect {prop -> data.upperCamelCase.call(prop.name)}.join('')
         lines.add("""
