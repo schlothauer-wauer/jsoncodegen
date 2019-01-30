@@ -442,7 +442,6 @@ import com.swarco.cip.utils.config.impl.PureVarConfig;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import de.lisaplus.FixedValuesRandomizer;
 $daoImport
 import de.lisaplus.lisa.${extraParam.serviceBase}.model.*;
 import de.lisaplus.util.dao.DaoContext;
