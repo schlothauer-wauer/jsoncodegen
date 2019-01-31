@@ -10,24 +10,25 @@ import de.lisaplus.atlas.model.Type
 class FuzzyFilterExperiment {
 
     static main(args) {
-
-        def base = '/home/stefan/Entwicklung/service-op-message/models/models-lisa-server/model/'
+        /*
         // service-op-message
+        def base = '/home/stefan/Entwicklung/service-op-message/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'op_message.json'
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
                 : 'ObjectGroup' // 'OpMessage' // 'OpMessageJoined'
-        /*
+        */
         // service junction
+
+        def base = '/home/stefan/Entwicklung/service-junction/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'junction.json'
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
                 : 'Junction' // 'ObjectBaseGis' // 'Contact' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
-        */
 
         def fuzzyExp = new FuzzyFilterExperiment(modelPath)
         fuzzyExp.execute(typeName, typeName.endsWith('Joined'))
