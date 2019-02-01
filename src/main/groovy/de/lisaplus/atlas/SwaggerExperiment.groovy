@@ -175,7 +175,7 @@ ${parameterStr}
           description: "object to save"
           required: true
           schema:
-            ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(item.name)}\""""
+            ${data.DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(item.name)}\""""
     }
 
     /**
@@ -194,15 +194,15 @@ ${parameterStr}
         200:
           description: "in case of success"
           schema:
-            ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(type.name)}"
+            ${data.DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(type.name)}"
         404:
           description: "Requested object was not found"
           schema:
-            ${DOLLAR}ref: "#/definitions/LisaError\"
+            ${data.DOLLAR}ref: "#/definitions/LisaError\"
         default:
           description: "Unexpected error"
           schema:
-            ${DOLLAR}ref: "#/definitions/LisaError\""""
+            ${data.DOLLAR}ref: "#/definitions/LisaError\""""
     }
 
     /**
@@ -218,11 +218,11 @@ ${parameterStr}
           schema:
             type: "array"
             items:
-              ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(typeName)}"
+              ${data.DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(typeName)}"
         default:
           description: "Unexpected error"
           schema:
-            ${DOLLAR}ref: "#/definitions/LisaError\""""
+            ${data.DOLLAR}ref: "#/definitions/LisaError\""""
         }
         // with status code 400
         return """      responses:
@@ -231,15 +231,15 @@ ${parameterStr}
           schema:
             type: "array"
             items:
-              ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(typeName)}"
+              ${data.DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(typeName)}"
         400:
           description: "in case of broken filter or sort criteria"
           schema:
-            ${DOLLAR}ref: "#/definitions/LisaError\"
+            ${data.DOLLAR}ref: "#/definitions/LisaError\"
         default:
           description: "Unexpected error"
           schema:
-            ${DOLLAR}ref: "#/definitions/LisaError\""""
+            ${data.DOLLAR}ref: "#/definitions/LisaError\""""
     }
 
     /**
@@ -250,15 +250,15 @@ ${parameterStr}
         200:
           description: "in case of success"
           schema:
-            ${DOLLAR}ref: "#/definitions/IdObj"
+            ${data.DOLLAR}ref: "#/definitions/IdObj"
         404:
           description: "if the object to delete was not found"
           schema:
-            ${DOLLAR}ref: "#/definitions/LisaError\"
+            ${data.DOLLAR}ref: "#/definitions/LisaError\"
         default:
           description: "Unexpected error"
           schema:
-            ${DOLLAR}ref: "#/definitions/LisaError\""""
+            ${data.DOLLAR}ref: "#/definitions/LisaError\""""
     }
 
     /**
@@ -269,19 +269,19 @@ ${parameterStr}
         200:
           description: "in case of success"
           schema:
-            ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(type.name)}"
+            ${data.DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(type.name)}"
         404:
           description: "if the object to process was not found"
           schema:
-            ${DOLLAR}ref: "#/definitions/LisaError\"
+            ${data.DOLLAR}ref: "#/definitions/LisaError\"
         409:
           description: "if altering object would cause inconsistent data model"
           schema:
-            ${DOLLAR}ref: "#/definitions/LisaError\"
+            ${data.DOLLAR}ref: "#/definitions/LisaError\"
         default:
           description: "Unexpected error"
           schema:
-            ${DOLLAR}ref: "#/definitions/LisaError\""""
+            ${data.DOLLAR}ref: "#/definitions/LisaError\""""
     }
 
     /**
@@ -301,15 +301,15 @@ ${parameterStr}
         200:
           description: \"in case of success\"
           schema:
-            ${DOLLAR}ref: \"#/definitions/OptionsResponse\"
+            ${data.DOLLAR}ref: \"#/definitions/OptionsResponse\"
         501:
           description: \"in case of missing implementation\"
           schema:
-            ${DOLLAR}ref: \"#/definitions/LisaError\"
+            ${data.DOLLAR}ref: \"#/definitions/LisaError\"
         default:
           description: \"Unexpected error\"
           schema:
-            ${DOLLAR}ref: \"#/definitions/LisaError\""""
+            ${data.DOLLAR}ref: \"#/definitions/LisaError\""""
     }
 
     /**
@@ -321,10 +321,10 @@ ${parameterStr}
         }
         parameterStr = "      parameters:"
         return """    options:
-${printTags(lastItem)}
+${ -> printTags(lastItem)}
       summary: Provides meta data of the related type
       description: return a meta data object
-      operationId: \"${printOperationId('options',pathStr)}\"
+      operationId: \"${ -> printOperationId('options',pathStr)}\"
       produces:
         - \"application/xml\"
         - \"application/json\"
@@ -337,15 +337,15 @@ ${parameterStr}
         200:
           description: \"in case of success\"
           schema:
-            ${DOLLAR}ref: \"#/definitions/OptionsListResponse\"
+            ${data.DOLLAR}ref: \"#/definitions/OptionsListResponse\"
         501:
           description: \"in case of missing implementation\"
           schema:
-            ${DOLLAR}ref: \"#/definitions/LisaError\"
+            ${data.DOLLAR}ref: \"#/definitions/LisaError\"
         default:
           description: \"Unexpected error\"
           schema:
-            ${DOLLAR}ref: \"#/definitions/LisaError\""""
+            ${data.DOLLAR}ref: \"#/definitions/LisaError\""""
     }
 
     // If you declare a closure you can use it inside the template
@@ -533,31 +533,31 @@ ${printPutPatchPostItemResponse(lastItem)}
         }
         def ret = """
   ${pathStr}:
-${printListOptionsBlock(pathStr,lastItem,parameterStr)}
+${ -> printListOptionsBlock(pathStr,lastItem,parameterStr)}
     get:
-${printTags(lastItem)}
+${ -> printTags(lastItem)}
       summary: "${summary}"
       description: "returns object list${descriptionExtension}"
-      operationId: "${printOperationId('get',pathStr)}"
+      operationId: "${ -> printOperationId('get',pathStr)}"
       produces:
         - "application/xml"
         - "application/json"
 ${parameterStrGetList}
-${printListResponse(lastItem.name,typeList.size!=1)}
+${ -> printListResponse(lastItem.name,typeList.size!=1)}
     post:
-${printTags(lastItem)}
+${ -> printTags(lastItem)}
       summary: "add a new ${lastItem.name}"
       description: ""
-      operationId: "${printOperationId('add',pathStr)}"
+      operationId: "${ -> printOperationId('add',pathStr)}"
       produces:
         - "application/xml"
         - "application/json"
       consumes:
         - "application/xml"
         - "application/json"
-${printParametersSectionForPost(parameterStr)}
-${printAdditionalParametersForPostAndPut(lastItem)}
-${printPutPatchPostItemResponse(lastItem)}
+${ -> printParametersSectionForPost(parameterStr)}
+${ -> printAdditionalParametersForPostAndPut(lastItem)}
+${ -> printPutPatchPostItemResponse(lastItem)}
 """
         return ret
     }
@@ -741,7 +741,7 @@ paths:
 //                    type: array
 //                    items:
 //                    <% if ((prop.isRefTypeOrComplexType())) { %>
-//                        ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(prop.type.type.name)}"
+//                        ${data.DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(prop.type.type.name)}"
 //                        <% } else { %>
 //                        <% if (prop.description) { %>
 //                            description: "${prop.description}"
@@ -753,7 +753,7 @@ paths:
 //                        <% } %>
 //                    <% } else { %>
 //                    <% if (prop.isRefTypeOrComplexType()) { %>
-//                        ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(prop.type.type.name)}"
+//                        ${data.DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(prop.type.type.name)}"
 //                        <% } else { %>
 //                        <% if (prop.description) { %>
 //                            description: "${prop.description}"
