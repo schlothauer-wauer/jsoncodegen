@@ -46,9 +46,6 @@ class MaskExperiments {
                 : args[0]
         def type = args.length > 0 ?
                 args[1]
-                : 'Junction' // 'Incident' // 'ObjectBaseGis' // 'Contact' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
-        def typeName = args.length > 0 ?
-                args[1]
                 : 'ObjectGroup' // 'OpMessage' // 'OpMessageJoined'
         */
 
