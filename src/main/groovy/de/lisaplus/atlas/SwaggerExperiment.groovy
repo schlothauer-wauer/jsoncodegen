@@ -715,13 +715,14 @@ paths:
                 }
              }
         }
-//
-//
-//                <% model.types.findAll { it.hasTag('joinedType') && it.hasTag('rest') && it.hasTag('mainType') }.each { type -> %>
-//            ${printListPathJoined([type])}
-//            ${printIDPathJoined([type])}
-//            <% } %>
-////// mix in an optional file with additional files
+
+
+        model.types.findAll { it.hasTag('joinedType') && it.hasTag('rest') && it.hasTag('mainType') }.each { type ->
+            println printListPathJoined([type])
+            println printIDPathJoined([type])
+        }
+
+//// mix in an optional file with additional files
 //                ${ includeAdditionalPaths.call() }
 //        definitions:
 //        <% model.types.each { type -> %>
