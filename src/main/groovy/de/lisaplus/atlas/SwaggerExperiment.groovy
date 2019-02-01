@@ -665,34 +665,29 @@ paths:
 /$
         println part1
 
-        //// search for all types that should provide entry points
         // model.types.each{ println "name=$it.name  tags=$it.tags isMainType=${ -> it.isMainType('junction')}" }
 
+        //// search for all types that should provide entry points
         model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
-            println type.name
             println printListPath([type], true)
             println printIDPath([type])
         }
 
 
-////// search for all types that should provide entry points
-//        <% model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type -> %>
-//            ${printListPath([type],true)}
-//            ${printIDPath([type])}
-//            <% } %>
-//
-//
-//                <% model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type -> %>
-//            //// properties that are Sub-Types should be rendered as sub paths
-//            <% type.properties.findAll{ ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
-//                    (!(['number','name'].contains(it.name)))  && (it.type.type.name!='ListEntry') }.each { prop -> %>
-//                ${printListPath([type,prop.type.type],prop.type.isArray)}
-//                //// ID functions for subpaths are only needed in case of array elements
-//                <% if (prop.type.isArray) { %>
-//                    ${printIDPath([type,prop.type.type])}
-//                    <% } %>
-//                <% } %>
-//                    <% } %>
+        model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
+            //// properties that are Sub-Types should be rendered as sub paths
+            type.properties.findAll{ ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
+                    (!(['number','name'].contains(it.name)))  && (it.type.type.name!='ListEntry') }.each { prop ->
+                println printListPath([type,prop.type.type],prop.type.isArray)
+                //// ID functions for subpaths are only needed in case of array elements
+                if (prop.type.isArray) {
+                    println printIDPath([type,prop.type.type])
+                }
+            }
+        }
+
+
+
 //
 //                <% model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type -> %>
 //            //// properties that are Sub-Types should be rendered as sub paths
