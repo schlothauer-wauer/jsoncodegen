@@ -88,6 +88,522 @@ class SwaggerExperiment {
         executeForModel()
     }
 
+    def printOperationId = { operationStr, pathStr ->
+        return "${operationStr}${firstUpperCase.call(pathStr).replaceAll('[^a-zA-Z0-9]','_').replaceAll('__','_')}"
+    }
+
+    def includeAdditionalPaths = {
+        if (!extraParam.additionalPaths) return ''
+        File f = new File (extraParam.additionalPaths)
+        if (!f.exists()) {
+            return "!!! additionalPaths file not found: $extraParam.additionalPaths"
+        }
+        else {
+            return f.getText('UTF-8')
+        }
+    }
+
+    def includeAdditionalTypes = {
+        if (!extraParam.additionalTypes) return ''
+        File f = new File (extraParam.additionalTypes)
+        if (!f.exists()) {
+            return "!!! additionalTypes file not found: $extraParam.additionalTypes"
+        }
+        else {
+            return f.getText('UTF-8')
+        }
+    }
+
+    def getParameterStr = { List typeList,boolean isIdPath,boolean isGetPath ->
+        if ((!typeList) && (!isGetPath) || ((typeList.size()==1) && (!isIdPath) && (!isGetPath) )) return ''
+        def parameterStr=''
+        if (isGetPath && (typeList.size()==1)) {
+            parameterStr += "\n        - in: query"
+            parameterStr += "\n          name: offset"
+            parameterStr += "\n          type: integer"
+            parameterStr += "\n          description: The number of objects to skip before starting to collect the result set."
+            parameterStr += "\n        - in: query"
+            parameterStr += "\n          name: limit"
+            parameterStr += "\n          type: integer"
+            parameterStr += "\n          description: The numbers of objects to return."
+            parameterStr += "\n        - in: query"
+            parameterStr += "\n          name: filter"
+            parameterStr += "\n          type: string"
+            parameterStr += "\n          description: Defines a criteria for selecting specific objects"
+            parameterStr += "\n        - in: query"
+            parameterStr += "\n          name: sort"
+            parameterStr += "\n          type: string"
+            parameterStr += "\n          description: Defines a sorting order for the objects"
+        }
+        typeList.findAll {
+            isIdPath || (it != typeList[typeList.size()-1])
+        }.each {
+            def descriptionStr = it.description ? it.description : '???'
+            parameterStr += "\n        - name: \"${lowerCamelCase.call(it.name)}_id\""
+            parameterStr += '\n          in: "path"'
+            parameterStr += "\n          description: \"$descriptionStr\""
+            parameterStr += '\n          required: true'
+            parameterStr += '\n          type: "string"'
+            parameterStr += '\n          format: "uuid"'
+        }
+        def ret = """\n      parameters:
+${parameterStr}
+"""
+        return ret
+    }
+
+    def printParametersSectionForPost = { parameterStr ->
+        if (!parameterStr) {
+            return '      parameters:'
+        }
+        else {
+            return parameterStr
+        }
+    }
+
+    def printAdditionalParametersForPostAndPut = { item ->
+        return """        - name: "bodyParam"
+          in: "body"
+          description: "object to save"
+          required: true
+          schema:
+            ${DOLLAR}ref: "#/definitions/${upperCamelCase.call(item.name)}\""""
+    }
+
+    /**
+     * prints out tags section
+     */
+    def printTags = { type ->
+        return """      tags:
+        - ${type.name}"""
+    }
+
+    /**
+     * prints out response section for ID-Paths
+     */
+    def printIdResponse = { type ->
+        return """      responses:
+        200:
+          description: "in case of success"
+          schema:
+            ${DOLLAR}ref: "#/definitions/${upperCamelCase.call(type.name)}"
+        404:
+          description: "Requested object was not found"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError\"
+        default:
+          description: "Unexpected error"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError\""""
+    }
+
+    /**
+     * prints out response section for List-Paths
+     */
+    def printListResponse = { typeName, boolean withQueryParameter ->
+        // TODO Eiko: avoid duplication!
+        if(withQueryParameter) {
+            // without status code 400
+            return """      responses:
+        200:
+          description: "in case of success"
+          schema:
+            type: "array"
+            items:
+              ${DOLLAR}ref: "#/definitions/${upperCamelCase.call(typeName)}"
+        default:
+          description: "Unexpected error"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError\""""
+        }
+        // with status code 400
+        return """      responses:
+        200:
+          description: "in case of success"
+          schema:
+            type: "array"
+            items:
+              ${DOLLAR}ref: "#/definitions/${upperCamelCase.call(typeName)}"
+        400:
+          description: "in case of broken filter or sort criteria"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError\"
+        default:
+          description: "Unexpected error"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError\""""
+    }
+
+    /**
+     * prints out response section for Delete-Paths
+     */
+    def printDeleteResponse = { typeName ->
+        return """      responses:
+        200:
+          description: "in case of success"
+          schema:
+            ${DOLLAR}ref: "#/definitions/IdObj"
+        404:
+          description: "if the object to delete was not found"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError\"
+        default:
+          description: "Unexpected error"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError\""""
+    }
+
+    /**
+     * prints out response section for List-Paths
+     */
+    def printPutPatchPostItemResponse = { type ->
+        return """      responses:
+        200:
+          description: "in case of success"
+          schema:
+            ${DOLLAR}ref: "#/definitions/${upperCamelCase.call(type.name)}"
+        404:
+          description: "if the object to process was not found"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError\"
+        409:
+          description: "if altering object would cause inconsistent data model"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError\"
+        default:
+          description: "Unexpected error"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError\""""
+    }
+
+    /**
+     * prints out options block
+     */
+    def printOptionsBlock = { pathStr,lastItem,parameterStr ->
+        return """    options:
+${printTags(lastItem)}
+      summary: Provides meta data of the related type
+      description: return a meta data object
+      operationId: \"${printOperationId('options',pathStr)}\"
+      produces:
+        - \"application/xml\"
+        - \"application/json\"
+${parameterStr}
+      responses:
+        200:
+          description: \"in case of success\"
+          schema:
+            ${DOLLAR}ref: \"#/definitions/OptionsResponse\"
+        501:
+          description: \"in case of missing implementation\"
+          schema:
+            ${DOLLAR}ref: \"#/definitions/LisaError\"
+        default:
+          description: \"Unexpected error\"
+          schema:
+            ${DOLLAR}ref: \"#/definitions/LisaError\""""
+    }
+
+    /**
+     * prints out options block
+     */
+    def printListOptionsBlock = { pathStr,lastItem,parameterStr ->
+        if (parameterStr) {
+            return printOptionsBlock.call (pathStr,lastItem,parameterStr)
+        }
+        parameterStr = "      parameters:"
+        return """    options:
+${printTags(lastItem)}
+      summary: Provides meta data of the related type
+      description: return a meta data object
+      operationId: \"${printOperationId('options',pathStr)}\"
+      produces:
+        - \"application/xml\"
+        - \"application/json\"
+${parameterStr}
+        - in: query
+          name: filter
+          type: string
+          description: Defines a criteria for selecting specific objects
+      responses:
+        200:
+          description: \"in case of success\"
+          schema:
+            ${DOLLAR}ref: \"#/definitions/OptionsListResponse\"
+        501:
+          description: \"in case of missing implementation\"
+          schema:
+            ${DOLLAR}ref: \"#/definitions/LisaError\"
+        default:
+          description: \"Unexpected error\"
+          schema:
+            ${DOLLAR}ref: \"#/definitions/LisaError\""""
+    }
+
+    // If you declare a closure you can use it inside the template
+    /**
+     * Print path for List URLs
+     */
+    def printIDPath = { List typeList ->
+        def pathStr=''
+        typeList.each {
+            pathStr += '/'
+            pathStr += lowerCamelCase.call(it.name)
+            pathStr += "/{${lowerCamelCase.call(it.name)}_id}"
+        }
+        def lastItem = typeList[typeList.size()-1]
+        def summary = lastItem.description ? lastItem.description : '???'
+        def parameterStr = getParameterStr(typeList,true,false)
+        // def parameterStrGetList = getParameterStr(typeList,true,true)
+        return """
+  ${pathStr}:
+${printOptionsBlock(pathStr,lastItem,parameterStr)}
+    get:
+${printTags(lastItem)}
+      summary: ${summary}
+      description: "returns object by id"
+      operationId: "${printOperationId('get',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+${parameterStr}
+${printIdResponse(lastItem)}
+    put:
+${printTags(lastItem)}
+      summary: "update ${lastItem.name}"
+      description: "update existing ${lastItem.name}"
+      operationId: "${printOperationId('upd',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+      consumes:
+        - "application/xml"
+        - "application/json"
+${parameterStr}
+${printAdditionalParametersForPostAndPut(lastItem)}
+${printPutPatchPostItemResponse(lastItem)}
+    patch:
+${printTags(lastItem)}
+      summary: "partial update ${lastItem.name}"
+      description: "partial update existing ${lastItem.name}"
+      operationId: "${printOperationId('patch',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+      consumes:
+        - "application/xml"
+        - "application/json"
+${parameterStr}
+${printAdditionalParametersForPostAndPut(lastItem)}
+${printPutPatchPostItemResponse(lastItem)}
+    delete:
+${printTags(lastItem)}
+      summary: "delete ${lastItem.name}"
+      description: "delete existing ${lastItem.name}"
+      operationId: "${printOperationId('del',pathStr)}"
+${parameterStr}
+${printDeleteResponse()}
+"""
+    }
+
+    /**
+     * Print path for ID URLs and joined types
+     */
+    def printIDPathJoined = { List typeList ->
+        def pathStr=''
+        typeList.each {
+            pathStr += '/'
+            pathStr += lowerCamelCase.call(it.name)
+            pathStr += "/{${lowerCamelCase.call(it.name)}_id}"
+        }
+        def lastItem = typeList[typeList.size()-1]
+        def summary = lastItem.description ? lastItem.description : '???'
+        def parameterStr = getParameterStr(typeList,true,false)
+        // def parameterStrGetList = getParameterStr(typeList,true,true)
+        return """
+  ${pathStr}:
+${printOptionsBlock(pathStr,lastItem,parameterStr)}
+    get:
+${printTags(lastItem)}
+      summary: ${summary}
+      description: "returns object by id"
+      operationId: "${printOperationId('get',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+${parameterStr}
+${printIdResponse(lastItem)}
+"""
+    }
+
+    /**
+     * Print path for List URLs that are no arrays
+     */
+    def printListPath_noArray = { List typeList ->
+        def pathStr=''
+        def lastElem = typeList[typeList.size()-1]
+        typeList.each {
+            pathStr += '/'
+            pathStr += lowerCamelCase.call(it.name)
+            if (it!=lastElem) {
+                pathStr += "/{${lowerCamelCase.call(it.name)}_id}"
+            }
+        }
+        def lastItem = typeList[typeList.size()-1]
+        def summary = lastItem.description ? lastItem.description : '???'
+        def parameterStr = getParameterStr(typeList,false,false)
+        def parameterStrGetList = getParameterStr(typeList,false,true)
+        def descriptionExtension = ''
+        if (typeList.size==1) {
+            descriptionExtension += ", contains optional query paramter for defining offset, limit, object filter and object order"
+        }
+        def ret = """
+  ${pathStr}:
+${printOptionsBlock(pathStr,lastItem,parameterStr)}
+    get:
+${printTags(lastItem)}
+      summary: "${summary}"
+      description: "returns object list${descriptionExtension}"
+      operationId: "${printOperationId('get',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+${parameterStrGetList}
+${printListResponse(lastItem.name,typeList.size!=1)}
+    put:
+${printTags(lastItem)}
+      summary: "add a new ${lastItem.name}"
+      description: ""
+      operationId: "${printOperationId('upd',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+      consumes:
+        - "application/xml"
+        - "application/json"
+${printParametersSectionForPost(parameterStr)}
+${printAdditionalParametersForPostAndPut(lastItem)}
+${printPutPatchPostItemResponse(lastItem)}
+    patch:
+${printTags(lastItem)}
+      summary: "partial update ${lastItem.name}"
+      description: ""
+      operationId: "${printOperationId('patch',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+      consumes:
+        - "application/xml"
+        - "application/json"
+${printParametersSectionForPost(parameterStr)}
+${printAdditionalParametersForPostAndPut(lastItem)}
+${printPutPatchPostItemResponse(lastItem)}
+"""
+        return ret
+    }
+
+    /**
+     * Print path for List URLs for arrays
+     */
+    def printListPath_array = { List typeList ->
+        def pathStr=''
+        def lastElem = typeList[typeList.size()-1]
+        typeList.each {
+            pathStr += '/'
+            pathStr += lowerCamelCase.call(it.name)
+            if (it!=lastElem) {
+                pathStr += "/{${lowerCamelCase.call(it.name)}_id}"
+            }
+        }
+        def lastItem = typeList[typeList.size()-1]
+        def summary = lastItem.description ? lastItem.description : '???'
+        def parameterStr = getParameterStr(typeList,false,false)
+        def parameterStrGetList = getParameterStr(typeList,false,true)
+        def descriptionExtension = ''
+        if (typeList.size==1) {
+            descriptionExtension += ", contains optional query paramter for defining offset, limit, object filter and object order"
+        }
+        def ret = """
+  ${pathStr}:
+${printListOptionsBlock(pathStr,lastItem,parameterStr)}
+    get:
+${printTags(lastItem)}
+      summary: "${summary}"
+      description: "returns object list${descriptionExtension}"
+      operationId: "${printOperationId('get',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+${parameterStrGetList}
+${printListResponse(lastItem.name,typeList.size!=1)}
+    post:
+${printTags(lastItem)}
+      summary: "add a new ${lastItem.name}"
+      description: ""
+      operationId: "${printOperationId('add',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+      consumes:
+        - "application/xml"
+        - "application/json"
+${printParametersSectionForPost(parameterStr)}
+${printAdditionalParametersForPostAndPut(lastItem)}
+${printPutPatchPostItemResponse(lastItem)}
+"""
+        return ret
+    }
+
+    /**
+     * Print path for List URLs for arrays
+     */
+    def printListPathJoined = { List typeList ->
+        def pathStr=''
+        def lastElem = typeList[typeList.size()-1]
+        typeList.each {
+            pathStr += '/'
+            pathStr += lowerCamelCase.call(it.name)
+            if (it!=lastElem) {
+                pathStr += "/{${lowerCamelCase.call(it.name)}_id}"
+            }
+        }
+        def lastItem = typeList[typeList.size()-1]
+        def summary = lastItem.description ? lastItem.description : '???'
+        def parameterStr = getParameterStr(typeList,false,false)
+        def parameterStrGetList = getParameterStr(typeList,false,true)
+        def descriptionExtension = ''
+        if (typeList.size==1) {
+            descriptionExtension += ", contains optional query paramter for defining offset, limit, object filter and object order"
+        }
+        def ret = """
+  ${pathStr}:
+${printListOptionsBlock(pathStr,lastItem,parameterStr)}
+    get:
+${printTags(lastItem)}
+      summary: "${summary}"
+      description: "returns object list${descriptionExtension}"
+      operationId: "${printOperationId('get',pathStr)}"
+      produces:
+        - "application/xml"
+        - "application/json"
+${parameterStrGetList}
+${printListResponse(lastItem.name,typeList.size!=1)}
+"""
+        return ret
+    }
+
+    /**
+     * Print path for List URLs that are no arrays, functional fasade
+     */
+    def printListPath = { List typeList, boolean array = false ->
+        if (array) {
+            printListPath_array (typeList)
+        }
+        else {
+            printListPath_noArray (typeList)
+        }
+    }
+
     private void executeForModel() {
         println 'Add stuff!'
     }
