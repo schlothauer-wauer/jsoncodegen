@@ -67,6 +67,8 @@ class SwaggerExperiment {
     List<String> allLines = []
     /** For enabling/disabling debug output */
     boolean verbose = false
+    /** Mimic template environment! */
+    Map extraParam = [:]
 
     SwaggerExperiment( String modelPath) {
         this.modelPath = modelPath
@@ -722,44 +724,44 @@ paths:
             println printIDPathJoined([type])
         }
 
-//// mix in an optional file with additional files
-//                ${ includeAdditionalPaths.call() }
-//        definitions:
-//        <% model.types.each { type -> %>
-//            ${data.upperCamelCase.call(type.name)}:
-//            type: object
-//            properties:
-//            <% type.properties.each { prop -> %>
-//                ${prop.name}:
-//                <% if (prop.type.isArray) { %>
-//                    type: array
-//                    items:
-//                    <% if ((prop.isRefTypeOrComplexType())) { %>
-//                        ${data.DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(prop.type.type.name)}"
-//                        <% } else { %>
-//                        <% if (prop.description) { %>
-//                            description: "${prop.description}"
-//                            <% } %>
-//                        type: "${typeToSwagger.call(prop.type)}"
-//                        <% if (typeFormatToSwagger.call(prop.type)) { %>
-//                            format: "${typeFormatToSwagger.call(prop.type)}"
-//                            <% } %>
-//                        <% } %>
-//                    <% } else { %>
-//                    <% if (prop.isRefTypeOrComplexType()) { %>
-//                        ${data.DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(prop.type.type.name)}"
-//                        <% } else { %>
-//                        <% if (prop.description) { %>
-//                            description: "${prop.description}"
-//                            <% } %>
-//                        type: "${typeToSwagger.call(prop.type)}"
-//                        <% if (typeFormatToSwagger.call(prop.type)) { %>
-//                            format: "${typeFormatToSwagger.call(prop.type)}"
-//                            <% } %>
-//                        <% } %>
-//                    <% } %>
-//                <% } %>
-//                    <% } %>
+        // mix in an optional file with additional files
+        println includeAdditionalPaths.call()
+        println 'definitions:'
+        model.types.each { type ->
+            println """    ${data.upperCamelCase.call(type.name)}':'
+    type: object
+    properties:"""
+            type.properties.each { prop ->
+                println "      ${prop.name}:"
+                if (prop.type.isArray) {
+                    println "        type: array"
+                    println "        items:"
+                    if (prop.isRefTypeOrComplexType()) {  // FIXME: Realy Groovy trooth not null? Or True?
+                        println "          ${data.DOLLAR}ref: \"#/definitions/${data.upperCamelCase.call(prop.type.type.name)}\""
+                    } else {
+                        if (prop.description) {
+                            println "          description: \"${prop.description}\""
+                        }
+                        println "          type: \"${data.typeToSwagger.call(prop.type)}\""
+                        if (data.typeFormatToSwagger.call(prop.type)) {
+                            println "          format: \"${data.typeFormatToSwagger.call(prop.type)}\""
+                        }
+                    }
+                } else {
+                    if (prop.isRefTypeOrComplexType()) {
+                        println "        ${data.DOLLAR}ref: \"#/definitions/${data.upperCamelCase.call(prop.type.type.name)}\""
+                    } else {
+                        if (prop.description) {
+                            println "        description: \"${prop.description}\""
+                        }
+                        println "        type: \"${data.typeToSwagger.call(prop.type)}\""
+                        if (data.typeFormatToSwagger.call(prop.type)) {
+                            println "        format: \"${data.typeFormatToSwagger.call(prop.type)}\""
+                        }
+                    }
+                }
+            }
+        }
 ////// mix in an optional file with additional files
 //                ${ includeAdditionalTypes.call() }
     }
