@@ -97,7 +97,7 @@ class SwaggerExperiment {
     }
 
     def printOperationId = { operationStr, pathStr ->
-        return "${operationStr}${firstUpperCase.call(pathStr).replaceAll('[^a-zA-Z0-9]','_').replaceAll('__','_')}"
+        return "${operationStr}${data.firstUpperCase.call(pathStr).replaceAll('[^a-zA-Z0-9]','_').replaceAll('__','_')}"
     }
 
     def includeAdditionalPaths = {
@@ -147,7 +147,7 @@ class SwaggerExperiment {
             isIdPath || (it != typeList[typeList.size()-1])
         }.each {
             def descriptionStr = it.description ? it.description : '???'
-            parameterStr += "\n        - name: \"${lowerCamelCase.call(it.name)}_id\""
+            parameterStr += "\n        - name: \"${data.lowerCamelCase.call(it.name)}_id\""
             parameterStr += '\n          in: "path"'
             parameterStr += "\n          description: \"$descriptionStr\""
             parameterStr += '\n          required: true'
@@ -175,7 +175,7 @@ ${parameterStr}
           description: "object to save"
           required: true
           schema:
-            ${DOLLAR}ref: "#/definitions/${upperCamelCase.call(item.name)}\""""
+            ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(item.name)}\""""
     }
 
     /**
@@ -194,7 +194,7 @@ ${parameterStr}
         200:
           description: "in case of success"
           schema:
-            ${DOLLAR}ref: "#/definitions/${upperCamelCase.call(type.name)}"
+            ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(type.name)}"
         404:
           description: "Requested object was not found"
           schema:
@@ -218,7 +218,7 @@ ${parameterStr}
           schema:
             type: "array"
             items:
-              ${DOLLAR}ref: "#/definitions/${upperCamelCase.call(typeName)}"
+              ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(typeName)}"
         default:
           description: "Unexpected error"
           schema:
@@ -231,7 +231,7 @@ ${parameterStr}
           schema:
             type: "array"
             items:
-              ${DOLLAR}ref: "#/definitions/${upperCamelCase.call(typeName)}"
+              ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(typeName)}"
         400:
           description: "in case of broken filter or sort criteria"
           schema:
@@ -269,7 +269,7 @@ ${parameterStr}
         200:
           description: "in case of success"
           schema:
-            ${DOLLAR}ref: "#/definitions/${upperCamelCase.call(type.name)}"
+            ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(type.name)}"
         404:
           description: "if the object to process was not found"
           schema:
@@ -356,8 +356,8 @@ ${parameterStr}
         def pathStr=''
         typeList.each {
             pathStr += '/'
-            pathStr += lowerCamelCase.call(it.name)
-            pathStr += "/{${lowerCamelCase.call(it.name)}_id}"
+            pathStr += data.lowerCamelCase.call(it.name)
+            pathStr += "/{${data.lowerCamelCase.call(it.name)}_id}"
         }
         def lastItem = typeList[typeList.size()-1]
         def summary = lastItem.description ? lastItem.description : '???'
@@ -421,8 +421,8 @@ ${printDeleteResponse()}
         def pathStr=''
         typeList.each {
             pathStr += '/'
-            pathStr += lowerCamelCase.call(it.name)
-            pathStr += "/{${lowerCamelCase.call(it.name)}_id}"
+            pathStr += data.lowerCamelCase.call(it.name)
+            pathStr += "/{${data.lowerCamelCase.call(it.name)}_id}"
         }
         def lastItem = typeList[typeList.size()-1]
         def summary = lastItem.description ? lastItem.description : '???'
@@ -452,9 +452,9 @@ ${printIdResponse(lastItem)}
         def lastElem = typeList[typeList.size()-1]
         typeList.each {
             pathStr += '/'
-            pathStr += lowerCamelCase.call(it.name)
+            pathStr += data.lowerCamelCase.call(it.name)
             if (it!=lastElem) {
-                pathStr += "/{${lowerCamelCase.call(it.name)}_id}"
+                pathStr += "/{${data.lowerCamelCase.call(it.name)}_id}"
             }
         }
         def lastItem = typeList[typeList.size()-1]
@@ -518,9 +518,9 @@ ${printPutPatchPostItemResponse(lastItem)}
         def lastElem = typeList[typeList.size()-1]
         typeList.each {
             pathStr += '/'
-            pathStr += lowerCamelCase.call(it.name)
+            pathStr += data.lowerCamelCase.call(it.name)
             if (it!=lastElem) {
-                pathStr += "/{${lowerCamelCase.call(it.name)}_id}"
+                pathStr += "/{${data.lowerCamelCase.call(it.name)}_id}"
             }
         }
         def lastItem = typeList[typeList.size()-1]
@@ -570,9 +570,9 @@ ${printPutPatchPostItemResponse(lastItem)}
         def lastElem = typeList[typeList.size()-1]
         typeList.each {
             pathStr += '/'
-            pathStr += lowerCamelCase.call(it.name)
+            pathStr += data.lowerCamelCase.call(it.name)
             if (it!=lastElem) {
-                pathStr += "/{${lowerCamelCase.call(it.name)}_id}"
+                pathStr += "/{${data.lowerCamelCase.call(it.name)}_id}"
             }
         }
         def lastItem = typeList[typeList.size()-1]
@@ -732,7 +732,7 @@ paths:
 //                ${ includeAdditionalPaths.call() }
 //        definitions:
 //        <% model.types.each { type -> %>
-//            ${upperCamelCase.call(type.name)}:
+//            ${data.upperCamelCase.call(type.name)}:
 //            type: object
 //            properties:
 //            <% type.properties.each { prop -> %>
@@ -741,7 +741,7 @@ paths:
 //                    type: array
 //                    items:
 //                    <% if ((prop.isRefTypeOrComplexType())) { %>
-//                        ${DOLLAR}ref: "#/definitions/${upperCamelCase.call(prop.type.type.name)}"
+//                        ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(prop.type.type.name)}"
 //                        <% } else { %>
 //                        <% if (prop.description) { %>
 //                            description: "${prop.description}"
@@ -753,7 +753,7 @@ paths:
 //                        <% } %>
 //                    <% } else { %>
 //                    <% if (prop.isRefTypeOrComplexType()) { %>
-//                        ${DOLLAR}ref: "#/definitions/${upperCamelCase.call(prop.type.type.name)}"
+//                        ${DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(prop.type.type.name)}"
 //                        <% } else { %>
 //                        <% if (prop.description) { %>
 //                            description: "${prop.description}"
