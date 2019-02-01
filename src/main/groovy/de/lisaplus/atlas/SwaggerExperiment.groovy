@@ -76,7 +76,15 @@ class SwaggerExperiment {
     private Model readModel(String modelPath) {
         def modelFile = new File(modelPath)
         IModelBuilder builder = new JsonSchemaBuilder()
-        return builder.buildModel(modelFile)
+        Model model = builder.buildModel(modelFile)
+        model.types.each { type ->
+            boolean isMainType = type.isMainType(modelFile.name)
+            if(isMainType) {
+                println "Tagging ${type.name}!"
+                type.tags.add('mainType')
+            }
+        }
+        return model
     }
 
     /**
@@ -658,6 +666,8 @@ paths:
         println part1
 
         //// search for all types that should provide entry points
+        // model.types.each{ println "name=$it.name  tags=$it.tags isMainType=${ -> it.isMainType('junction')}" }
+
         model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
             println type.name
             println printListPath([type], true)
