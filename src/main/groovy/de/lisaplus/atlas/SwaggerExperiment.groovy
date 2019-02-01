@@ -762,7 +762,7 @@ paths:
                 }
             }
         }
-////// mix in an optional file with additional files
-//                ${ includeAdditionalTypes.call() }
+//// mix in an optional file with additional files
+        println includeAdditionalTypes.call()
     }
 }
