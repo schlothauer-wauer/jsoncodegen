@@ -11,7 +11,9 @@ class MaskTestExperiment {
 
     static main(args) {
 
-        def base = 'C:\\Entwicklung\\lisa-junction-server\\models\\models-lisa-server\\model\\'
+
+        // service service-junction
+        def base = '/home/stefan/Entwicklung/service-junction/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'junction.json'
                 // base + 'shared\\geo_point.json'
@@ -19,6 +21,29 @@ class MaskTestExperiment {
         def typeName = args.length > 0 ?
                 args[1]
                 : 'Junction' // 'JunctionContact' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+
+        /*
+        // service service-op-message
+        def base = '/home/stefan/Entwicklung/service-op-message/models/models-lisa-server/model/'
+        def modelPath = args.length == 0 ?
+                base + 'op_message.json'
+                : args[0]
+        def typeName = args.length > 0 ?
+                args[1]
+                : 'ObjectGroup' // 'OpMessage' // 'OpMessageJoined'
+        */
+
+        /*
+        // service incident
+        def base = '/home/stefan/Entwicklung/service-op-message/models/models-lisa-server/model/'
+        def modelPath = args.length == 0 ?
+                base + 'incident.json'
+                : args[0]
+        def typeName = args.length > 0 ?
+                args[1]
+                : 'Incident' // 'ObjectBase'
+        */
+
 
         def maskExp = new MaskTestExperiment(modelPath)
         maskExp.execute(typeName, typeName.endsWith('Joined'))
