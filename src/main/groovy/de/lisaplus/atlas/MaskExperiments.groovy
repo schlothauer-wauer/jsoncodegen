@@ -28,14 +28,41 @@ class MaskExperiments {
 
     static main(args) {
 
-        def base = 'C:\\Entwicklung\\lisa-junction-server\\models\\models-lisa-server\\model\\'
+        // service service-junction
+        def base = '/home/stefan/Entwicklung/service-junction/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'junction.json'
                 // base + 'shared\\geo_point.json'
                 : args[0]
         def type = args.length > 0 ?
                 args[1]
-                : 'ObjectBaseGis' //' Contact' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'Junction' // 'ObjectBaseGis' // 'Contact' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+
+        /*
+        // service service-op-message
+        def base = '/home/stefan/Entwicklung/service-op-message/models/models-lisa-server/model/'
+        def modelPath = args.length == 0 ?
+                base + 'op_message.json'
+                : args[0]
+        def type = args.length > 0 ?
+                args[1]
+                : 'Junction' // 'Incident' // 'ObjectBaseGis' // 'Contact' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+        def typeName = args.length > 0 ?
+                args[1]
+                : 'ObjectGroup' // 'OpMessage' // 'OpMessageJoined'
+        */
+
+        /*
+        // service incident
+        def base = '/home/stefan/Entwicklung/service-op-message/models/models-lisa-server/model/'
+        def modelPath = args.length == 0 ?
+                base + 'incident.json'
+                : args[0]
+        def type = args.length > 0 ?
+                args[1]
+                : 'Incident' // 'ObjectBase'
+        */
+
         def joined = type.endsWith('Joined')
 
         def maskExp = new MaskExperiments(type, modelPath)
@@ -470,13 +497,13 @@ class MaskExperiments {
      */
     def evalRestoreCaseForType = { Type type ->
 //        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() && !prop.hasTag('notDisplayed') }.each { prop ->
-        data.filterProps.call(type, [refComplex:false, withoutTag:'notDisplayed']).each { Property prop ->
+        data.filterProps.call(type, [refComplex:false, withoutTag:'notDisplayed', withoutTag:'recursion']).each { Property prop ->
             // println "// evalRestoreCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
             evalRestoreCaseSimple.call(prop)
         }
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() && !prop.hasTag('notDisplayed') }.each { prop ->
-        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
+        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed', withoutTag:'recursion']).each { Property prop ->
             evalRestoreCaseSimple.call(prop)
             // recursive call!
             putStacks.call(prop)
@@ -655,13 +682,13 @@ class MaskExperiments {
      */
     def evalMaskCaseForType = { Type type ->
 //        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() && !prop.hasTag('notDisplayed') }.each { prop ->
-        data.filterProps.call(type, [refComplex:false, withoutTag:'notDisplayed']).each { Property prop ->
+        data.filterProps.call(type, [refComplex:false, withoutTag:'notDisplayed', withoutTag:'recursion']).each { Property prop ->
             println "// evalMaskCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
             evalMakCaseSimple.call(prop)
         }
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() && !prop.hasTag('notDisplayed') }.each { prop ->
-        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
+        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed', withoutTag:'recursion']).each { Property prop ->
             evalMakCaseSimple.call(prop)
             // recursive call!
             putStacks.call(prop)
