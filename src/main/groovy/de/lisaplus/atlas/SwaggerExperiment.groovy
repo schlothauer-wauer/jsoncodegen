@@ -321,10 +321,10 @@ ${parameterStr}
         }
         parameterStr = "      parameters:"
         return """    options:
-${ -> printTags(lastItem)}
+${printTags(lastItem)}
       summary: Provides meta data of the related type
       description: return a meta data object
-      operationId: \"${ -> printOperationId('options',pathStr)}\"
+      operationId: \"${printOperationId('options',pathStr)}\"
       produces:
         - \"application/xml\"
         - \"application/json\"
@@ -533,31 +533,31 @@ ${printPutPatchPostItemResponse(lastItem)}
         }
         def ret = """
   ${pathStr}:
-${ -> printListOptionsBlock(pathStr,lastItem,parameterStr)}
+${printListOptionsBlock(pathStr,lastItem,parameterStr)}
     get:
-${ -> printTags(lastItem)}
+${printTags(lastItem)}
       summary: "${summary}"
       description: "returns object list${descriptionExtension}"
-      operationId: "${ -> printOperationId('get',pathStr)}"
+      operationId: "${printOperationId('get',pathStr)}"
       produces:
         - "application/xml"
         - "application/json"
 ${parameterStrGetList}
-${ -> printListResponse(lastItem.name,typeList.size!=1)}
+${printListResponse(lastItem.name,typeList.size!=1)}
     post:
-${ -> printTags(lastItem)}
+${printTags(lastItem)}
       summary: "add a new ${lastItem.name}"
       description: ""
-      operationId: "${ -> printOperationId('add',pathStr)}"
+      operationId: "${printOperationId('add',pathStr)}"
       produces:
         - "application/xml"
         - "application/json"
       consumes:
         - "application/xml"
         - "application/json"
-${ -> printParametersSectionForPost(parameterStr)}
-${ -> printAdditionalParametersForPostAndPut(lastItem)}
-${ -> printPutPatchPostItemResponse(lastItem)}
+${printParametersSectionForPost(parameterStr)}
+${printAdditionalParametersForPostAndPut(lastItem)}
+${printPutPatchPostItemResponse(lastItem)}
 """
         return ret
     }
