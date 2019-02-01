@@ -687,36 +687,34 @@ paths:
         }
 
 
-
-//
-//                <% model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type -> %>
-//            //// properties that are Sub-Types should be rendered as sub paths
-//            <% type.properties.findAll{ ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
-//                    (!(['number','name'].contains(it.name))) && (it.type.type.name!='ListEntry') }.each { prop -> %>
-//                //// ID functions for subpaths are only needed in case of array elements
-//                <% def idProp = prop.type.type.properties.find{ it -> it.name=='guid' || it.name=='entryId' } %>
-//                        //// sub-level 3: properties that are Sub-Types should be rendered as sub paths
-//                        <% if (!['dummy'].contains(prop.name)) { %>
-//                    <% prop.type.type.properties.findAll{ ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
-//                            (!(['contact','area','center','route'].contains(it.name))) && (it.type.type.name!='ListEntry') }.each { prop2 -> %>
-//                        <% if (idProp) { %>
-//                            ${printListPath([type,prop.type.type,prop2.type.type],prop2.type.isArray)}
-//                            <% } else { %>
-//                            ${printListPath([type,prop2.type.type],prop2.type.isArray)}
-//                            <% } %>
-//                        //// ID functions for subpaths are only needed in case of array elements
-//                        <% if (prop2.type.isArray) { %>
-//                            <% if (idProp) { %>
-//                                //// need to handle post/put problem
-//                                ${printIDPath([type,prop.type.type,prop2.type.type])}
-//                                <% } else { %>
-//                                ${printIDPath([type,prop2.type.type])}
-//                                <% } %>
-//                            <% } %>
-//                        <% } %>
-//                            <% } %>
-//                <% } %>
-//                    <% } %>
+        model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
+            //// properties that are Sub-Types should be rendered as sub paths
+            type.properties.findAll{ ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
+                    (!(['number','name'].contains(it.name))) && (it.type.type.name!='ListEntry') }.each { prop ->
+                //// ID functions for subpaths are only needed in case of array elements
+                def idProp = prop.type.type.properties.find{ it -> it.name=='guid' || it.name=='entryId' }
+                        //// sub-level 3: properties that are Sub-Types should be rendered as sub paths
+                if (!['dummy'].contains(prop.name)) {
+                    prop.type.type.properties.findAll{ ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
+                            (!(['contact','area','center','route'].contains(it.name))) && (it.type.type.name!='ListEntry') }.each { prop2 ->
+                        if (idProp) {
+                            println printListPath([type,prop.type.type,prop2.type.type],prop2.type.isArray)
+                        } else {
+                            println printListPath([type,prop2.type.type],prop2.type.isArray)
+                        }
+                        //// ID functions for subpaths are only needed in case of array elements
+                        if (prop2.type.isArray) {
+                            if (idProp) {
+                                //// need to handle post/put problem
+                                println printIDPath([type,prop.type.type,prop2.type.type])
+                            } else {
+                                println printIDPath([type,prop2.type.type])
+                            }
+                        }
+                    }
+                }
+             }
+        }
 //
 //
 //                <% model.types.findAll { it.hasTag('joinedType') && it.hasTag('rest') && it.hasTag('mainType') }.each { type -> %>
