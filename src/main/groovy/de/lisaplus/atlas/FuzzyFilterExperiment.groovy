@@ -51,9 +51,9 @@ class FuzzyFilterExperiment {
     String targetTypeNotJoined
     /** This stack holds the property (names) visited while traversing the object hierarchy.*/
     List<Property> propStack = []
-    /** Indicates that this property is an array. This sack is build while traversing the object hierarchy. */
+    /** Indicates that this property is an array. This stack is build while traversing the object hierarchy. */
     List<Boolean> propIsArrayStack = []
-    /** The name of the Java class, which holds the property. This sack is build while traversing the object hierarchy. */
+    /** The name of the Java class, which holds the property. This stack is build while traversing the object hierarchy. */
     List<String> parentJavaClass = []
     /** Same as parentJavaClass, but the very first entry without suffix 'Joined' */
     List<String> parentJavaClassNotJoined = []
