@@ -426,8 +426,7 @@ ${printDeleteResponse()}"""
         def summary = lastItem.description ? lastItem.description : '???'
         def parameterStr = getParameterStr(typeList,true,false)
         // def parameterStrGetList = getParameterStr(typeList,true,true)
-        return """
-  ${pathStr}:
+        return """  ${pathStr}:
 ${printOptionsBlock(pathStr,lastItem,parameterStr)}
     get:
 ${printTags(lastItem)}
@@ -438,8 +437,7 @@ ${printTags(lastItem)}
         - "application/xml"
         - "application/json"
 ${parameterStr}
-${printIdResponse(lastItem)}
-"""
+${printIdResponse(lastItem)}"""
     }
 
     /**
@@ -577,8 +575,7 @@ ${printPutPatchPostItemResponse(lastItem)}"""
         if (typeList.size==1) {
             descriptionExtension += ", contains optional query paramter for defining offset, limit, object filter and object order"
         }
-        def ret = """
-  ${pathStr}:
+        def ret = """  ${pathStr}:
 ${printListOptionsBlock(pathStr,lastItem,parameterStr)}
     get:
 ${printTags(lastItem)}
@@ -589,8 +586,7 @@ ${printTags(lastItem)}
         - "application/xml"
         - "application/json"
 ${parameterStrGetList}
-${printListResponse(lastItem.name,typeList.size!=1)}
-"""
+${printListResponse(lastItem.name,typeList.size!=1)}"""
         return ret
     }
 
