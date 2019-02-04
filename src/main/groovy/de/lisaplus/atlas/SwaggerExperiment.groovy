@@ -11,6 +11,7 @@ class SwaggerExperiment {
 
     static main(args) {
 
+        /*
         // service service-junction
         def base = '/home/stefan/Entwicklung/service-junction/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
@@ -18,7 +19,7 @@ class SwaggerExperiment {
                 // base + 'shared\\geo_point.json'
                 : args[0]
         def forceMainTypes = 'ObjectBase:Tag:Region:ObjectGroup'
-
+        */
         /*
         // service service-op-message
         def base = '/home/stefan/Entwicklung/service-op-message/models/models-lisa-server/model/'
@@ -36,6 +37,13 @@ class SwaggerExperiment {
                 : args[0]
         def forceMainTypes = ''
         */
+        def base = '/home/stefan/Entwicklung/service-junction-graphics/models/models-lisa-server/model/'
+        def modelPath = args.length == 0 ?
+                base + 'junction_graphics.json'
+                : args[0]
+        def forceMainTypes = 'ObjectBase:Tag:Region:ObjectGroup'
+
+
 
         def swaggerExp = new SwaggerExperiment(modelPath, forceMainTypes.split(':').toList())
         swaggerExp.execute()
@@ -629,7 +637,8 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         println "with embedded logic: ${ -> var.startsWith('ha') ? 'yes' : 'no' } done!"
         */
 
-        extraParam = [ 'basePath':'/junction', additionalTypes:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/types.yaml', additionalPaths:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml']
+        // extraParam = [ 'basePath':'/junction', additionalTypes:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/types.yaml', additionalPaths:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml']
+        extraParam = [ 'basePath':'/junctionGraphics', additionalTypes:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/types.yaml', additionalPaths:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/paths.yaml']
 
         /*
         def hostLine = extraParam.host ? /host: "${extraParam.host}"/ :  'host: "please.change.com"'
