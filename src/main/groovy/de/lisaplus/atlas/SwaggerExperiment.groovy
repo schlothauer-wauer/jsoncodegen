@@ -156,9 +156,7 @@ class SwaggerExperiment {
             parameterStr += '\n          type: "string"'
             parameterStr += '\n          format: "uuid"'
         }
-        def ret = """\n      parameters:
-${parameterStr}
-"""
+        def ret = """      parameters:${parameterStr}"""
         return ret
     }
 
@@ -365,8 +363,7 @@ ${parameterStr}
         def summary = lastItem.description ? lastItem.description : '???'
         def parameterStr = getParameterStr(typeList,true,false)
         // def parameterStrGetList = getParameterStr(typeList,true,true)
-        return """
-  ${pathStr}:
+        return """  ${pathStr}:
 ${printOptionsBlock(pathStr,lastItem,parameterStr)}
     get:
 ${printTags(lastItem)}
@@ -412,8 +409,7 @@ ${printTags(lastItem)}
       description: "delete existing ${lastItem.name}"
       operationId: "${printOperationId('del',pathStr)}"
 ${parameterStr}
-${printDeleteResponse()}
-"""
+${printDeleteResponse()}"""
     }
 
     /**
@@ -467,8 +463,7 @@ ${printIdResponse(lastItem)}
         if (typeList.size==1) {
             descriptionExtension += ", contains optional query paramter for defining offset, limit, object filter and object order"
         }
-        def ret = """
-  ${pathStr}:
+        def ret = """  ${pathStr}:
 ${printOptionsBlock(pathStr,lastItem,parameterStr)}
     get:
 ${printTags(lastItem)}
@@ -507,8 +502,7 @@ ${printTags(lastItem)}
         - "application/json"
 ${printParametersSectionForPost(parameterStr)}
 ${printAdditionalParametersForPostAndPut(lastItem)}
-${printPutPatchPostItemResponse(lastItem)}
-"""
+${printPutPatchPostItemResponse(lastItem)}"""
         return ret
     }
 
@@ -533,8 +527,7 @@ ${printPutPatchPostItemResponse(lastItem)}
         if (typeList.size==1) {
             descriptionExtension += ", contains optional query paramter for defining offset, limit, object filter and object order"
         }
-        def ret = """
-  ${pathStr}:
+        def ret = """  ${pathStr}:
 ${printListOptionsBlock(pathStr,lastItem,parameterStr)}
     get:
 ${printTags(lastItem)}
@@ -559,8 +552,7 @@ ${printTags(lastItem)}
         - "application/json"
 ${printParametersSectionForPost(parameterStr)}
 ${printAdditionalParametersForPostAndPut(lastItem)}
-${printPutPatchPostItemResponse(lastItem)}
-"""
+${printPutPatchPostItemResponse(lastItem)}"""
         return ret
     }
 
@@ -615,12 +607,13 @@ ${printListResponse(lastItem.name,typeList.size!=1)}
     }
 
     private void executeForModel() {
-        println 'Add stuff!'
 
+        /*
         def var = 'have it my way'
         println "with embedded logic: ${ -> var.startsWith('ha') ? 'yes' : 'no' } done!"
+        */
 
-        Map extraParam = [:]
+        extraParam = [ 'basePath':'/junction', additionalTypes:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/types.yaml', additionalPaths:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml']
 
         /*
         def hostLine = extraParam.host ? /host: "${extraParam.host}"/ :  'host: "please.change.com"'
@@ -645,13 +638,13 @@ ${printListResponse(lastItem.name,typeList.size!=1)}
         String part1 = $/
 swagger: "2.0"
 info:
-title: "${model.title}"
-description: "${model.description}"
-version: "${model.version}"
+  title: "${model.title}"
+  description: "${model.description}"
+  version: "${model.version}"
 host: "${ -> extraParam.host ? extraParam.host : 'please.change.com' }"
 schemes:
-- "http"
-- "https"
+  - "http"
+  - "https"
 basePath: "${ ->
             if (extraParam.basePath) {
                 if (extraParam.appendVersionToPath) {
@@ -663,8 +656,7 @@ basePath: "${ ->
                 "/v${model.version}"
             }
         }"
-paths:
-/$
+paths:/$
         println part1
 
         // model.types.each{ println "name=$it.name  tags=$it.tags isMainType=${ -> it.isMainType('junction')}" }
@@ -728,7 +720,7 @@ paths:
         println includeAdditionalPaths.call()
         println 'definitions:'
         model.types.each { type ->
-            println """    ${data.upperCamelCase.call(type.name)}':'
+            println """  ${data.upperCamelCase.call(type.name)}:
     type: object
     properties:"""
             type.properties.each { prop ->
