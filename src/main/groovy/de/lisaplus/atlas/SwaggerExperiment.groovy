@@ -17,6 +17,7 @@ class SwaggerExperiment {
                 base + 'junction.json'
                 // base + 'shared\\geo_point.json'
                 : args[0]
+        def forceMainTypes = 'ObjectBase:Tag:Region:ObjectGroup'
 
         /*
         // service service-op-message
@@ -24,6 +25,7 @@ class SwaggerExperiment {
         def modelPath = args.length == 0 ?
                 base + 'op_message.json'
                 : args[0]
+        def forceMainTypes = ''
         */
 
         /*
@@ -32,10 +34,12 @@ class SwaggerExperiment {
         def modelPath = args.length == 0 ?
                 base + 'incident.json'
                 : args[0]
+        def forceMainTypes = ''
         */
 
-        def maskExp = new SwaggerExperiment(modelPath)
-        maskExp.execute()
+        def swaggerExp = new SwaggerExperiment(modelPath)
+        swaggerExp.forceMainTypes=forceMainTypes.split(':').toList()
+        swaggerExp.execute()
     }
 
     /** The path to the model definition file */
@@ -69,10 +73,11 @@ class SwaggerExperiment {
     boolean verbose = false
     /** Mimic template environment! */
     Map extraParam = [:]
+    /** Name of types, which are to be tagged as main types, mimic template environment! */
+    List<String> forceMainTypes = []
 
     SwaggerExperiment( String modelPath) {
         this.modelPath = modelPath
-        this.model = readModel(modelPath)
     }
 
     private Model readModel(String modelPath) {
@@ -84,6 +89,12 @@ class SwaggerExperiment {
             if(isMainType) {
                 println "Tagging ${type.name}!"
                 type.tags.add('mainType')
+            }/* else if (type.name == 'ObjectBase') {
+                println "Tagging ${type.name}!"
+                type.tags.add('mainType')
+            }*/ else if (forceMainTypes.contains(type.name)) {
+                println "Force tagging ${type.name}!"
+                type.tags.add('mainType')
             }
         }
         return model
@@ -93,6 +104,7 @@ class SwaggerExperiment {
      * Prepares and performs the code generation for one model
      */
     void execute() {
+        model = readModel(modelPath)
         GeneratorBase generator = new DummyGenerator()
         data = generator.createTemplateDataMap(model)
         executeForModel()
