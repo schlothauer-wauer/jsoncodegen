@@ -37,8 +37,7 @@ class SwaggerExperiment {
         def forceMainTypes = ''
         */
 
-        def swaggerExp = new SwaggerExperiment(modelPath)
-        swaggerExp.forceMainTypes=forceMainTypes.split(':').toList()
+        def swaggerExp = new SwaggerExperiment(modelPath, forceMainTypes.split(':').toList())
         swaggerExp.execute()
     }
 
@@ -73,13 +72,23 @@ class SwaggerExperiment {
     boolean verbose = false
     /** Mimic template environment! */
     Map extraParam = [:]
-    /** Name of types, which are to be tagged as main types, mimic template environment! */
+    /** Name of types, which are to be tagged as main types forcefully, mimic template environment! */
     List<String> forceMainTypes = []
 
-    SwaggerExperiment( String modelPath) {
+    /**
+     * @param modelPath The path to the (json) file defining the model
+     * @param forceMainTypes Name of types, which are to be tagged as main types forcefully
+     */
+    SwaggerExperiment(String modelPath, List<String> forceMainTypes) {
         this.modelPath = modelPath
+        this.forceMainTypes = forceMainTypes
+        this.model = readModel(modelPath)
     }
 
+    /**
+     * @param modelPath The path to the model definition file.
+     * @return The model parsed from the model definition
+     */
     private Model readModel(String modelPath) {
         def modelFile = new File(modelPath)
         IModelBuilder builder = new JsonSchemaBuilder()
@@ -104,7 +113,6 @@ class SwaggerExperiment {
      * Prepares and performs the code generation for one model
      */
     void execute() {
-        model = readModel(modelPath)
         GeneratorBase generator = new DummyGenerator()
         data = generator.createTemplateDataMap(model)
         executeForModel()
