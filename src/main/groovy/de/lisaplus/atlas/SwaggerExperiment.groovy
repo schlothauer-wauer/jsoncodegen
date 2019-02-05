@@ -66,8 +66,8 @@ class SwaggerExperiment {
     Map extraParam = [:]
     /** Name of types, which are to be tagged as main types forcefully, mimic template environment! */
     List<String> forceMainTypes = []
-    /** The names of the types, for which REST paths are to be created */
-    List<String> whitelistTypes = []
+    /** The names of the types, for which deeper nested REST paths are NOT to be created */
+    List<String> blacklistTypes = []
     /** All generated REST paths */
     List<String> restPaths = []
     /** This stack holds the property (names) visited while traversing the object hierarchy.*/
@@ -676,12 +676,12 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         println "key=$key prop=$prop.name type=$typeName"
         def goOn
         if (prop.hasTag('restSubPath')) {
-            goON = true
+            goOn = true
         } else {
-            goOn = !whitelistTypes.contains(typeName)
+            goOn = !blacklistTypes.contains(typeName)
         }
         // check type and look for tag || type.hasTag('restSubPath')
-        // def goOn= !whitelistTypes.contains(typeName)
+        // def goOn= !blacklistTypes.contains(typeName)
         if (!goOn) {
             println "stopRecursion: key=$key prop=$prop.name type=$typeName"
         }
@@ -708,7 +708,10 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         */
 
         // extraParam = [ 'basePath':'/junction', additionalTypes:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/types.yaml', additionalPaths:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml']
-        extraParam = [ 'basePath':'/junctionGraphics', additionalTypes:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/types.yaml', additionalPaths:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/paths.yaml']
+        extraParam = [ 'basePath':'/junctionGraphics',
+                        additionalTypes:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/types.yaml',
+                        additionalPaths:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/paths.yaml',
+                        disableRecursionLimit: 'false']
 
         /*
         def hostLine = extraParam.host ? /host: "${extraParam.host}"/ :  'host: "please.change.com"'
@@ -729,12 +732,20 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         $basePathLine
         */
 
-        // build main type list 'restSubPath'
-        // exclude all main types (with or without tag mongodb / associated DAO / REST API Delegate of its own) from path recursion
-        whitelistTypes = model.types.findAll { type -> type.hasTag('mainType') }.collect { type -> type.name }
-        // exclude all main types with tag mongodb / associated DAO / REST API Delegate of its own from recursion
-        // whitelistTypes = model.types.findAll { type -> type.hasTag('mainType') && type.hasTag('mongodb')}.collect { type -> type.name }
-        println "mainTypes: ${whitelistTypes.findAll { it }.join(', ')}"
+        if (Boolean.valueOf(extraParam.getOrDefault('disableRecursionLimit', 'false'))) {
+            // only blacklist classes with REST endpoints of it s own.
+            // blacklistTypes = model.types.findAll { type -> type.hasTag('mainType') && type.hasTag('rest')}.collect { type -> type.name }
+
+            // blacklist not types at all!
+            blacklistTypes = []
+        } else {
+            // blacklist all main types
+            // blacklistTypes = model.types.findAll { type -> type.hasTag('mainType') }.collect { type -> type.name }
+
+            // blacklist all known types!
+            blacklistTypes = model.types.collect { type -> type.name }
+        }
+        println "Deep REST path blacklist: ${blacklistTypes.findAll { it }.join(', ')}"
 
         prepareStacks.call()
 
@@ -774,7 +785,7 @@ paths:/$
         model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
             //// properties that are Sub-Types should be rendered as sub paths
             type.properties.findAll{ ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
-                    (!(['number','name'].contains(it.name)))  && (it.type.type.name!='ListEntry') && checkContinueRecursion.call(it, whitelistTypes) }.each { prop ->  // TODO replace number/name condition with main type filter!
+                    (!(['number','name'].contains(it.name)))  && (it.type.type.name!='ListEntry') && checkContinueRecursion.call(it, blacklistTypes) }.each { prop ->  // TODO replace number/name condition with main type filter!
                 putStacks.call(prop)
                 println printListPath([type,prop.type.type],prop.type.isArray)
                 //// ID functions for subpaths are only needed in case of array elements
@@ -789,14 +800,14 @@ paths:/$
         model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
             //// properties that are Sub-Types should be rendered as sub paths
             type.properties.findAll{ ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
-                    (!(['number','name'].contains(it.name))) && (it.type.type.name!='ListEntry') && checkContinueRecursion.call(it, whitelistTypes) }.each { prop ->
+                    (!(['number','name'].contains(it.name))) && (it.type.type.name!='ListEntry') && checkContinueRecursion.call(it, blacklistTypes) }.each { prop ->
                 putStacks.call(prop)
                 //// ID functions for subpaths are only needed in case of array elements
                 def idProp = prop.type.type.properties.find{ it -> it.name=='guid' || it.name=='entryId' }
                         //// sub-level 3: properties that are Sub-Types should be rendered as sub paths
                 if (!['dummy'].contains(prop.name)) {
                     prop.type.type.properties.findAll{ ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
-                            (!(['contact','area','center','route'].contains(it.name))) && (it.type.type.name!='ListEntry') && checkContinueRecursion.call(it, whitelistTypes)}.each { prop2 ->
+                            (!(['contact','area','center','route'].contains(it.name))) && (it.type.type.name!='ListEntry') && checkContinueRecursion.call(it, blacklistTypes)}.each { prop2 ->
                         putStacks.call(prop2)
                         if (idProp) {
                             println printListPath([type,prop.type.type,prop2.type.type],prop2.type.isArray)
@@ -832,7 +843,7 @@ paths:/$
             println """  ${data.upperCamelCase.call(type.name)}:
     type: object
     properties:"""
-            type.properties.findAll { checkContinueRecursion.call(it, whitelistTypes) }.each { prop ->
+            type.properties.findAll { checkContinueRecursion.call(it, blacklistTypes) }.each { prop ->
                 println "      ${prop.name}:"
                 if (prop.type.isArray) {
                     println "        type: array"
@@ -866,7 +877,7 @@ paths:/$
 //// mix in an optional file with additional files
         println includeAdditionalTypes.call()
 
-        println '\n REST paths:'
+        println '\nREST paths:'
         restPaths.each { println it}
     }
 }
