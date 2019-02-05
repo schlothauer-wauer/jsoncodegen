@@ -723,7 +723,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         }
     }
 
-    Closure<Map<String, List<String>>> prepareModel = { Model model ->
+    Closure<Map<Type, List<String>>> prepareModel = { Model model ->
         def res = [:]
         def types = model.types.findAll { it.hasTag('mainType') && it.hasTag('rest') }
         types.each { type ->
@@ -731,9 +731,36 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             List<String> keys = []
             prepType.call(type, keys)
             println "type=$type.name, keys=$keys"
-            res.put(type.name, keys)
+            res.put(type, keys)
         }
         return res
+    }
+
+    Closure<Void> findSubPaths = { Type type, List<String> keys ->
+        type.properties.findAll { it.hasTag('restSubPath')}.each { prop ->
+            putStacks.call(prop)
+            def key = currentKey.call()
+            println "output sub-paths of ${key}"
+            boolean res = keys.remove(key)
+            assert res : "key=$key prop=$prop.name type=$type.name"
+            popStacks.call()
+        }
+        if (!keys.isEmpty()) {
+            type.properties.findAll { it.hasTag('recurseToRestSubPath')}.each { prop ->
+                putStacks.call(prop)
+                // only ref or complex types are supposed to be tagged with recurseToRestSubPath
+                findSubPaths.call(prop.type.type, keys)
+                popStacks.call()
+            }
+        }
+    }
+
+    Closure<Void> findAllSubPaths = { Type type, List<String> keys ->
+        println "findAllSubPath for type=$type.name and keys $keys"
+        def keys2 = keys.clone()
+        prepareStacks.call()
+        findSubPaths.call(type, keys2)
+        assert keys2.isEmpty() : "type=$type.name missed keys=$keys2"
     }
 
     private void executeForModel() {
@@ -784,9 +811,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         println "Deep REST path blacklist: ${blacklistTypes.findAll { it }.join(', ')}"
 
         def type2keys = prepareModel.call(model)
-        type2keys.each { k, v -> println "2: type=$k keys=$v" }
-
-
+        // type2keys.each { t, k -> println "2: type=$t.name keys=$k" }
 
         prepareStacks.call()
 
@@ -822,6 +847,14 @@ paths:/$
             println printIDPath([type])
         }
 
+        // loop over all type with keys
+        type2keys.each { type, keys ->
+            if (!keys.isEmpty()) {
+                findAllSubPaths.call(type, keys)
+            }
+        }
+
+        prepareStacks.call()
 
         model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
             //// properties that are Sub-Types should be rendered as sub paths
