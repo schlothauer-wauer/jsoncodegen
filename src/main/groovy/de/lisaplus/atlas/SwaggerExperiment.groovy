@@ -770,7 +770,15 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         println "with embedded logic: ${ -> var.startsWith('ha') ? 'yes' : 'no' } done!"
         */
 
-        // extraParam = [ 'basePath':'/junction', additionalTypes:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/types.yaml', additionalPaths:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml']
+        //service junction
+        /*
+        extraParam = [ 'basePath':'/junction',
+                       additionalTypes:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/types.yaml',
+                       additionalPaths:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml',
+                       disableRecursionLimit: 'false']
+       */
+
+        // service junctionGraphics
         extraParam = [ 'basePath':'/junctionGraphics',
                         additionalTypes:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/types.yaml',
                         additionalPaths:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/paths.yaml',
