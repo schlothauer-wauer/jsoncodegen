@@ -784,25 +784,6 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
                         additionalPaths:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/paths.yaml',
                         disableRecursionLimit: 'false']
 
-        /*
-        def hostLine = extraParam.host ? /host: "${extraParam.host}"/ :  'host: "please.change.com"'
-        $hostLine
-        */
-
-        /*
-        def basePathLine
-        if (extraParam.basePath) {
-            if (extraParam.appendVersionToPath) {
-                basePathLine = $/basePath: "${extraParam.basePath}/v${model.version}"/$
-            } else {
-                basePathLine = /basePath: "${extraParam.basePath}"/
-            }
-        } else {
-            basePathLine = $/basePath: "/v${model.version}"/$
-        }
-        $basePathLine
-        */
-
         if (Boolean.valueOf(extraParam.getOrDefault('disableRecursionLimit', 'false'))) {
             // only blacklist classes with REST endpoints of it s own.
             // blacklistTypes = model.types.findAll { type -> type.hasTag('mainType') && type.hasTag('rest')}.collect { type -> type.name }
@@ -819,7 +800,6 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         println "Deep REST path blacklist: ${blacklistTypes.findAll { it }.join(', ')}"
 
         def type2keys = prepareModel.call(model)
-        // type2keys.each { t, k -> println "2: type=$t.name keys=$k" }
 
         prepareStacks.call()
 
@@ -847,15 +827,13 @@ basePath: "${ ->
 paths:/$
         println part1
 
-        // model.types.each{ println "name=$it.name  tags=$it.tags isMainType=${ -> it.isMainType('junction')}" }
-
         //// search for all types that should provide entry points
         model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
             println printListPath([type], true)
             println printIDPath([type])
         }
 
-        // loop over all type with keys
+        // loop over all type with sub-paths
         type2keys.each { type, keys ->
             if (!keys.isEmpty()) {
                 findAllSubPaths.call(type, keys)
@@ -911,7 +889,6 @@ paths:/$
                 popStacks.call()
              }
         }
-
 
         // Keep around!
         // TODO check multiplicity of response definition!
