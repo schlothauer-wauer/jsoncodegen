@@ -5,6 +5,7 @@ import de.lisaplus.atlas.codegen.GeneratorBase
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Property
+import de.lisaplus.atlas.model.Type
 
 class SwaggerExperiment {
 
@@ -700,6 +701,41 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         }
     }
 
+    Closure<Void> ensureRecursionTags = {
+        propStack.each { prop -> if (!prop.hasTag('recurseToRestSubPath')) prop.tags.add('recurseToRestSubPath') }
+    }
+
+    Closure<String> currentKey = {
+        return propStack.collect { prop -> prop.name}.join('.')
+    }
+
+    Closure<Void> prepType = { Type type, List<String> keys ->
+        type.properties.findAll { it.hasTag('restSubPath')}.each { prop ->
+            putStacks.call(prop)
+            keys.add( currentKey.call() )
+            popStacks.call()
+            ensureRecursionTags.call()
+        }
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            putStacks.call(prop)
+            prepType.call(prop.type.type, keys)
+            popStacks.call()
+        }
+    }
+
+    Closure<Map<String, List<String>>> prepareModel = { Model model ->
+        def res = [:]
+        def types = model.types.findAll { it.hasTag('mainType') && it.hasTag('rest') }
+        types.each { type ->
+            prepareStacks.call()
+            List<String> keys = []
+            prepType.call(type, keys)
+            println "type=$type.name, keys=$keys"
+            res.put(type.name, keys)
+        }
+        return res
+    }
+
     private void executeForModel() {
 
         /*
@@ -746,6 +782,11 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             blacklistTypes = model.types.collect { type -> type.name }
         }
         println "Deep REST path blacklist: ${blacklistTypes.findAll { it }.join(', ')}"
+
+        def type2keys = prepareModel.call(model)
+        type2keys.each { k, v -> println "2: type=$k keys=$v" }
+
+
 
         prepareStacks.call()
 
