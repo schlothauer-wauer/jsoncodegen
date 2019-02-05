@@ -725,7 +725,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
 
     Closure<Map<Type, List<String>>> prepareModel = { Model model ->
         def res = [:]
-        def types = model.types.findAll { it.hasTag('mainType') && it.hasTag('rest') }
+        def types = model.types.findAll { it.hasTag('mainType') && it.hasTag('rest') && !it.hasTag('joinedType') }
         types.each { type ->
             prepareStacks.call()
             List<String> keys = []
@@ -905,24 +905,27 @@ paths:/$
         }
 
 
+        // Keep around!
+        // TODO check multiplicity of response definition!
         model.types.findAll { it.hasTag('joinedType') && it.hasTag('rest') && it.hasTag('mainType') }.each { type ->
             println printListPathJoined([type])
             println printIDPathJoined([type])
         }
 
+        // Keep around!
         // mix in an optional file with additional files
         println includeAdditionalPaths.call()
         println 'definitions:'
-        model.types.each { type ->
+        model.types.each { type ->  // Always for all types!
             println """  ${data.upperCamelCase.call(type.name)}:
     type: object
     properties:"""
-            type.properties.findAll { checkContinueRecursion.call(it, blacklistTypes) }.each { prop ->
+            type.properties.each { prop ->  // Always for all properties!
                 println "      ${prop.name}:"
                 if (prop.type.isArray) {
                     println "        type: array"
                     println "        items:"
-                    if (prop.isRefTypeOrComplexType()) {  // FIXME: Realy Groovy trooth not null? Or True?
+                    if (prop.isRefTypeOrComplexType()) {
                         println "          ${data.DOLLAR}ref: \"#/definitions/${data.upperCamelCase.call(prop.type.type.name)}\""
                     } else {
                         if (prop.description) {
