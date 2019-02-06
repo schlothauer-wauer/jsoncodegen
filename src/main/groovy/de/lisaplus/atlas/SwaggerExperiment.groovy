@@ -744,7 +744,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             prepareStacks.call(type)
             List<String> keys = []
             prepType.call(type, keys)
-            println "type=$type.name, keys=$keys"
+            // println "type=$type.name, keys=$keys"
             res.put(type, keys)
         }
         return res
@@ -762,7 +762,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             println printListPath(typeList, prop.type.isArray)
             // ID functions for sub-paths are only needed in case of array elements
             if (prop.type.isArray) {
-                println "output id sub-paths of ${key} with types ${typeList.collect { it.name }}"
+                // println "output id sub-paths of ${key} with types ${typeList.collect { it.name }}"
                 println printIDPath(typeList)
             }
             boolean res = keys.remove(key)
@@ -780,7 +780,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
     }
 
     Closure<Void> findAllSubPaths = { Type type, List<String> keys ->
-        println "findAllSubPath for type=$type.name and keys $keys"
+        // println "findAllSubPath for type=$type.name and keys $keys"
         def keys2 = keys.clone()
         prepareStacks.call(type)
         findSubPaths.call(type, keys2)
