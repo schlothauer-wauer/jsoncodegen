@@ -11,7 +11,6 @@ class SwaggerExperiment {
 
     static main(args) {
 
-        /*
         // service service-junction
         def base = '/home/stefan/Entwicklung/service-junction/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
@@ -19,7 +18,7 @@ class SwaggerExperiment {
                 // base + 'shared\\geo_point.json'
                 : args[0]
         def forceMainTypes = 'ObjectBase:Tag:Region:ObjectGroup'
-        */
+
         /*
         // service service-op-message
         def base = '/home/stefan/Entwicklung/service-op-message/models/models-lisa-server/model/'
@@ -37,20 +36,22 @@ class SwaggerExperiment {
                 : args[0]
         def forceMainTypes = ''
         */
+
+        /*
+        // service service-junction-graphics
         def base = '/home/stefan/Entwicklung/service-junction-graphics/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'junction_graphics.json'
                 : args[0]
         def forceMainTypes = 'ObjectBase:Tag:Region:ObjectGroup'
-
-
+        */
 
         def swaggerExp = new SwaggerExperiment(modelPath, forceMainTypes.split(':').toList())
         swaggerExp.execute()
     }
 
     /** The path to the model definition file */
-    String modelPath = modelPath
+    String modelPath
     /** The complete model with all types */
     Model model
     /** The bindings of the template / code generation */
@@ -757,12 +758,12 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             typeList.add(prop.type.type) // always include type of current property!
             putStacks.call(prop)
             String key = currentKey.call()
-            println "output sub-paths of ${key} with types ${typeList.collect { it.name }}"
-            // println printListPath(typeList, prop.type.isArray)
+            // println "output sub-paths of ${key} with types ${typeList.collect { it.name }}"
+            println printListPath(typeList, prop.type.isArray)
             // ID functions for sub-paths are only needed in case of array elements
             if (prop.type.isArray) {
                 println "output id sub-paths of ${key} with types ${typeList.collect { it.name }}"
-                // println printIDPath(typeList)
+                println printIDPath(typeList)
             }
             boolean res = keys.remove(key)
             assert res : "key=$key prop=$prop.name type=$type.name"
@@ -787,25 +788,23 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
     }
 
     private void executeForModel() {
-
-        /*
-        def var = 'have it my way'
-        println "with embedded logic: ${ -> var.startsWith('ha') ? 'yes' : 'no' } done!"
-        */
-
-        //service junction
-        /*
-        extraParam = [ 'basePath':'/junction',
-                       additionalTypes:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/types.yaml',
-                       additionalPaths:'/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml',
-                       disableRecursionLimit: 'false']
-       */
-
-        // service junctionGraphics
-        extraParam = [ 'basePath':'/junctionGraphics',
-                        additionalTypes:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/types.yaml',
-                        additionalPaths:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/paths.yaml',
-                        disableRecursionLimit: 'false']
+        boolean useNew = true
+        if (modelPath.endsWith('junction.json')) {
+            //service junction
+            extraParam = ['basePath'           : '/junction',
+                          additionalTypes      : '/home/stefan/Entwicklung/service-junction/rest/swagger/additional/types.yaml',
+                          additionalPaths      : '/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml',
+                          disableRecursionLimit: 'false']
+        } else if (modelPath.endsWith('junction_graphics.json')) {
+            // service junctionGraphics
+            extraParam = [ 'basePath':'/junctionGraphics',
+                           additionalTypes:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/types.yaml',
+                           additionalPaths:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/paths.yaml',
+                           disableRecursionLimit: 'false']
+        } else {
+            println 'Missing extraParam!'
+            System.exit(1)
+        }
 
         if (Boolean.valueOf(extraParam.getOrDefault('disableRecursionLimit', 'false'))) {
             // only blacklist classes with REST endpoints of it s own.
@@ -856,6 +855,8 @@ paths:/$
             println printIDPath([type])
         }
 
+        if (useNew) {
+
         // loop over all type with sub-paths
         type2keys.each { type, keys ->
             if (!keys.isEmpty()) {
@@ -863,54 +864,67 @@ paths:/$
             }
         }
 
+        } else {
         prepareStacks.call(null)
 
-        model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
+        model.types.findAll {
+            return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType'))
+        }.each { type ->
             //// properties that are Sub-Types should be rendered as sub paths
-            type.properties.findAll{ ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
-                    (!(['number','name'].contains(it.name)))  && (it.type.type.name!='ListEntry') && checkContinueRecursion.call(it, blacklistTypes) }.each { prop ->  // TODO replace number/name condition with main type filter!
+            type.properties.findAll {
+                ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
+                        (!(['number', 'name'].contains(it.name))) && (it.type.type.name != 'ListEntry') && checkContinueRecursion.call(it, blacklistTypes)
+            }.each { prop ->  // TODO replace number/name condition with main type filter!
                 putStacks.call(prop)
-                println printListPath([type,prop.type.type],prop.type.isArray)
+                println printListPath([type, prop.type.type], prop.type.isArray)
                 //// ID functions for subpaths are only needed in case of array elements
                 if (prop.type.isArray) {
-                    println printIDPath([type,prop.type.type])
+                    println printIDPath([type, prop.type.type])
                 }
                 popStacks.call()
             }
         }
 
 
-        model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
+        model.types.findAll {
+            return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType'))
+        }.each { type ->
             //// properties that are Sub-Types should be rendered as sub paths
-            type.properties.findAll{ ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
-                    (!(['number','name'].contains(it.name))) && (it.type.type.name!='ListEntry') && checkContinueRecursion.call(it, blacklistTypes) }.each { prop ->
+            type.properties.findAll {
+                ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
+                        (!(['number', 'name'].contains(it.name))) && (it.type.type.name != 'ListEntry') && checkContinueRecursion.call(it, blacklistTypes)
+            }.each { prop ->
                 putStacks.call(prop)
                 //// ID functions for subpaths are only needed in case of array elements
-                def idProp = prop.type.type.properties.find{ it -> it.name=='guid' || it.name=='entryId' }
-                        //// sub-level 3: properties that are Sub-Types should be rendered as sub paths
+                def idProp = prop.type.type.properties.find { it -> it.name == 'guid' || it.name == 'entryId' }
+                //// sub-level 3: properties that are Sub-Types should be rendered as sub paths
                 if (!['dummy'].contains(prop.name)) {
-                    prop.type.type.properties.findAll{ ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
-                            (!(['contact','area','center','route'].contains(it.name))) && (it.type.type.name!='ListEntry') && checkContinueRecursion.call(it, blacklistTypes)}.each { prop2 ->
+                    prop.type.type.properties.findAll {
+                        ((it.type instanceof de.lisaplus.atlas.model.RefType) || (it.type instanceof de.lisaplus.atlas.model.ComplexType)) &&
+                                (!(['contact', 'area', 'center', 'route'].contains(it.name))) && (it.type.type.name != 'ListEntry') && checkContinueRecursion.call(it, blacklistTypes)
+                    }.each { prop2 ->
                         putStacks.call(prop2)
                         if (idProp) {
-                            println printListPath([type,prop.type.type,prop2.type.type],prop2.type.isArray)
+                            println printListPath([type, prop.type.type, prop2.type.type], prop2.type.isArray)
                         } else {
-                            println printListPath([type,prop2.type.type],prop2.type.isArray)
+                            println printListPath([type, prop2.type.type], prop2.type.isArray)
                         }
                         //// ID functions for subpaths are only needed in case of array elements
                         if (prop2.type.isArray) {
                             if (idProp) {
                                 //// need to handle post/put problem
-                                println printIDPath([type,prop.type.type,prop2.type.type])
+                                println printIDPath([type, prop.type.type, prop2.type.type])
                             } else {
-                                println printIDPath([type,prop2.type.type])
+                                println printIDPath([type, prop2.type.type])
                             }
                         }
                         popStacks.call()
                     }
                 }
                 popStacks.call()
-             }
+            }
+        }
+
         }
 
         // Keep around!
