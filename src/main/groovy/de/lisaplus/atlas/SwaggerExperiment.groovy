@@ -71,8 +71,10 @@ class SwaggerExperiment {
     List<String> blacklistTypes = []
     /** All generated REST paths */
     List<String> restPaths = []
-    /** This stack holds the property (names) visited while traversing the object hierarchy.*/
+    /** This stack holds the property visited while traversing the object hierarchy.*/
     List<Property> propStack = []
+    /** This stack holds the base and intermediate array types needed to build the sub-paths. It is filled while traversing the object hierarchy.*/
+    List<Type> typeStack = []
     /** Indicates that this property is an array. This stack is build while traversing the object hierarchy. */
     List<Boolean> propIsArrayStack = []
     /** The name of the Java class, which holds the property. This stack is build while traversing the object hierarchy. */
@@ -625,13 +627,15 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
     /**
      * Prepares the stacks for running the next loop over the model
      */
-    def prepareStacks = {
+    def prepareStacks = { type ->
         propStack.clear()
         propIsArrayStack.clear()
         // avoid extra case for handling empty stack!
         propIsCollectionStack = [false]
         parentJavaClass.clear()
         // parentJavaClassNotJoined.clear()
+        typeStack.clear()
+        typeStack.add(type)
     }
 
     /**
@@ -650,17 +654,26 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         propIsArrayStack.add(property.type.isArray)
         // If either already collection of if this property is an collection.
         propIsCollectionStack.add(propIsCollectionStack.last() || property.type.isArray)
+
+        // Assumes Ref or Complex types, only add if property represents an array and therefore has entryId/guid!
+        assert property.isRefTypeOrComplexType()
+        if (property.type.isArray) {
+            typeStack.add(property.type.type)
+        }
     }
 
     /**
      * Pops the latest elements from the stacks
      */
     def popStacks = {
-        propStack.pop()
+        def dropped = propStack.pop()
         propIsArrayStack.pop()
         propIsCollectionStack.pop()
         parentJavaClass.pop()
         // parentJavaClassNotJoined.pop()
+        if (dropped.type.isArray) {
+            typeStack.pop()
+        }
     }
 
     /**
@@ -727,7 +740,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         def res = [:]
         def types = model.types.findAll { it.hasTag('mainType') && it.hasTag('rest') && !it.hasTag('joinedType') }
         types.each { type ->
-            prepareStacks.call()
+            prepareStacks.call(type)
             List<String> keys = []
             prepType.call(type, keys)
             println "type=$type.name, keys=$keys"
@@ -738,9 +751,19 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
 
     Closure<Void> findSubPaths = { Type type, List<String> keys ->
         type.properties.findAll { it.hasTag('restSubPath')}.each { prop ->
+            // only ref or complex types are supposed to be tagged with restSubPath
+            // Inner types are omitted if corresponding property are not an array and therefore there is no guid/entryId!
+            List typeList = typeStack.clone()
+            typeList.add(prop.type.type) // always include type of current property!
             putStacks.call(prop)
-            def key = currentKey.call()
-            println "output sub-paths of ${key}"
+            String key = currentKey.call()
+            println "output sub-paths of ${key} with types ${typeList.collect { it.name }}"
+            // println printListPath(typeList, prop.type.isArray)
+            // ID functions for sub-paths are only needed in case of array elements
+            if (prop.type.isArray) {
+                println "output id sub-paths of ${key} with types ${typeList.collect { it.name }}"
+                // println printIDPath(typeList)
+            }
             boolean res = keys.remove(key)
             assert res : "key=$key prop=$prop.name type=$type.name"
             popStacks.call()
@@ -758,7 +781,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
     Closure<Void> findAllSubPaths = { Type type, List<String> keys ->
         println "findAllSubPath for type=$type.name and keys $keys"
         def keys2 = keys.clone()
-        prepareStacks.call()
+        prepareStacks.call(type)
         findSubPaths.call(type, keys2)
         assert keys2.isEmpty() : "type=$type.name missed keys=$keys2"
     }
@@ -801,7 +824,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
 
         def type2keys = prepareModel.call(model)
 
-        prepareStacks.call()
+        prepareStacks.call(null)
 
         String part1 = $/
 swagger: "2.0"
@@ -840,7 +863,7 @@ paths:/$
             }
         }
 
-        prepareStacks.call()
+        prepareStacks.call(null)
 
         model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
             //// properties that are Sub-Types should be rendered as sub paths
