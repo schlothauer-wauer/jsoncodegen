@@ -98,10 +98,10 @@ class SwaggerExperiment {
         model.types.each { type ->
             boolean isMainType = type.isMainType(modelFile.name)
             if(isMainType) {
-                println "Tagging ${type.name}!"
+                // println "Tagging ${type.name}!"
                 type.tags.add('mainType')
             } else if (forceMainTypes.contains(type.name)) {
-                println "Force tagging ${type.name}!"
+                // println "Force tagging ${type.name}!"
                 type.tags.add('mainType')
             }
         }
@@ -726,7 +726,8 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
     }
 
     /** Recursively called method for locating and processing the REST sub-paths in one type */
-    Closure<Void> findSubPaths = { Type type, List<String> keys ->
+    Closure<String> findSubPaths = { Type type, List<String> keys ->
+        String ret = ''
         type.properties.findAll { it.hasTag('restSubPath')}.each { prop ->
             // only ref or complex types are supposed to be tagged with restSubPath
             // Inner types are omitted if corresponding property are not an array and therefore there is no guid/entryId!
@@ -734,10 +735,12 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             typeList.add(prop.type.type) // always include type of current property!
             putStacks.call(prop)
             String key = currentKey.call()
-            println printListPath(typeList, prop.type.isArray)
+            ret += printListPath(typeList, prop.type.isArray)
+            ret += '\n'
             // ID functions for sub-paths are only needed in case of array elements
             if (prop.type.isArray) {
-                println printIDPath(typeList)
+                ret += printIDPath(typeList)
+                ret += '\n'
             }
             boolean res = keys.remove(key)
             assert res : "key=$key prop=$prop.name type=$type.name"
@@ -747,18 +750,22 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             type.properties.findAll { it.hasTag('recurseToRestSubPath')}.each { prop ->
                 putStacks.call(prop)
                 // only ref or complex types are supposed to be tagged with recurseToRestSubPath
-                findSubPaths.call(prop.type.type, keys)
+                ret += findSubPaths.call(prop.type.type, keys)
                 popStacks.call()
             }
         }
+        return ret
     }
 
     /** Kicks of traversing the properties if one main type with the objection to generate the REST sub-paths */
-    Closure<Void> findAllSubPaths = { Type type, List<String> keys ->
+    Closure<String> findAllSubPaths = { Type type, List<String> keys ->
+        String ret = ''
         def keys2 = keys.clone()
         prepareStacks.call(type)
-        findSubPaths.call(type, keys2)
+        ret += findSubPaths.call(type, keys2)
         assert keys2.isEmpty() : "type=$type.name missed keys=$keys2"
+        // remove last \nA ???
+        return ret
     }
 
     private void executeForModel() {
@@ -780,6 +787,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             System.exit(1)
         }
 
+        /*
         if (Boolean.valueOf(extraParam.getOrDefault('disableRecursionLimit', 'false'))) {
             // only blacklist classes with REST endpoints of it s own.
             // blacklistTypes = model.types.findAll { type -> type.hasTag('mainType') && type.hasTag('rest')}.collect { type -> type.name }
@@ -794,6 +802,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             blacklistTypes = model.types.collect { type -> type.name }
         }
         println "Deep REST path blacklist: ${blacklistTypes.findAll { it }.join(', ')}"
+        */
 
         String part1 = $/
 swagger: "2.0"
@@ -832,10 +841,8 @@ paths:/$
         prepareStacks.call(null)
 
         // loop over all types with REST sub-paths
-        type2keys.each { type, keys ->
-            if (!keys.isEmpty()) {
-                findAllSubPaths.call(type, keys)
-            }
+        type2keys.findAll { type, keys -> !keys.isEmpty()}.each { type, keys ->
+            println findAllSubPaths.call(type, keys)
         }
 
         } else {
