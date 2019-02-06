@@ -492,8 +492,10 @@ ${printIdResponse(lastItem)}"""
         def parameterStrGetList = getParameterStr(typeList,false,true)
         def descriptionExtension = ''
         if (typeList.size==1) {
-            descriptionExtension += ", contains optional query paramter for defining offset, limit, object filter and object order"
+            descriptionExtension += ", contains optional query parameter for defining offset, limit, object filter and object order"
         }
+        // Response of verb/method get:
+        // ${printListResponse(lastItem.name,typeList.size!=1)}    // Why ListResponse in _noArray for path ending with blah/{id}/blub?!?
         def ret = """  ${pathStr}:
 ${printOptionsBlock(pathStr,lastItem,parameterStr)}
     get:
@@ -505,7 +507,7 @@ ${printTags(lastItem)}
         - "application/xml"
         - "application/json"
 ${parameterStrGetList}
-${printListResponse(lastItem.name,typeList.size!=1)}
+${printIdResponse(lastItem)}
     put:
 ${printTags(lastItem)}
       summary: "add a new ${lastItem.name}"
