@@ -76,17 +76,6 @@ class SwaggerExperiment {
     List<Property> propStack = []
     /** This stack holds the base and intermediate array types needed to build the sub-paths. It is filled while traversing the object hierarchy.*/
     List<Type> typeStack = []
-    /** Indicates that this property is an array. This stack is build while traversing the object hierarchy. */
-    List<Boolean> propIsArrayStack = []
-    /** The name of the Java class, which holds the property. This stack is build while traversing the object hierarchy. */
-    List<String> parentJavaClass = []
-    /** Same as parentJavaClass, but the very first entry without suffix 'Joined' */
-    // List<String> parentJavaClassNotJoined = []
-    /**
-     *  Indicates that this property or any of its parents was an array and that we therefore have to process an collection.
-     *  This sack is build while traversing the object hierarchy.
-     */
-    List<Boolean> propIsCollectionStack = []
 
     /**
      * @param modelPath The path to the (json) file defining the model
@@ -632,11 +621,6 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
      */
     def prepareStacks = { type ->
         propStack.clear()
-        propIsArrayStack.clear()
-        // avoid extra case for handling empty stack!
-        propIsCollectionStack = [false]
-        parentJavaClass.clear()
-        // parentJavaClassNotJoined.clear()
         typeStack.clear()
         typeStack.add(type)
     }
@@ -646,18 +630,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
      * @param property The property, which is to be visited
      */
     def putStacks = { Property property ->
-        if (propStack.empty) {
-            parentJavaClass.add(targetType)
-            // parentJavaClassNotJoined.add(targetTypeNotJoined)
-        } else {
-            parentJavaClass.add(data.upperCamelCase.call(propStack.last().type.type.name))
-            // parentJavaClassNotJoined.add(data.upperCamelCase.call(propStack.last().type.type.name))
-        }
         propStack.add(property)
-        propIsArrayStack.add(property.type.isArray)
-        // If either already collection of if this property is an collection.
-        propIsCollectionStack.add(propIsCollectionStack.last() || property.type.isArray)
-
         // Assumes Ref or Complex types, only add if property represents an array and therefore has entryId/guid!
         assert property.isRefTypeOrComplexType()
         if (property.type.isArray) {
@@ -670,9 +643,6 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
      */
     def popStacks = {
         def dropped = propStack.pop()
-        propIsArrayStack.pop()
-        propIsCollectionStack.pop()
-        parentJavaClass.pop()
         // parentJavaClassNotJoined.pop()
         if (dropped.type.isArray) {
             typeStack.pop()
@@ -717,14 +687,17 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         }
     }
 
+    /** Add missing tags recurseToRestSubPath */
     Closure<Void> ensureRecursionTags = {
         propStack.each { prop -> if (!prop.hasTag('recurseToRestSubPath')) prop.tags.add('recurseToRestSubPath') }
     }
 
+    /** Create key from current state of propStack */
     Closure<String> currentKey = {
         return propStack.collect { prop -> prop.name}.join('.')
     }
 
+    /** Find all properties with tag restSubPath in one type, distribute tags recurseToRestSubPath to guide generating sub-path */
     Closure<Void> prepType = { Type type, List<String> keys ->
         type.properties.findAll { it.hasTag('restSubPath')}.each { prop ->
             putStacks.call(prop)
@@ -739,6 +712,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         }
     }
 
+    /** Find all properties with tag restSubPath in the complete model, distribute tags recurseToRestSubPath to guide generating sub-path */
     Closure<Map<Type, List<String>>> prepareModel = { Model model ->
         def res = [:]
         def types = model.types.findAll { it.hasTag('mainType') && it.hasTag('rest') && !it.hasTag('joinedType') }
@@ -746,12 +720,12 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             prepareStacks.call(type)
             List<String> keys = []
             prepType.call(type, keys)
-            // println "type=$type.name, keys=$keys"
             res.put(type, keys)
         }
         return res
     }
 
+    /** Recursively called method for locating and processing the REST sub-paths in one type */
     Closure<Void> findSubPaths = { Type type, List<String> keys ->
         type.properties.findAll { it.hasTag('restSubPath')}.each { prop ->
             // only ref or complex types are supposed to be tagged with restSubPath
@@ -760,11 +734,9 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             typeList.add(prop.type.type) // always include type of current property!
             putStacks.call(prop)
             String key = currentKey.call()
-            // println "output sub-paths of ${key} with types ${typeList.collect { it.name }}"
             println printListPath(typeList, prop.type.isArray)
             // ID functions for sub-paths are only needed in case of array elements
             if (prop.type.isArray) {
-                // println "output id sub-paths of ${key} with types ${typeList.collect { it.name }}"
                 println printIDPath(typeList)
             }
             boolean res = keys.remove(key)
@@ -781,8 +753,8 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         }
     }
 
+    /** Kicks of traversing the properties if one main type with the objection to generate the REST sub-paths */
     Closure<Void> findAllSubPaths = { Type type, List<String> keys ->
-        // println "findAllSubPath for type=$type.name and keys $keys"
         def keys2 = keys.clone()
         prepareStacks.call(type)
         findSubPaths.call(type, keys2)
@@ -823,10 +795,6 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         }
         println "Deep REST path blacklist: ${blacklistTypes.findAll { it }.join(', ')}"
 
-        def type2keys = prepareModel.call(model)
-
-        prepareStacks.call(null)
-
         String part1 = $/
 swagger: "2.0"
 info:
@@ -859,7 +827,11 @@ paths:/$
 
         if (useNew) {
 
-        // loop over all type with sub-paths
+        // prepare evaluation of REST sub-paths
+        def type2keys = prepareModel.call(model)
+        prepareStacks.call(null)
+
+        // loop over all types with REST sub-paths
         type2keys.each { type, keys ->
             if (!keys.isEmpty()) {
                 findAllSubPaths.call(type, keys)
