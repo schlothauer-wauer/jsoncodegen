@@ -287,7 +287,7 @@ class SwaggerExperiment {
         return """      responses:
         200:
           description: "in case of success"
-          schema:
+          schema:gi
             ${data.DOLLAR}ref: "#/definitions/${data.upperCamelCase.call(type.name)}"
         404:
           description: "if the object to process was not found"
@@ -490,7 +490,7 @@ ${printOptionsBlock(pathStr,lastItem,parameterStr)}
     get:
 ${printTags(lastItem)}
       summary: "${summary}"
-      description: "returns object list${descriptionExtension}"
+      description: "returns a single object${descriptionExtension}"
       operationId: "${printOperationId('get',pathStr)}"
       produces:
         - "application/xml"
