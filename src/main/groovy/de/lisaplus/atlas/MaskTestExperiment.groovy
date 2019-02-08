@@ -1118,7 +1118,9 @@ public class TestMask${targetType} {
      * @param type The type to process
      * @param lines Where the created lines of code are to be added.
      */
-    def createEnsureMatchingForType = { Type type, List<String> lines, int idx ->
+    Closure<Integer> createEnsureMatchingForType = { Type type, List<String> lines, int idx ->
+        // Track the number of increments of idx!
+        int incCount = 0
         if (propIsCollectionStack.last()) {
             Property pProp = propStack.last()
             boolean parentHasEntryId = pProp.isRefTypeOrComplexType() && pProp.type.type.properties.collect { prop2 -> prop2.name }.contains('entryId')
@@ -1133,7 +1135,8 @@ public class TestMask${targetType} {
                 lines.add("        // found pProp=${pProp.name} type=${data.upperCamelCase.call(type.name)}")
                 def jType = data.upperCamelCase.call(type.name)
                 def methodName = propStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
-                idx+=1
+                idx += 1
+                incCount += 1
                 lines.add(
 """        final Iterator<${jType}> sourceIter${idx} = get${methodName}(source).iterator();
         final Iterator<${jType}> targetIter${idx} = get${methodName}(target).iterator();
@@ -1146,9 +1149,13 @@ public class TestMask${targetType} {
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             // recursive call!
             putStacks.call(prop)
-            createEnsureMatchingForType.call(prop.type.type, lines, idx)
+            // idx may have been incremented 0 to n times by the recursive call!
+            int recIncCount = createEnsureMatchingForType.call(prop.type.type, lines, idx)
             popStacks.call()
+            idx += recIncCount
+            incCount += recIncCount
         }
+        return incCount
     }
 
     /**
