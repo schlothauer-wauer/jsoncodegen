@@ -369,15 +369,19 @@ ${parameterStr}
 
     // If you declare a closure you can use it inside the template
 
+    // https://stackoverflow.com/questions/12580262/groovy-closure-with-optional-arguments
     /**
      * Creates rest path from types
      */
-    def buildPathFromTypes = { List typeList ->
+    def buildPathFromTypes = { List typeList, boolean addLastId=true ->
         def pathStr=''
+        def lastElem = typeList[typeList.size() - 1]    // Assumption: list never empty!
         typeList.each {
             pathStr += '/'
             pathStr += data.lowerCamelCase.call(it.name)
-            pathStr += "/{${data.lowerCamelCase.call(it.name)}_id}"
+            if (it != lastElem || addLastId ) {
+                pathStr += "/{${data.lowerCamelCase.call(it.name)}_id}"
+            }
         }
         return pathStr
     }
@@ -479,22 +483,6 @@ ${printIdResponse(lastItem)}"""
     }
 
     /**
-     * Creates rest path from types, sepcail case last entry
-     */
-    def buildPathFromTypesNoArray = { List typeList ->
-        def pathStr = ''
-        def lastElem = typeList[typeList.size() - 1]
-        typeList.each {
-            pathStr += '/'
-            pathStr += data.lowerCamelCase.call(it.name)
-            if (it != lastElem) {
-                pathStr += "/{${data.lowerCamelCase.call(it.name)}_id}"
-            }
-        }
-        return pathStr
-    }
-
-    /**
      * Print path for List URLs that are no arrays
      */
     def printListPath_noArray = { List typeList ->
@@ -507,7 +495,7 @@ ${printIdResponse(lastItem)}"""
                 pathStr += "/{${data.lowerCamelCase.call(it.name)}_id}"
             }
         }*/
-        def pathStr = buildPathFromTypesNoArray.call(typeList)
+        def pathStr = buildPathFromTypes.call(typeList, false)
         restPaths.add(pathStr)
         def lastItem = typeList[typeList.size()-1]
         def summary = lastItem.description ? lastItem.description : '???'
@@ -575,7 +563,7 @@ ${printPutPatchPostItemResponse(lastItem)}"""
                 pathStr += "/{${data.lowerCamelCase.call(it.name)}_id}"
             }
         }*/
-        def pathStr = buildPathFromTypesNoArray.call(typeList)
+        def pathStr = buildPathFromTypes.call(typeList, false)
         restPaths.add(pathStr)
         def lastItem = typeList[typeList.size()-1]
         def summary = lastItem.description ? lastItem.description : '???'
@@ -628,7 +616,7 @@ ${printPutPatchPostItemResponse(lastItem)}"""
             }
         }
         */
-        def pathStr = buildPathFromTypesNoArray.call(typeList)
+        def pathStr = buildPathFromTypes.call(typeList, false)
         restPaths.add(pathStr)
         def lastItem = typeList[typeList.size()-1]
         def summary = lastItem.description ? lastItem.description : '???'
