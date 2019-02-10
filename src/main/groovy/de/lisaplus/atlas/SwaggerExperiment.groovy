@@ -84,6 +84,8 @@ class SwaggerExperiment {
     List<String> pathElementStack = []
     /** Switch to using REST paths created using property names */
     boolean usePropNames = true
+    /** Places tags "restSubPath" at all compatible properties to force creation of complete set of REST paths. */
+    boolean forceAllSubPaths = true
 
     /**
      * @param modelPath The path to the (json) file defining the model
@@ -738,10 +740,38 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         }
     }
 
+    /**
+     *  Places tags "restSubPath" at all compatible properties pf a type to force creation of complete set of REST paths.
+     *  Calls itself recursively to travers through the complete model.
+     */
+    def forceAllSubPathsForType = { Type type ->
+        if (type == null || type.properties == null) {
+            println "??? at key=${currentKey.call()}"
+        }
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            putStacks.call(prop)
+            if (!prop.hasTag('restSubPath')) {
+                prop.tags.add('restSubPath')
+            }
+            if (prop.type.type == null || prop.type.type.properties == null) {
+                println "??? at $prop.name key=${currentKey.call()}"
+            } else {
+                forceAllSubPathsForType.call(prop.type.type)
+            }
+            popStacks.call()
+        }
+    }
+
     /** Find all properties with tag restSubPath in the complete model, distribute tags recurseToRestSubPath to guide generating sub-path */
     Closure<Map<Type, List<String>>> prepareModel = { Model model ->
         def res = [:]
         def types = model.types.findAll { it.hasTag('mainType') && it.hasTag('rest') && !it.hasTag('joinedType') }
+        if (forceAllSubPaths) {
+            types.each { type ->
+                prepareStacks.call(type)
+                forceAllSubPathsForType.call(type)
+            }
+        }
         types.each { type ->
             prepareStacks.call(type)
             List<String> keys = []
