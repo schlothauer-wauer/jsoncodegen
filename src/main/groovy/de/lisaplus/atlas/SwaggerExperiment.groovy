@@ -84,6 +84,8 @@ class SwaggerExperiment {
     List<Type> typeStack = []
     /** Stack for the elements of the REST paths build using the property names  */
     List<String> pathElementStack = []
+    /** Switch to using REST paths created using property names */
+    boolean usePropNames = true
 
     /**
      * @param modelPath The path to the (json) file defining the model
@@ -395,9 +397,10 @@ ${parameterStr}
     }
 
     /**
-     * Creates REST path from property chain
+     * Creates REST path using property names
      */
-    def buildPathFromProps = { List<Property> propList, boolean addLastId=true ->
+    def buildPathFromProps = { boolean addLastId=true ->
+        /*
         List parts = [currentType.name]
         def lastElem = propList[propList.size() - 1].name    // Assumption: list is never empty!
         propList.each {
@@ -407,6 +410,16 @@ ${parameterStr}
             }
         }
         return parts.join('/')
+        */
+        String path
+        if (addLastId) {
+            path = pathElementStack.join('')
+        } else {
+            def lastElement = pathElementStack.pop()
+            path = pathElementStack.join('')
+            pathElementStack.add(lastElement)
+        }
+        return path
     }
 
     /**
@@ -414,6 +427,8 @@ ${parameterStr}
      */
     def printIDPath = { List typeList ->
         def pathStr = buildPathFromTypes.call(typeList)
+        if (usePropNames)
+            pathStr = buildPathFromProps.call(true)
         restPaths.add(pathStr)
         def lastItem = typeList[typeList.size()-1]
         def summary = lastItem.description ? lastItem.description : '???'
@@ -473,6 +488,8 @@ ${printDeleteResponse()}"""
      */
     def printIDPathJoined = { List typeList ->
         def pathStr = buildPathFromTypes.call(typeList)
+        if (usePropNames)
+            pathStr = buildPathFromProps.call(true)
         restPaths.add(pathStr)
         def lastItem = typeList[typeList.size()-1]
         def summary = lastItem.description ? lastItem.description : '???'
@@ -497,6 +514,8 @@ ${printIdResponse(lastItem)}"""
      */
     def printListPath_noArray = { List typeList ->
         def pathStr = buildPathFromTypes.call(typeList, false)
+        if (usePropNames)
+            pathStr = buildPathFromProps.call(false)
         restPaths.add(pathStr)
         def lastItem = typeList[typeList.size()-1]
         def summary = lastItem.description ? lastItem.description : '???'
@@ -556,6 +575,8 @@ ${printPutPatchPostItemResponse(lastItem)}"""
      */
     def printListPath_array = { List typeList ->
         def pathStr = buildPathFromTypes.call(typeList, false)
+        if (usePropNames)
+            pathStr = buildPathFromProps.call(false)
         restPaths.add(pathStr)
         def lastItem = typeList[typeList.size()-1]
         def summary = lastItem.description ? lastItem.description : '???'
@@ -599,6 +620,8 @@ ${printPutPatchPostItemResponse(lastItem)}"""
      */
     def printListPathJoined = { List typeList ->
         def pathStr = buildPathFromTypes.call(typeList, false)
+        if (usePropNames)
+            pathStr = buildPathFromProps.call(false)
         restPaths.add(pathStr)
         def lastItem = typeList[typeList.size()-1]
         def summary = lastItem.description ? lastItem.description : '???'
@@ -641,7 +664,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
      * @param property The element to evaluate.
      */
     def checkHasId = { Property property ->
-        return property.type.type.properties.findAll{ Property prop -> prop.name == 'guid' || prop.name == 'entryId' }.isEmpty()
+        return !property.type.type.properties.findAll{ Property prop -> prop.name == 'guid' || prop.name == 'entryId' }.isEmpty()
     }
 
     /**
@@ -894,6 +917,7 @@ paths:/$
         //// search for all types that should provide entry points
         model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
             currentType = type
+            prepareStacks.call(type)
             println printListPath([type], true)
             println printIDPath([type])
         }
