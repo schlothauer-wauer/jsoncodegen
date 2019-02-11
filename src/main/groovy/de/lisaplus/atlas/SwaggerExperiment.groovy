@@ -904,6 +904,7 @@ paths:/$
         // Keep around!
         model.types.findAll { it.hasTag('joinedType') && it.hasTag('rest') && it.hasTag('mainType') }.each { type ->
             currentType = type
+            prepareStacks.call(type)
             println printListPathJoined([type])
             println printIDPathJoined([type])
         }
