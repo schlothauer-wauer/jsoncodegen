@@ -49,11 +49,21 @@ class SwaggerExperiment {
         */
 
         // service-user-config
+        /*
         def base = '/home/stefan/Entwicklung/service-user-config/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'user_config.json'
                 : args[0]
         def forceMainTypes = ''
+        */
+
+        // ines-network
+        def base = '/home/stefan/Entwicklung/models-lisa-server/model/'
+        def modelPath = args.length == 0 ?
+                base + 'ines_network.json'
+                : args[0]
+        def forceMainTypes = ''
+
 
         def swaggerExp = new SwaggerExperiment(modelPath, forceMainTypes.split(':').toList())
         swaggerExp.execute()
@@ -850,37 +860,35 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             //service junction
             extraParam = ['basePath'           : '/junction',
                           additionalTypes      : '/home/stefan/Entwicklung/service-junction/rest/swagger/additional/types.yaml',
-                          additionalPaths      : '/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml',
-                          disableRecursionLimit: 'false']
+                          additionalPaths      : '/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml']
         } else if (modelPath.endsWith('junction_graphics.json')) {
             // service junctionGraphics
             extraParam = [ 'basePath':'/junctionGraphics',
                            additionalTypes:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/types.yaml',
-                           additionalPaths:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/paths.yaml',
-                           disableRecursionLimit: 'false']
+                           additionalPaths:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/paths.yaml']
         } else if (modelPath.endsWith('incident.json')) {
             // service incident
             extraParam = ['basePath'           : '/incident',
                           additionalTypes      : '/home/stefan/Entwicklung/service-incident/rest/swagger/additional/types.yaml',
-                          additionalPaths      : '/home/stefan/Entwicklung/service-incident/rest/swagger/additional/paths.yaml',
-                          disableRecursionLimit: 'false']
+                          additionalPaths      : '/home/stefan/Entwicklung/service-incident/rest/swagger/additional/paths.yaml']
 
         } else if (modelPath.endsWith('op_message.json')) {
             // service incident
             extraParam = ['basePath'           : '/opMessage',
                           additionalTypes      : '/home/stefan/Entwicklung/service-op-message/rest/swagger/additional/types.yaml',
-                          additionalPaths      : '/home/stefan/Entwicklung/service-op-message/rest/swagger/additional/paths.yaml',
-                          disableRecursionLimit: 'false']
+                          additionalPaths      : '/home/stefan/Entwicklung/service-op-message/rest/swagger/additional/paths.yaml']
         } else if (modelPath.endsWith('user_config.json')) {
             // service incident
             extraParam = ['basePath'           : '/userConfig',
                           additionalTypes      : '/home/stefan/Entwicklung/service-user-config/rest/swagger/additional/types.yaml',
-                          additionalPaths      : '/home/stefan/Entwicklung/service-user-config/rest/swagger/additional/paths.yaml',
-                          disableRecursionLimit: 'false']
+                          additionalPaths      : '/home/stefan/Entwicklung/service-user-config/rest/swagger/additional/paths.yaml']
+        } else if (modelPath.endsWith('ines_network.json')) {
+            // service incident
+            extraParam = ['basePath'           : '/inesNetwork']
         } else {
             println 'Missing extraParam!'
             System.exit(1)
-        } // service-user-config
+        }
 
         String part1 = $/
 swagger: "2.0"
