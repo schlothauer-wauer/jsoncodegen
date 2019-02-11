@@ -13,12 +13,14 @@ class SwaggerExperiment {
     static main(args) {
 
         // service service-junction2
+        /*
         def base = '/home/stefan/Entwicklung/service-junction2/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'junction.json'
                 // base + 'shared\\geo_point.json'
                 : args[0]
         def forceMainTypes = 'ObjectBase:Tag:Region:ObjectGroup'
+        */
 
         /*
         // service service-junction
@@ -28,7 +30,9 @@ class SwaggerExperiment {
                 // base + 'shared\\geo_point.json'
                 : args[0]
         def forceMainTypes = 'ObjectBase:Tag:Region:ObjectGroup'
+        */
 
+        /*
         // service service-op-message
         def base = '/home/stefan/Entwicklung/service-op-message/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
@@ -37,8 +41,8 @@ class SwaggerExperiment {
         def forceMainTypes = ''
         */
 
-        /*
         // service incident
+        /*
         def base = '/home/stefan/Entwicklung/service-op-message/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'incident.json'
@@ -46,14 +50,12 @@ class SwaggerExperiment {
         def forceMainTypes = ''
         */
 
-        /*
         // service service-junction-graphics
         def base = '/home/stefan/Entwicklung/service-junction-graphics/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'junction_graphics.json'
                 : args[0]
         def forceMainTypes = 'ObjectBase:Tag:Region:ObjectGroup'
-        */
 
         def swaggerExp = new SwaggerExperiment(modelPath, forceMainTypes.split(':').toList())
         swaggerExp.execute()
@@ -70,7 +72,7 @@ class SwaggerExperiment {
     /** The main type, which is to be processed */
     Type currentType
     /** For enabling/disabling debug output */
-    boolean verbose = false
+    boolean verbose = true
     /** Mimic template environment! */
     Map extraParam = [:]
     /** Name of types, which are to be tagged as main types forcefully, mimic template environment! */
@@ -753,10 +755,9 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             println "??? at key=${currentKey.call()}"
         }
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
-            putStacks.call(prop)
-            println prop.name
             if (prop.type.isArray &&  !checkHasId.call(prop) ) {
                 def msg = "Add missing entryId to ${currentKey.call()}"
+                if (verbose) println msg
                 restPaths.add(msg)
                 Type propType = prop.type.type
                 Property idProp = new Property()
@@ -767,6 +768,10 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
                 idProp.tags.add('notNull')
                 propType.properties.add(idProp)
             }
+        }
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            putStacks.call(prop)
+            if (verbose) println "prop=$prop.name key=${currentKey.call()}"
             if (!prop.hasTag('restSubPath')) {
                 prop.tags.add('restSubPath')
             }
@@ -785,6 +790,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         def types = model.types.findAll { it.hasTag('mainType') && it.hasTag('rest') && !it.hasTag('joinedType') }
         if (forceAllSubPaths) {
             types.each { type ->
+                if (verbose) println "Start preparing model for type $type.name"
                 prepareStacks.call(type)
                 forceAllSubPathsForType.call(type)
             }
@@ -855,10 +861,29 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
                            additionalTypes:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/types.yaml',
                            additionalPaths:'/home/stefan/Entwicklung/service-junction-graphics/rest/swagger/additional/paths.yaml',
                            disableRecursionLimit: 'false']
+        } else if (modelPath.endsWith('incident.json')) {
+            // service incident
+            extraParam = ['basePath'           : '/incident',
+                          additionalTypes      : '/home/stefan/Entwicklung/service-incident/rest/swagger/additional/types.yaml',
+                          additionalPaths      : '/home/stefan/Entwicklung/service-incident/rest/swagger/additional/paths.yaml',
+                          disableRecursionLimit: 'false']
+
+        } else if (modelPath.endsWith('op_message.json')) {
+            // service incident
+            extraParam = ['basePath'           : '/opMessage',
+                          additionalTypes      : '/home/stefan/Entwicklung/service-op-message/rest/swagger/additional/types.yaml',
+                          additionalPaths      : '/home/stefan/Entwicklung/service-op-message/rest/swagger/additional/paths.yaml',
+                          disableRecursionLimit: 'false']
+        } else if (modelPath.endsWith('user_config.json')) {
+            // service incident
+            extraParam = ['basePath'           : '/userConfig',
+                          additionalTypes      : '/home/stefan/Entwicklung/service-user-config/rest/swagger/additional/types.yaml',
+                          additionalPaths      : '/home/stefan/Entwicklung/service-user-config/rest/swagger/additional/paths.yaml',
+                          disableRecursionLimit: 'false']
         } else {
             println 'Missing extraParam!'
             System.exit(1)
-        }
+        } // service-user-config
 
         String part1 = $/
 swagger: "2.0"
