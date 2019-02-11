@@ -11,19 +11,8 @@ import de.lisaplus.atlas.model.UUIDType
 class SwaggerExperiment {
 
     static main(args) {
-
-        // service service-junction2
         /*
-        def base = '/home/stefan/Entwicklung/service-junction2/models/models-lisa-server/model/'
-        def modelPath = args.length == 0 ?
-                base + 'junction.json'
-                // base + 'shared\\geo_point.json'
-                : args[0]
-        def forceMainTypes = 'ObjectBase:Tag:Region:ObjectGroup'
-        */
-
-        /*
-        // service service-junction
+        // service-junction
         def base = '/home/stefan/Entwicklung/service-junction/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'junction.json'
@@ -32,8 +21,8 @@ class SwaggerExperiment {
         def forceMainTypes = 'ObjectBase:Tag:Region:ObjectGroup'
         */
 
+        // service-op-message
         /*
-        // service service-op-message
         def base = '/home/stefan/Entwicklung/service-op-message/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'op_message.json'
@@ -41,7 +30,7 @@ class SwaggerExperiment {
         def forceMainTypes = ''
         */
 
-        // service incident
+        // service-incident
         /*
         def base = '/home/stefan/Entwicklung/service-op-message/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
@@ -50,12 +39,21 @@ class SwaggerExperiment {
         def forceMainTypes = ''
         */
 
-        // service service-junction-graphics
+        // service-junction-graphics
+        /*
         def base = '/home/stefan/Entwicklung/service-junction-graphics/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'junction_graphics.json'
                 : args[0]
         def forceMainTypes = 'ObjectBase:Tag:Region:ObjectGroup'
+        */
+
+        // service-user-config
+        def base = '/home/stefan/Entwicklung/service-user-config/models/models-lisa-server/model/'
+        def modelPath = args.length == 0 ?
+                base + 'user_config.json'
+                : args[0]
+        def forceMainTypes = ''
 
         def swaggerExp = new SwaggerExperiment(modelPath, forceMainTypes.split(':').toList())
         swaggerExp.execute()
@@ -848,12 +846,11 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
     }
 
     private void executeForModel() {
-        boolean useNew = true
         if (modelPath.endsWith('junction.json')) {
             //service junction
             extraParam = ['basePath'           : '/junction',
-                          additionalTypes      : '/home/stefan/Entwicklung/service-junction2/rest/swagger/additional/types.yaml',
-                          additionalPaths      : '/home/stefan/Entwicklung/service-junction2/rest/swagger/additional/paths.yaml',
+                          additionalTypes      : '/home/stefan/Entwicklung/service-junction/rest/swagger/additional/types.yaml',
+                          additionalPaths      : '/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml',
                           disableRecursionLimit: 'false']
         } else if (modelPath.endsWith('junction_graphics.json')) {
             // service junctionGraphics
