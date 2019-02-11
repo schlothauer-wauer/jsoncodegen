@@ -11,7 +11,6 @@ import de.lisaplus.atlas.model.UUIDType
 class SwaggerExperiment {
 
     static main(args) {
-        /*
         // service-junction
         def base = '/home/stefan/Entwicklung/service-junction/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
@@ -19,7 +18,6 @@ class SwaggerExperiment {
                 // base + 'shared\\geo_point.json'
                 : args[0]
         def forceMainTypes = 'ObjectBase:Tag:Region:ObjectGroup'
-        */
 
         // service-op-message
         /*
@@ -58,11 +56,13 @@ class SwaggerExperiment {
         */
 
         // ines-network
+        /*
         def base = '/home/stefan/Entwicklung/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'ines_network.json'
                 : args[0]
         def forceMainTypes = ''
+        */
 
 
         def swaggerExp = new SwaggerExperiment(modelPath, forceMainTypes.split(':').toList())
@@ -97,6 +97,10 @@ class SwaggerExperiment {
     boolean usePropNames = true
     /** Places tags "restSubPath" at all compatible properties to force creation of complete set of REST paths. */
     boolean forceAllSubPaths = true
+    /** Mimic template environment */
+    def generateGeoJsonPaths
+    /** Mimic template environment */
+    List<String> providedGeoJsonTypes = []
 
     /**
      * @param modelPath The path to the (json) file defining the model
@@ -649,6 +653,104 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
     }
 
     /**
+     * Print geoJson path for a point object of that type. It's required that the type is a joined type with objectBase
+     */
+    def printGeoPath = { def type, String geoObjType ->
+        def geoObjTypeLowerCase = geoObjType.toLowerCase()
+        def strippedTypeName=type.name.replace('Joined','')
+        if (!providedGeoJsonTypes.contains("${strippedTypeName}${geoObjType}".toString())) {
+            // for that object is no geoJsonType defined in settings.sh, so path creation is skipped
+            return "Test: $providedGeoJsonTypes vs ${strippedTypeName}${geoObjType}";
+        }
+        def pathName="${strippedTypeName.toLowerCase()}_${geoObjTypeLowerCase}"
+        def ret="""
+  /${pathName}:
+    options:
+      tags:
+        - ${type.name}
+      summary: Provides meta data of the geo ${geoObjTypeLowerCase} request for the related type
+      description: return a meta data object
+      operationId: "options_${pathName}"
+      produces:
+        - "application/xml"
+        - "application/json"
+      parameters:
+        - in: query
+          name: offset
+          type: integer
+          description: The number of objects to skip before starting to collect the result set.
+        - in: query
+          name: limit
+          type: integer
+          description: The numbers of objects to return.
+        - in: query
+          name: filter
+          type: string
+          description: Defines a criteria for selecting specific objects
+        - in: query
+          name: sort
+          type: string
+          description: Defines a sorting order for the objects
+        - in: query
+          name: bbox
+          type: string
+          description: bbox of the desired area
+      responses:
+        200:
+          description: "in case of success"
+          schema:
+            ${DOLLAR}ref: "#/definitions/OptionsListResponse"
+        default:
+          description: "Unexpected error"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError"
+    get:
+      tags:
+        - ${type.name}
+      summary: "GeoJSON list for ${type.name} ${geoObjTypeLowerCase}"
+      description: "returns GeoJSON list of ${geoObjTypeLowerCase}"
+      operationId: "geo_${pathName}"
+      produces:
+        - "application/json"
+      parameters:
+        - in: query
+          name: offset
+          type: integer
+          description: The number of objects to skip before starting to collect the result set.
+        - in: query
+          name: limit
+          type: integer
+          description: The numbers of objects to return.
+        - in: query
+          name: filter
+          type: string
+          description: Defines a criteria for selecting specific objects
+        - in: query
+          name: sort
+          type: string
+          description: Defines a sorting order for the objects
+        - in: query
+          name: bbox
+          type: string
+          description: bbox of the desired area
+      responses:
+        200:
+          description: "in case of success"
+          schema:
+            ${DOLLAR}ref: "#/definitions/${type.name.replace('Joined','')}${geoObjType}"
+        400:
+          description: "in case of broken filter or sort criteria"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError"
+        default:
+          description: "Unexpected error"
+          schema:
+            ${DOLLAR}ref: "#/definitions/LisaError"
+        """
+        return ret
+    }
+
+    /**
      * Print path for List URLs that are no arrays, functional fasade
      */
     def printListPath = { List typeList, boolean array = false ->
@@ -859,7 +961,9 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             //service junction
             extraParam = ['basePath'           : '/junction',
                           additionalTypes      : '/home/stefan/Entwicklung/service-junction/rest/swagger/additional/types.yaml',
-                          additionalPaths      : '/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml']
+                          additionalPaths      : '/home/stefan/Entwicklung/service-junction/rest/swagger/additional/paths.yaml',
+                          providedGeoJsonTypes : 'JunctionRoutes;JunctionPoints;JunctionAreas',
+                          ]
         } else if (modelPath.endsWith('junction_graphics.json')) {
             // service junctionGraphics
             extraParam = [ 'basePath':'/junctionGraphics',
@@ -889,6 +993,9 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
             System.exit(1)
         }
 
+        this.generateGeoJsonPaths = extraParam.providedGeoJsonTypes
+        this.providedGeoJsonTypes = generateGeoJsonPaths ? extraParam.providedGeoJsonTypes.split(';') : []
+
         String part1 = $/
 swagger: "2.0"
 info:
@@ -917,8 +1024,8 @@ paths:/$
         model.types.findAll { return (it.hasTag('mainType')) && (it.hasTag('rest')) && (!it.hasTag('joinedType')) }.each { type ->
             currentType = type
             prepareStacks.call(type)
-            println printListPath([type], true)
-            println printIDPath([type])
+            println printListPath.call([type], true)
+            println printIDPath.call([type])
         }
 
         // prepare evaluation of REST sub-paths
@@ -939,8 +1046,13 @@ paths:/$
         model.types.findAll { it.hasTag('joinedType') && it.hasTag('rest') && it.hasTag('mainType') }.each { type ->
             currentType = type
             prepareStacks.call(type)
-            println printListPathJoined([type])
-            println printIDPathJoined([type])
+            println printListPathJoined.call([type])
+            println printIDPathJoined.call([type])
+            if (generateGeoJsonPaths && type.hasPropertyWithName('objectBase')) {
+                println printGeoPath.call(type,'Points')
+                println printGeoPath.call(type,'Areas')
+                println printGeoPath.call(type,'Routes')
+            }
         }
 
         // Keep around!
