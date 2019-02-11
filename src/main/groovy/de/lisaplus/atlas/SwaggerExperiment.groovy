@@ -6,6 +6,7 @@ import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Property
 import de.lisaplus.atlas.model.Type
+import de.lisaplus.atlas.model.UUIDType
 
 class SwaggerExperiment {
 
@@ -397,11 +398,13 @@ ${parameterStr}
     }
 
     /**
-     * Creates REST path using property names
+     * Creates REST path using property names.
+     * An example of a path, which ends with the ID of an object, is /objectBase/{objectBase_id}
+     * @param addLastId Indicates, whether the last entry of the stack representing the ID of an object, is to be added to the REST path
      */
     def buildPathFromProps = { boolean addLastId=true ->
         String path
-        if (addLastId) {
+        if (addLastId || !pathElementStack.last().endsWith('_id}')) {
             path = pathElementStack.join('')
         } else {
             def lastElement = pathElementStack.pop()
@@ -675,6 +678,7 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         } else {
             prefix = '/'
         }
+        def key = currentKey.call()
         if (checkHasId.call(property)) {
             // e.g. /addressPerson in /junctionContact/{junctionContact_id}/addressPerson(/{addressPerson_id})
             // or   .streets in /junction/{junction_id}/location.streets(/{junctionLocationStreetsItem_id})
@@ -750,6 +754,19 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         }
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             putStacks.call(prop)
+            println prop.name
+            if (prop.type.isArray &&  !checkHasId.call(prop) ) {
+                def msg = "Add missing entryId to ${currentKey.call()}"
+                restPaths.add(msg)
+                Type propType = prop.type.type
+                Property idProp = new Property()
+                idProp.name = 'entryId'
+                idProp.type = new UUIDType()
+                idProp.description = 'ID property inserted on the fly!'
+                idProp.tags.add('notDisplayed')
+                idProp.tags.add('notNull')
+                propType.properties.add(idProp)
+            }
             if (!prop.hasTag('restSubPath')) {
                 prop.tags.add('restSubPath')
             }
