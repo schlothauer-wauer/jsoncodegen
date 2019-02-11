@@ -649,6 +649,26 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
     }
 
     /**
+     * Print path for List URLs that are no arrays, functional fasade
+     */
+    def printListPath = { List typeList, boolean array = false ->
+        if (array) {
+            printListPath_array (typeList)
+        }
+        else {
+            printListPath_noArray (typeList)
+        }
+    }
+
+    /**
+     * Checks whether the property has an identity (its type contains a fied guid or entryId)
+     * @param property The element to evaluate.
+     */
+    def checkHasId = { Property property ->
+        return !property.type.type.properties.findAll{ Property prop -> prop.name == 'guid' || prop.name == 'entryId' }.isEmpty()
+    }
+
+    /**
      * Prepares the stacks for running the next loop over the model
      * @param the current type
      */
@@ -659,14 +679,6 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         pathElementStack.clear()
         pathElementStack.add("/${data.lowerCamelCase.call(type.name)}") // e.g. /junction
         pathElementStack.add("/{${data.lowerCamelCase.call(type.name)}_id}") // e.g. junction_id
-    }
-
-    /**
-     * Checks whether the property has an identity (its type contains a fied guid or entryId)
-     * @param property The element to evaluate.
-     */
-    def checkHasId = { Property property ->
-        return !property.type.type.properties.findAll{ Property prop -> prop.name == 'guid' || prop.name == 'entryId' }.isEmpty()
     }
 
     /**
@@ -688,7 +700,6 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         } else {
             prefix = '/'
         }
-        def key = currentKey.call()
         if (checkHasId.call(property)) {
             // e.g. /addressPerson in /junctionContact/{junctionContact_id}/addressPerson(/{addressPerson_id})
             // or   .streets in /junction/{junction_id}/location.streets(/{junctionLocationStreetsItem_id})
@@ -714,18 +725,6 @@ ${printListResponse(lastItem.name,typeList.size!=1)}"""
         if (checkHasId.call(dropped)) {
             // drop extra element /{XXX_id}
             pathElementStack.pop()
-        }
-    }
-
-    /**
-     * Print path for List URLs that are no arrays, functional fasade
-     */
-    def printListPath = { List typeList, boolean array = false ->
-        if (array) {
-            printListPath_array (typeList)
-        }
-        else {
-            printListPath_noArray (typeList)
         }
     }
 
@@ -924,6 +923,11 @@ paths:/$
 
         // prepare evaluation of REST sub-paths
         def type2keys = prepareModel.call(model)
+        if (verbose) {
+            type2keys.findAll { type, keys -> !keys.isEmpty()}.each { type, keys ->
+                println "type=$type.name keys=$keys"
+            }
+        }
 
         // loop over all types with REST sub-paths
         type2keys.findAll { type, keys -> !keys.isEmpty()}.each { type, keys ->
