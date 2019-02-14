@@ -48,7 +48,7 @@ class HandlingTemplate {
         template.execute(typeName, typeName.endsWith('Joined'))
 
         // Check for exception while running code generation for all available types
-        template.generateAll()
+        // template.generateAll()
     }
 
     /** The path to the model definition file */
@@ -125,76 +125,6 @@ class HandlingTemplate {
         executeForType(type, joined)
     }
 
-    def applyMaskKeyOverwritesLoop1 = { List<String> maskKeys, Map<String, String> overwrites ->
-        if (joined) {
-            // Kick out the original maskKey and add the corrected one if that is missing
-            overwrites.each {entry ->
-                assert maskKeys.contains(entry.key)
-                assert maskKeys.contains(entry.value)
-                maskKeys.remove(entry.key)
-                if (!maskKeys.contains(entry.value)) {
-                    maskKeys.add(entry.value)
-                    println "ATTENTION: added corrected maskKey ${entry.value} which ususally is already available!"
-                }
-            }
-        } else {
-            // replace e.g. objectBaseId with objectBase
-            overwrites.each { entry ->
-                int idx = maskKeys.indexOf(entry.key)
-                if (idx > -1) {
-                    maskKeys.set(idx, entry.getValue())
-                } else {
-                    throw new RuntimeException("Failed to apply overwrite: maskKeys=$maskKeys  overwrite= $entry")
-                }
-            }
-        }
-    }
-
-    def applyMaskKeyOverwritesLoop2 = { Map<String,Set<String>> maskKey2affectedProps, Map<String, String> overwrites ->
-        if (joined) {
-            overwrites.each {entry ->
-                // remove entry with out-dated mask key
-                maskKey2affectedProps.remove(entry.key)
-                // For the entry with the correct mask key, add the the property name with suffix Id, too
-                Set<String> affected = maskKey2affectedProps.get(entry.value)
-                if (affected != null && !affected.contains(entry.key)) {
-                    affected.add(entry.key)
-                }
-            }
-        } else {
-            // find the entry with wrong mask key and update the key
-            overwrites.each {entry ->
-                Set<String> affected = maskKey2affectedProps.remove(entry.key)
-                if (affected != null) {
-                    maskKey2affectedProps.put(entry.value, affected)
-                } else {
-                    throw new RuntimeException(entry)
-                }
-            }
-        }
-    }
-
-    def applyMaskKeyOverwritesLoop3a = { Map<String,Map<String,Integer>> maskKey2propName2deleteCount, Map<String, String> overwrites ->
-        if (joined) {
-            overwrites.each { entry ->
-                // When masking using key 'objectBase', then the same amount of properties named 'objectBase'
-                // and 'objectBaseId' are deleted, but the later one is missing!
-                Map<String, Integer> prop2delCount = maskKey2propName2deleteCount.get(entry.value)
-                prop2delCount.put(entry.key, prop2delCount.get(entry.value))
-            }
-        } else {
-            // Just update the maskKey
-            overwrites.each {entry ->
-                Map<String, Integer> prop2delCount = maskKey2propName2deleteCount.get(entry.key)
-                if (prop2delCount != null) {
-                    maskKey2propName2deleteCount.put(entry.value, prop2delCount)
-                } else {
-                    throw new RuntimeException("No counts for maskKey ${entry.key}?!?")
-                }
-            }
-        }
-    }
-
     private void executeForType(Type type, boolean joined) {
         this.joined = joined
         targetType = data.upperCamelCase.call(type.name)
@@ -210,36 +140,9 @@ class HandlingTemplate {
         Set<String> propNames = []
         // The mask keys, which are available for the current type
         List<String> maskKeys = []
-        findNamesKeysForType.call(type, propNames, maskKeys)
-
-        // apply maskKey overwrites
-//        applyMaskKeyOverwritesLoop1.call(maskKeys, maskKeyOverwrites)
-
-        List<String> sorted = []
-        if (printDebug) {
-            // Debug output of 1st loop:
-            sorted.addAll(propNames); Collections.sort(sorted)
-            println "propNames=${sorted}"
-            sorted.clear(); sorted.addAll(maskKeys); Collections.sort(sorted)
-            println "maskKey=${sorted}"
-        }
 
         /* 2nd loop: find property names affected by masking a mask key */
         prepareStacks.call()
-        // A mapping of mask key to the property names affected when masking the property associated with that mask key
-        Map<String,Set<String>> maskKey2PropNames = [:]
-        findKeyAffectedParamsForType.call(type, maskKey2PropNames)
-
-        // apply maskKey overwrites
-//        applyMaskKeyOverwritesLoop2.call(maskKey2PropNames, maskKeyOverwrites)
-
-        // Debug output of 2nd loop:
-        if (printDebug) {
-            maskKey2PropNames.keySet().stream().sorted().each { maskKey ->
-                sorted.clear(); sorted.addAll(maskKey2PropNames.get(maskKey)); Collections.sort(sorted)
-                println "maskKey='$maskKey' affected=${sorted}"
-            }
-        }
 
         /* 3rd loop: find mapping of mask key to the number of deleted property occurrences triggered by actually masking that key. */
         prepareStacks.call()
@@ -248,30 +151,6 @@ class HandlingTemplate {
         maskKeys.each { key -> maskKey2propName2deleteCount.put(key, [:]) }
         for (String propName : propNames) {
             findMaskKey2propName2CountForType.call(type, propName, entryPerArray, 0, maskKey2propName2deleteCount)
-        }
-
-        // apply maskKey overwrites
-        applyMaskKeyOverwritesLoop1.call(maskKeys, maskKeyOverwrites)
-        applyMaskKeyOverwritesLoop2.call(maskKey2PropNames, maskKeyOverwrites)
-        applyMaskKeyOverwritesLoop3a.call(maskKey2propName2deleteCount, maskKeyOverwrites)
-
-        // Debug output of 3rd loop:
-        if (printDebug) {
-            for (String maskKey : maskKeys) {
-                println "maskKey '$maskKey':"
-                Map<String, Integer> prop2Count = maskKey2propName2deleteCount.get(maskKey)
-                sorted.clear(); sorted.addAll(prop2Count.keySet()); Collections.sort(sorted)
-                // display all counts
-                sorted.each { prop -> println "prop=$prop maskKey='$maskKey' count=${prop2Count.get(prop)}" }
-            }
-
-            for (String maskKey : maskKeys) {
-                println "maskKey '$maskKey':"
-                Map<String, Integer> prop2Count = maskKey2propName2deleteCount.get(maskKey)
-                sorted.clear(); sorted.addAll(prop2Count.keySet()); Collections.sort(sorted)
-                // display count > 0!
-                sorted.findAll { prop -> prop2Count.get(prop) > 0 }.each { prop -> println "prop=$prop maskKey='$maskKey' count=${prop2Count.get(prop)}" }
-            }
         }
 
         // 4th loop: Find complex properties / notes with child for checking that no NPE is thrown while masking that
@@ -297,11 +176,11 @@ class HandlingTemplate {
 
         String fileHead = """
 /*********start*********/
-package de.lisaplus.lisa.junction.mask;
+package de.lisaplus.lisa.junction.model.handling;
 
 /**
  * This file is generated by jsonCodeGen. Changes will be overwritten with next code generation run.
- * Template: test_mask.txt
+ * Template: handling.txt
  */
 
 import static java.nio.charset.Charset.forName;
@@ -342,7 +221,7 @@ import io.github.benas.randombeans.api.EnhancedRandom;
 /**
  * This class contains the Unit test for masking of class $targetType. 
  */
-public class TestMask${targetType} {
+public class ${targetType}Handling {
     /** Count of entries in Lists / array properties */
     static final int COLL_SIZE = ${entryPerArray}; // IMPORTANT: Needs to be altered in templates (via variable entryPerArray), otherwise counts in JSON will be off!
     /** Pattern for looking up the keys. */
@@ -393,11 +272,6 @@ public class TestMask${targetType} {
 
         maskKey2propNames = new HashMap<>();"""
         println fileHead
-        maskKeys.each { key ->
-            String affectedProps = maskKey2PropNames.get(key).collect{ prop -> /"$prop"/ }.join(', ') // e.g. "city", "classification", "ountry"
-            String line = /        maskKey2propNames.put("${key}", new HashSet<>(Arrays.asList($affectedProps)));/
-            println line
-        }
 
         println """
         final Map<String, Integer> propName2Count = new HashMap<>();
@@ -424,145 +298,7 @@ public class TestMask${targetType} {
         maskKey2propName2deleteCount = null;
         System.out.println ("*********************** TestMask$targetType - End ***********************");
     }
-
-    @Test
-    public void testMaskOne() throws Exception {
-        final Map<String,Integer> emptyMap = Collections.emptyMap();
-        final Map<String, Integer> expDelta = new HashMap<>(allProps.size());
-        for (final String maskKey : allMaskKeys) {
-            final $targetType t = random.nextObject(${targetType}.class);
-            assertNotNull(t);
-            final String jsonBefore = mapper.writeValueAsString(t); // JSON Output
-            assertNotNull(jsonBefore);
-            final Map<String, Integer> occurrencesBefore = countOccurences(jsonBefore);
-            final PojoMask mask = new PojoMask(Collections.singleton(maskKey));
-            Mask${targetType}.mask(t, mask);
-            final String jsonAfter= mapper.writeValueAsString(t); // JSON Output
-            assertNotNull(jsonAfter); 
-            final Map<String, Integer> occurrencesAfter = countOccurences(jsonAfter);
-            expDelta.clear();
-            expDelta.putAll(maskKey2propName2deleteCount.getOrDefault(maskKey, emptyMap));
-            checkDelta(occurrencesBefore, occurrencesAfter, expDelta, formatJson(jsonBefore, mapper), formatJson(jsonAfter, mapper), maskKey);
-        }
-    }
-
-    /**
-     * This test processes all complex properties of the ${targetType}. It checks that there are no NPE while masking
-     * these properties themselves or masking its children properties, even when the parent properties are already 
-     * masked / have value <i>null</i>!
-     */
-    @Test
-    public void testNoNPE() {
-        for (final String parentMaskKey : npeCheckMaskKeys) {
-            final List<String> childrenMaskKeys = allMaskKeys.stream()
-                                                          .filter(key -> key.startsWith(parentMaskKey))
-                                                          .collect(Collectors.toList());
-            final String message = String.format("No mask keys of children nodes?!?: parent maskKey=%s ", parentMaskKey);
-            assertFalse(message, childrenMaskKeys.isEmpty());
-            System.out.format("Perform NPE checks: parent maskKey=%s childrenMaskKeys=%s%n", parentMaskKey, childrenMaskKeys);
-            final ${targetType} t = random.nextObject(${targetType}.class);
-            assertNotNull(t);
-            Mask${targetType}.mask(t, new PojoMask(Collections.singleton(parentMaskKey)));
-            for (final String childMaskKey : childrenMaskKeys) {
-                try {
-                    Mask${targetType}.mask(t, new PojoMask(Collections.singleton(childMaskKey)));
-                } catch (final Exception exception) {
-                    final String msg = String.format("Encountered %s: parent maskKey=%s childMaskKey=%s", exception.toString(), parentMaskKey, childMaskKey);
-                    fail(msg);
-                }
-            }
-        }
-    }
-
-    /**
-     * @param json The JSON representation of the POJO / Bean
-     * @return A mapping of property name to the occurrence count of that property name throughout the JSON.
-     */
-    private Map<String, Integer> countOccurences(String json) {
-        // Find all matches of pattern "[a-zA-Z]+:" -> keys
-        // For every key evaluate how often they occur!
-        final Matcher matcher = matcherFactory.get();
-        matcher.reset(json);
-        final List<String> keys = new ArrayList<>(json.length() / 10);
-        while(matcher.find()) {
-            // finds "abc":  -> strip quotes and trailing colon!
-            final String tmp = matcher.group();
-            keys.add(tmp.substring(1, tmp.length()-2));
-        }
-        if (keys.isEmpty()) {
-            // either
-            throw new RuntimeException(String.format("No keys found in JSON '%s'", json));
-//            // or
-//            return Collections.emptyMap();
-        }
-        return keys.stream().collect(Collectors.groupingBy(key -> key, Collectors.summingInt(l -> 1)));
-    }
-
-    /**
-     * @param occurrencesBefore A mapping of the property name to the occurence count of that property name in the JSON
-     * @param occurrencesAfter
-     * @param expDelta Defines the expected loss of property name occurrences. A mapping of property name to the number
-     *            of occurrences, which are supposed to have been eliminated by the operation.
-     * @param jsonBefore The JSON representation of the POJO / Bean before the operation, used for debugging.
-     * @param jsonAfter The JSON representation of the POJO / Bean after the operation, used for debugging.
-     * @param maskKey The mask key associated with the operation, used for debugging.
-     */
-    private void checkDelta(Map<String, Integer> occurrencesBefore,
-                            Map<String, Integer> occurrencesAfter,
-                            Map<String, Integer> expDelta,
-                            String jsonBefore, String jsonAfter,
-                            String maskKey) {
-        final Integer zero = Integer.valueOf(0);
-        // Check that the occurrence of the keys from before match expectation
-        for (final String key : occurrencesBefore.keySet()) {
-            final Integer countBefore = occurrencesBefore.get(key);
-            final Integer countAfter = occurrencesAfter.getOrDefault(key, zero);
-            final Integer exp = expDelta.get(key);
-            final String msg = String.format(
-                    "maskKey='%s' currKey='%s'%njsonBefore:%n%s%njsonAfter:%n%s%n",
-                        maskKey, key, jsonBefore, jsonAfter);
-            if (exp == null) {
-                assertEquals(msg, countBefore, countAfter);
-            } else {
-                final int expCount = countBefore.intValue() - exp.intValue();
-                assertEquals(msg, expCount, countAfter.intValue());
-            }
-        }
-        // Check that masking did not add new keys!
-        final Set<String> keysAfter = new HashSet<>(occurrencesAfter.keySet());
-        keysAfter.removeAll(occurrencesBefore.keySet());
-        final String msg = String.format("newKeys='%s'%njsonBefore:%n%s%njsonAfter:%n%s", keysAfter, jsonBefore, jsonAfter);
-        assertTrue(msg, keysAfter.isEmpty());
-    }
-
-    /**
-     * @param json The JSON string to pretty print
-     * @param mapper The mapper doing the actual work
-     * @return the pretty printed JSON
-     * @throws Exception Should not happen for valid JSON created from a POJO / Bean.
-     */
-    private static String formatJson(String json, ObjectMapper mapper) throws Exception {
-        final Object jsonObject = mapper.readValue(json, Object.class);
-        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
-    }
 /*********snip**********/
-    @Test
-    public void testRestoreOne() throws Exception {
-        ${targetType} source, target;
-        Object valueBefore;
-        PojoMask mask;
-        String key, jsonMasked, jsonRestored;
-        source = random.nextObject(${targetType}.class);
-        assertNotNull(source);"""
-        // handle objctBaseId
-        tuneType.call(type)
-        allLines.clear()
-        prepareStacks.call()
-        createTestRestoreForType.call(type, allLines)
-        allLines.each { line -> println line }
-        println """
-    }
-
     /**
      * For restoring of array properties with entryId attributes these entryId values need to match.
      * This method assumes that array dimension of objects <i>source</i> and <i>target</i> match!
@@ -570,6 +306,7 @@ public class TestMask${targetType} {
      * @param target The object, which is to inherit the entryId values.
      */
     private void ensureMatchingEntryId(final ${targetType} source, final ${targetType} target) {"""
+        tuneType.call(type)
         allLines.clear()
         prepareStacks.call()
         createEnsureMatchingForType.call(type, allLines, 0)
@@ -582,7 +319,7 @@ public class TestMask${targetType} {
      * @param maskKey The mask key to process.
      * @return The value(s) associated with a mask key.
      */
-    private Object getValue(final ${targetType} pojo, final String maskKey) {
+    public static Object getValue(final ${targetType} pojo, final String maskKey) {
         switch(maskKey) {"""
         allLines.clear()
         prepareStacks.call()
@@ -632,114 +369,6 @@ public class TestMask${targetType} {
         propStack.pop()
         propIsArrayStack.pop()
         propIsCollectionStack.pop()
-    }
-
-    /**
-     * Traverse the properties of a type and collect the mask keys and property names.
-     * This method calls itself recursively if the type contains properties of complex or reference types.
-     */
-    def findNamesKeysForType = { Type type, Set<String> propNames, List<String> maskKeys ->
-        // for delete count evaluation all property names are necessary!
-        type.properties.each { prop -> propNames.add(prop.name) }
-        // The mask keys associated with properties holding tag 'notDisplayed' are to be ignored!
-        type.properties.findAll{ prop -> !prop.hasTag('notDisplayed') }.each { prop ->
-            propStack.add(prop)
-            maskKeys.add(propStack.collect { prop2 -> prop2.name }.join('.'))
-            propStack.pop()
-        }
-
-        // search property pairs for handling joined objects
-        searchPrepLookupProps.call(type)
-
-        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
-            // recursive call!
-            putStacks.call(prop)
-            findNamesKeysForType.call(prop.type.type, propNames, maskKeys)
-            popStacks.call()
-        }
-    }
-
-    /**
-     * Use the assumption, that all properties with tag "prepLookup" have a suffix "Id" and have a associated mask key
-     * without that suffix, to populate maskKeyOverwrites!
-     */
-    def searchPrepLookupProps = { Type type  ->
-        // search property pairs for handling joined objects
-        String baseMsg = 'The assumption that all properties with tag "prepLookup" have a suffix "Id" and have a associated mask key without that suffix seams to be broken!'
-        if (joined) {
-            // Assume (and check) that the names off all properties tagged with prepLookup are ending with Id have a
-            // corresponding property tagged join / mask key without the suffix Id at the end of the name.
-            List<String> joinProps = type.properties.findAll { prop -> prop.hasTag('join')}.collect { prop -> prop.name}
-            List<String> prepLookupProps = type.properties.findAll { prop -> prop.hasTag('prepLookup')}.collect { prop -> prop.name}
-            List<String> prepLookupWrongSuffix = prepLookupProps.findAll { name -> !name.endsWith('Id')}
-            if (!prepLookupWrongSuffix.isEmpty()) {
-                throw new RuntimeException(baseMsg + " Properties with missing suffix: " + prepLookupWrongSuffix)
-            }
-            prepLookupProps.each { name ->
-                String maskKey = name.substring(0, name.length()-2)
-                if (!joinProps.contains(maskKey)) {
-                    throw new RuntimeException(baseMsg + " Property $name with tag prepLookup is misses corresponding property with tag joned. Candidates: $joinProps")
-                }
-                println "Attention: Overwriting maskKey of property $name: $maskKey!"
-                maskKeyOverwrites.put(name, maskKey)
-            }
-        }  else {
-            // Assume that prepLookup properties ending with Id have a corresponding mask key without the suffix Id
-            List<String> prepLookupProps = type.properties.findAll { prop -> prop.hasTag('prepLookup')}.collect { prop -> prop.name}
-            List<String> prepLookupWrongSuffix = prepLookupProps.findAll { name -> !name.endsWith('Id')}
-            if (!prepLookupWrongSuffix.isEmpty()) {
-                throw new RuntimeException(baseMsg + " Properties with missing suffix: " + prepLookupWrongSuffix)
-            }
-            prepLookupProps.each { name ->
-                String maskKey = name.substring(0, name.length()-2)
-                println "Attention: Overwriting maskKey of property $name: $maskKey!"
-                maskKeyOverwrites.put(name, maskKey)
-            }
-        }
-    }
-
-    /**
-     * Traverse the properties of a type and collect mapping of mask key to the names of those those properties, which will
-     * be affected by removing the property associated with the mask key.
-     * This method calls itself recursively if the type contains properties of complex or reference types.
-     * @param type the type to process
-     * @param maskKey2ParamNames The mapping to extend while traversing.
-     */
-    Closure<Set<String>> findKeyAffectedParamsForType = { Type type, Map<String,Set<String>> maskKey2PropNames ->
-        Set<String> affectedProps = []
-        // process nodes with children
-        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { prop ->
-            // Type type = prop.isRefType() ? prop.implicitRef.type : prop.type.type
-            putStacks.call(prop)
-            affectedProps.add(prop.name)
-            affectedProps.addAll(findKeyAffectedParamsForType.call(prop.type.type, maskKey2PropNames))
-            popStacks.call()
-        }
-        // process nodes without children
-        data.filterProps.call(type, [refComplex:false, withoutTag:'notDisplayed']).each { prop ->
-            putStacks.call(prop)
-            addAffected.call(Collections.singleton(prop.name), maskKey2PropNames)
-            popStacks.call()
-            affectedProps.add(prop.name)
-        }
-        if (!propStack.isEmpty()) {
-            affectedProps.add(propStack.last().name)
-        }
-        addAffected.call(affectedProps, maskKey2PropNames)
-        return affectedProps
-    }
-
-    /**
-     * Adds the names of the affected properties to the mapping maskKey2ParamNames.
-     * The mask key is created by examining propStack.
-     */
-    def addAffected = { Set<String> affected, Map<String,Set<String>> maskKey2PropNames ->
-        String maskKey = propStack.isEmpty() ? '.' : propStack.collect { prop2 -> prop2.name }.join('.')
-        if (maskKey2PropNames.put(maskKey, affected) != null) {
-            String msg = "maskKey already present: $maskKey!"
-            System.err.println msg
-            throw new RuntimeException(msg)
-        }
     }
 
     /**
@@ -869,60 +498,6 @@ public class TestMask${targetType} {
         type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   } each { Property prop -> tuneType.call(prop.implicitRef.type) }
         type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() } each { Property prop -> tuneType.call(prop.type.type) }
         lookupProps.each(action)
-    }
-
-    /**
-     * Actually creates the  case statements of the method testRestoreOne for a property.
-     * @param prop The property to process
-     * @param lines Where the created lines of code are to be added.
-     */
-    def createTestRestoreSimple = { Property property, List<String> lines ->
-        putStacks.call(property)
-        def key = propStack.collect {prop -> prop.name}.join('.')
-        lines.add("""
-        /* mask key '${key}': */
-        key = "${key}";
-        valueBefore = getValue(source, key);
-        assertNotNull(key, valueBefore);
-        target = random.nextObject(${targetType}.class);
-        ensureMatchingEntryId(source, target);
-        mask = new PojoMask(Collections.singletonList(key));
-        // Remove masked object to obtain starting point to ensure that restoreMasked is free of side effects.
-        // (Assumes that method mask is working correct!)
-        Mask${targetType}.mask(target, mask);
-        jsonMasked = mapper.writeValueAsString(target);
-
-        // Check that the attribute was restored successfully!
-        Mask${targetType}.restoreMasked(source, target, mask);
-        assertEquals(key, valueBefore, getValue(target, key));
-
-        // Now check that except for the the masked attributes nothing was changed:
-        // Remove restored values and compare to starting point JSON!
-        // (Assumes that method mask is working correct!)
-        Mask${targetType}.mask(target, mask);
-        jsonRestored = mapper.writeValueAsString(target);
-        assertEquals(key, jsonMasked, jsonRestored);""" )
-        popStacks.call()
-    }
-
-    /**
-     * Creates the case statements of the method testRestoreOne for a certain type, calls itself recursively for reference
-     * and complex types!
-     * @param type The type to process
-     * @param lines Where the created lines of code are to be added.
-     */
-    def createTestRestoreForType = { Type type, List<String> lines ->
-        data.filterProps.call(type, [refComplex:false, withoutTag:'notDisplayed']).each { Property prop ->
-            if (verbose) println "// createTestRestoreForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
-            createTestRestoreSimple.call(prop, lines)
-        }
-        data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
-            createTestRestoreSimple.call(prop, lines)
-            // recursive call!
-            putStacks.call(prop)
-            createTestRestoreForType.call(prop.type.type, lines)
-            popStacks.call()
-        }
     }
 
     /**
@@ -1169,7 +744,7 @@ public class TestMask${targetType} {
         }
         if (!propStack.isEmpty()) {
             /*
-                private static boolean checkObjectBaseGisArea(JunctionNumberJoined target) {
+                public static boolean checkObjectBaseGisArea(JunctionNumberJoined target) {
                     return target.getObjectBase() != null
                             && target.getObjectBase().getGis() != null
                             && target.getObjectBase().getGis().getArea() != null;
@@ -1184,7 +759,7 @@ public class TestMask${targetType} {
                 lines.add("target.${cond} != null")
             }
             def conditions = lines.join('\n                && ')
-            def output = "\n    private static boolean check${checkMethodPart}Exists(${targetType} target) {\n        return ${conditions};\n    }"
+            def output = "\n    public static boolean check${checkMethodPart}Exists(${targetType} target) {\n        return ${conditions};\n    }"
             println output
         }
 
