@@ -179,7 +179,6 @@ public class ${targetType}Handling {
         println fileHead
 
         println """
-/*********snip**********/
     /**
      * For restoring of array properties with entryId attributes these entryId values need to match.
      * This method assumes that array dimension of objects <i>source</i> and <i>target</i> match!
@@ -218,8 +217,13 @@ public class ${targetType}Handling {
         prepareStacks.call()
         printGetForType.call(tunedType)
 
+
+        for(String key : removeKeys) {
+            println printRemoveForKey.call(key)
+        }
+
         println '}\n'
-    }
+    }   // end of executeForType
 
     /**
      * Prepares the stacks for running the next loop over the model
@@ -264,7 +268,12 @@ public class ${targetType}Handling {
         // find all ref & complex properties, which are hold in arrays! These are the candidates for the methods removeXXX(pojo, UUID)
         type.properties.findAll{ Property prop -> prop.isRefTypeOrComplexType() && prop.type.isArray }.each { Property prop ->
             putStacks.call(prop)
-            keys.add(currentKey.call())
+            def key = currentKey.call()
+            if (findIdProperty.call(prop)) {
+                keys.add(key)
+            } else {
+                println "ATTENTION: Skip creating removeXXX(pojo, UUID) as property is missing proper ID: type=${currentType.name} key=${key}"
+            }
             popStacks.call()
         }
         // recurse into all ref & complex properties, which are not hold in arrays!
@@ -302,6 +311,56 @@ public class ${targetType}Handling {
             curType = curProp.type.type
         }
         return propStack
+    }
+
+    /**
+     * Processes a ref or complex property.
+     * Take the property's type, looks through it properties and returns the one of type UUID.
+     * That should usually be the entryId or guid!
+     */
+    def findIdProperty = { Property property ->
+        Type type = property.type.type
+        List candidates = type.properties.findAll { Property prop -> prop.type.name() == 'UUID'} // (${type.type.name()})
+        if (candidates.isEmpty() && type.name == 'ListEntry') {
+            // ListEntry usually have a StringType property refId (wanted) and text (to be avoided)
+            candidates.addAll( type.properties.findAll { Property prop -> prop.type.name() == 'STRING' && prop.name == 'refId'} )
+        }
+        /*
+        assert candidates.size() == 1 : "property=${property.name} type=${type.name} props=${type.properties.collect{ it.name }.join(', ')}"
+        assert candidates[0].name == 'guid' || candidates[0].name == 'entryId' || candidates[0].name == 'refId'  : "property=${property.name} type=${type.name} props=${type.properties.collect{ it.name }.join(', ')}"
+        */
+        return candidates.isEmpty() ? null : candidates[0].name
+    }
+
+    /**
+     * Prints the method removeXXX(pojo, UUID) associated with one key
+     */
+    Closure<String> printRemoveForKey = { String key ->
+        List<Property> propStack = propStackFromKey.call(key)
+        def keyUpper = propStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        def typeNameInner = data.upperCamelCase.call(propStack.last().type.type.name)
+        def typeName = data.upperCamelCase.call(currentType.name)
+        // usually one of entryId, guid or refId!
+        def idProp = data.upperCamelCase.call(findIdProperty.call(propStack.last()))
+        def ret = """
+    /**
+     * Tries to remove a specific ${typeNameInner} object from a ${typeName}.
+     * @param pojo The object to process
+     * @param targetId The ID of the ${typeNameInner}, which is to be removed.
+     * @return <i>True</i>, if a ${typeNameInner} of that id was found and subsequently removed,
+     *         <i>false</i> if no object with that id could be found and therefore removed.
+     */
+    public static boolean remove${keyUpper}ById(${typeName} pojo, UUID targetId) {
+        final Iterator<${typeNameInner}> iter = get${keyUpper}(pojo).iterator();
+        while (iter.hasNext()) {
+            if (iter.next().get${idProp}().equals(targetId.toString())) {
+                iter.remove();
+                return true;
+            }
+        }
+        return false;
+    }"""
+        return ret
     }
 
     /**
