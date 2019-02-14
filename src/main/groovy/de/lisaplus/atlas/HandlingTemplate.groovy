@@ -146,25 +146,6 @@ class HandlingTemplate {
 
         /* 3rd loop: find mapping of mask key to the number of deleted property occurrences triggered by actually masking that key. */
         prepareStacks.call()
-        int entryPerArray = 2
-        Map<String,Map<String,Integer>> maskKey2propName2deleteCount = ['.': [:]]
-        maskKeys.each { key -> maskKey2propName2deleteCount.put(key, [:]) }
-        for (String propName : propNames) {
-            findMaskKey2propName2CountForType.call(type, propName, entryPerArray, 0, maskKey2propName2deleteCount)
-        }
-
-        // 4th loop: Find complex properties / notes with child for checking that no NPE is thrown while masking that
-        // node's children, even when the parent node is already masked / null!
-        prepareStacks.call()
-        List<String> masksOfPropsWithChildren = []
-        findMaskOfPropsWithChildren.call( type, masksOfPropsWithChildren)
-
-        // Debug output of 4th loop:
-        if (printDebug) {
-            masksOfPropsWithChildren.each {
-                println "Check that there are no NPE while masking children of the property associated with the mask key '${it}', even when that value is already masked / null!"
-            }
-        }
 
         createUpdateMaskForType.call(type)
 
@@ -240,7 +221,7 @@ public class ${targetType}Handling {
         prepareStacks.call()
         printGetForType.call(type)
 
-        println '}'
+        println '}\n'
     }
 
     /**
@@ -271,104 +252,6 @@ public class ${targetType}Handling {
         propStack.pop()
         propIsArrayStack.pop()
         propIsCollectionStack.pop()
-    }
-
-    /**
-     * Traverse the properties of a type and, for a given property name, collect mapping of mask key to the expected
-     * count of removed properties when that masking is being performed.
-     * This method calls itself recursively if the type contains properties of complex or reference types.
-     * @param type the type to process
-     * @param propName The name of the property, where the expected count is to evaluate
-     * @param entryPerArray The count of entries per array property.
-     * @param maskKey2propName2deleteCount The mapping to extend while traversing.
-     */
-    Closure<Integer> findMaskKey2propName2CountForType = { Type type,
-                                                           String propName,
-                                                           int entryPerArray,
-                                                           int arrayCount,
-                                                           Map<String, Map<String, Integer>> maskKey2propName2deleteCount ->
-        def isArray = propStack.isEmpty() ? false : propStack.last().type.isArray
-        int childArrayCount = arrayCount + (isArray ? 1 : 0)
-
-        int countSum = 0
-        if (!propStack.isEmpty() && propStack.last().name == propName) {
-            // We are currently processing a complex property with the wanted name
-            def count = entryPerArray.power(arrayCount)
-            def maskKey = propStack.collect {prop2 -> prop2.name}.join('.')
-            println "Found $count occurrences in complex property of wanted name $propName at ${maskKey}"
-            countSum += count
-        }
-
-        // process nodes with children
-        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
-            putStacks.call(prop)
-            countSum += findMaskKey2propName2CountForType.call(prop.type.type, propName, entryPerArray, childArrayCount, maskKey2propName2deleteCount)
-            popStacks.call()
-        }
-        // process nodes without children
-        data.filterProps.call(type, [refComplex:false]).each { Property prop ->
-            putStacks.call(prop)
-            def count
-            if (prop.name == propName) {
-                count = entryPerArray.power(childArrayCount)
-                def maskKey = propStack.collect {prop2 -> prop2.name}.join('.')
-                println "Found $count occurrences in simple property of wanted name $propName at ${maskKey}"
-            } else {
-                count = 0
-            }
-            // Do add entries with mask keys associated with this node / property of simple type
-            addCount2.call(propName, count, maskKey2propName2deleteCount)
-            countSum += count
-            popStacks.call()
-        }
-        addCount2.call(propName, countSum, maskKey2propName2deleteCount)
-        return countSum
-    }
-
-    /**
-     * Adds a delete count to the mapping of mask key to the expected count of removed properties when that masking
-     * is being performed.
-     * @param propName The name of the property
-     * @param count The expected delete count
-     * @param maskKey2propName2deleteCount The mapping to extend
-     */
-    Closure<Void> addCount2 = { String propName,
-                                int count,
-                                Map<String, Map<String, Integer>> maskKey2propName2deleteCount ->
-        String maskKey = propStack.isEmpty() ? '.' : propStack.collect { prop2 -> prop2.name }.join('.')
-        Map propName2deleteCount = maskKey2propName2deleteCount.get(maskKey)
-        if (propName2deleteCount == null) {
-            if (verbose) println "addCount2: maskKey2propName2deleteCount misses entry for key ${maskKey}"
-            propName2deleteCount = [:]
-            maskKey2propName2deleteCount.put(maskKey, propName2deleteCount)
-        }
-        if (propName2deleteCount.put(propName, count) != null) {
-            String msg = "Count already present: maskKey=$maskKey propName=$propName!"
-            System.err.println msg
-            throw new RuntimeException(msg)
-        }
-    }
-
-    /**
-     * This method collects all complex properties / nodes with children.
-     * This method calls itself recursively if the type contains properties of complex or reference types.
-     * @param type the type to process
-     * @param masksOfPropsWithChildren The list contains the mask keys associated with the properties / nodes with children.
-     * The masks key of the relevant nodes found in the deepest level of the tree come first.
-     */
-    Closure<Void> findMaskOfPropsWithChildren = { type, List masksOfPropsWithChildren ->
-        List<Property> complex = data.filterProps.call(type, [refComplex: true, withoutTag:'notDisplayed'])
-        complex.each { prop ->
-            putStacks.call(prop)
-            def maskKey = propStack.collect { prop2 -> prop2.name }.join('.')
-            masksOfPropsWithChildren.add(0,  maskKey)
-            popStacks.call()
-        }
-        complex.each { prop ->
-            putStacks.call(prop)
-            findMaskOfPropsWithChildren.call(prop.type.type, masksOfPropsWithChildren)
-            popStacks.call()
-        }
     }
 
     /**
