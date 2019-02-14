@@ -168,12 +168,7 @@ class HandlingTemplate {
 
         createUpdateMaskForType.call(type)
 
-        // start printing JUnit
-
-        String propNameSequence = propNames.collect{ name -> /"$name"/ }.join(', ') // e.g. "area", "center", "city"
-        String maskKeySequence = maskKeys.collect { key -> /"$key"/ }.join(', ') // e.g. "domainId", "guid", "location"
-        String npeMaskKeySequence = masksOfPropsWithChildren.collect { key -> /"$key"/ }.join(', ') // e.g. "address.persons.contact", "address.persons", "address.contact", "address"
-
+        // start printing class content
         String fileHead = """
 /*********start*********/
 package de.lisaplus.lisa.junction.model.handling;
@@ -183,14 +178,6 @@ package de.lisaplus.lisa.junction.model.handling;
  * Template: handling.txt
  */
 
-import static java.nio.charset.Charset.forName;
-import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -200,104 +187,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-
 import de.lisaplus.lisa.junction.model.*;
-import de.lisaplus.util.mask.PojoMask;
-import de.lisaplus.util.serialization.MapperFactory;
-import io.github.benas.randombeans.EnhancedRandomBuilder;
-import io.github.benas.randombeans.api.EnhancedRandom;
 
 /**
  * This class contains the Unit test for masking of class $targetType. 
  */
 public class ${targetType}Handling {
-    /** Count of entries in Lists / array properties */
-    static final int COLL_SIZE = ${entryPerArray}; // IMPORTANT: Needs to be altered in templates (via variable entryPerArray), otherwise counts in JSON will be off!
-    /** Pattern for looking up the keys. */
-    static final String KEY_PATTERN = "\\"[a-zA-Z]+\\":";
+"""
 
-    /** For generating random POJOs/Beans. */
-    static EnhancedRandom random;
-    /** Converts the POJOs/Beans into the JSON representation. POJO attributes with value <i>null</i> are being dropped! */
-    static ObjectMapper mapper;
-    /** Provides the Matchers needed to count the occurrence of the keys in the JSON */
-    static ThreadLocal<Matcher> matcherFactory;
-    /** The names of the properties defined in the current type */
-    private static List<String> allProps;
-    /** The mask keys, which are available for the current type */
-    private static List<String> allMaskKeys;
-    /** A mapping  of mask key to the property names affected when masking the property associated with that mask key */
-    private static Map<String,Set<String>> maskKey2propNames;
-    /** A mapping mask key to a mapping of property name to the expected count of removed properties when that masking is being performed */
-    private static Map<String,Map<String,Integer>> maskKey2propName2deleteCount;
-    /**
-     * This list contains the mask keys of all the complex properties. No NullPointerException may occuree while masking
-     * these properties or the children of these properties, even if these property themselves are already masked / null!
-     */
-    private static List<String> npeCheckMaskKeys;
-
-    @BeforeClass
-    public static void before() {
-        System.out.println ("*********************** TestMask$targetType - Start ***********************");
-        final LocalDate minDate = LocalDate.parse("2000-01-01");
-        final LocalDate endDate = LocalDate.parse("2017-12-31");
-        random = EnhancedRandomBuilder.aNewEnhancedRandomBuilder()
-                .charset(forName("UTF-8"))
-                .dateRange(minDate, endDate)
-                .collectionSizeRange(COLL_SIZE, COLL_SIZE)
-                .overrideDefaultInitialization(true)
-                .stringLengthRange(5, 5)
-                // Ensure that sufficient individual objects are created so that they are not referenced multiple times, which triggers unwanted side effects!
-                // If there are not enough individual GeoPoint objects, masking objectBase.gis.area.points.lon may trigger removed lon in objectBase.gis.route.points!
-                .objectPoolSize(COLL_SIZE*COLL_SIZE)
-                .build();
-        mapper = MapperFactory.createObjectMapper();
-        mapper.setSerializationInclusion(Include.NON_NULL);
-        matcherFactory = ThreadLocal.withInitial(() -> Pattern.compile(KEY_PATTERN).matcher("dummy"));
-
-        allProps = Arrays.asList($propNameSequence);
-        allMaskKeys = Arrays.asList($maskKeySequence);
-        npeCheckMaskKeys = Arrays.asList($npeMaskKeySequence);
-
-        maskKey2propNames = new HashMap<>();"""
         println fileHead
 
         println """
-        final Map<String, Integer> propName2Count = new HashMap<>();
-        maskKey2propName2deleteCount = new HashMap<>();"""
-
-        maskKeys.each { maskKey ->
-            println '        propName2Count.clear();  // ' + maskKey
-            Map<String, Integer> propName2Count = maskKey2propName2deleteCount.get(maskKey)
-            sorted.each { key ->
-                println "        propName2Count.put(\"$key\", ${propName2Count.get(key)});"
-            }
-            println "        maskKey2propName2deleteCount.put(\"$maskKey\", new HashMap<>(propName2Count));"
-
-        }
-
-        println """
-    }
-
-    @AfterClass
-    public static void after() {
-        allProps = null;
-        allMaskKeys = null;
-        maskKey2propNames = null;
-        maskKey2propName2deleteCount = null;
-        System.out.println ("*********************** TestMask$targetType - End ***********************");
-    }
 /*********snip**********/
     /**
      * For restoring of array properties with entryId attributes these entryId values need to match.
