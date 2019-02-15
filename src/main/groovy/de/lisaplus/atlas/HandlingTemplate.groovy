@@ -19,7 +19,7 @@ class HandlingTemplate {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'JunctionJoined' // 'JunctionContact' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'JunctionContact' // 'JunctionJoined' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
 
         /*
         // service service-op-message
@@ -185,7 +185,7 @@ public class ${targetType}Handling {
      * @param source The object, which defines the entryId values
      * @param target The object, which is to inherit the entryId values.
      */
-    private void ensureMatchingEntryId(final ${targetType} source, final ${targetType} target) {"""
+    public static void ensureMatchingEntryId(final ${targetType} source, final ${targetType} target) {"""
         allLines.clear()
         prepareStacks.call()
         createEnsureMatchingForType.call(tunedType, allLines, 0)
