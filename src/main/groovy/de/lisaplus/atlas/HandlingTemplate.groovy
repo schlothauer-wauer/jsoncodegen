@@ -122,6 +122,43 @@ class HandlingTemplate {
     }
 
     /**
+     * <b>THIS METHOD ALTERS THE MODEL!!!</b>
+     * This method tunes the properties of a (complex or reference) type and calls itself recursively if the type
+     * itself holds properties of other (complex or reference) types.
+     * Checks for properties with the tag <i>prepLookup</i> and
+     * <ul>
+     * <li>joined==true: removes the property completely</li>
+     * <li>joined==false: removes the suffix Id</li>
+     * @param type The type to process.
+     */
+    def tuneType = { Type type ->
+        Closure<Void> action
+        if (joined) {
+            action = { Property prop ->
+                println "// ATTENTION: Removing lookup property ${prop.name}"
+                type.properties.remove(prop)
+            }
+        } else {
+            action = { Property prop ->
+                def orig = prop.name
+                def shorten = prop.name.take(prop.name.length() - 2)
+                println "// ATTENTION: Renaming lookup property from $orig to $shorten"
+                prop.setName(shorten)
+            }
+        }
+        Collection<Property> lookupProps = type.properties.findAll { Property prop -> prop.hasTag('prepLookup') && prop.name.endsWith('Id') }
+        type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   } each { Property prop -> tuneType.call(prop.implicitRef.type) }
+        type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() } each { Property prop -> tuneType.call(prop.type.type) }
+        lookupProps.each(action)
+    }
+
+    /* // mimic template
+    // Create a private copy of the current type and alter that: tune prepLookup properties to loose suffix Id!
+    def tunedType = copyType.call(currentType)
+    tuneType.call(tunedType)
+    */
+
+    /**
      * Prepares the stacks for running the next loop over the model
      */
     def prepareStacks = {
@@ -257,37 +294,6 @@ class HandlingTemplate {
         return false;
     }"""
         return ret
-    }
-
-    /**
-     * <b>THIS METHOD ALTERS THE MODEL!!!</b>
-     * This method tunes the properties of a (complex or reference) type and calls itself recursively if the type
-     * itself holds properties of other (complex or reference) types.
-     * Checks for properties with the tag <i>prepLookup</i> and
-     * <ul>
-     * <li>joined==true: removes the property completely</li>
-     * <li>joined==false: removes the suffix Id</li>
-     * @param type The type to process.
-     */
-    def tuneType = { Type type ->
-        Closure<Void> action
-        if (joined) {
-            action = { Property prop ->
-                println "// ATTENTION: Removing lookup property ${prop.name}"
-                type.properties.remove(prop)
-            }
-        } else {
-            action = { Property prop ->
-                def orig = prop.name
-                def shorten = prop.name.take(prop.name.length() - 2)
-                println "// ATTENTION: Renaming lookup property from $orig to $shorten"
-                prop.setName(shorten)
-            }
-        }
-        Collection<Property> lookupProps = type.properties.findAll { Property prop -> prop.hasTag('prepLookup') && prop.name.endsWith('Id') }
-        type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   } each { Property prop -> tuneType.call(prop.implicitRef.type) }
-        type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() } each { Property prop -> tuneType.call(prop.type.type) }
-        lookupProps.each(action)
     }
 
     /**
@@ -540,7 +546,6 @@ class HandlingTemplate {
         this.joined = joined
         targetType = data.upperCamelCase.call(type.name)
         currentType = type
-        boolean printDebug = true
         println '###################################################################'
         println "Start of $targetType:"
         println '###################################################################'
