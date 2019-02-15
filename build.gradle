@@ -1,6 +1,7 @@
 apply plugin: 'groovy'
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
@@ -8,7 +9,18 @@ sourceCompatibility = 1.8
 def mainClass='de.lisaplus.atlas.DoCodeGen'
 
 project.group = 'de.lisaplus.tools'
-project.version = '0.8.4'
+project.version = '0.8.5'
+
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
 
 /*
  * the following attributes need to be declared in $HOME/.gradle/gradle.properties
@@ -63,17 +75,6 @@ dependencies {
 clean {
     delete "${buildDir}/release"
 }
-
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allJava
-}
-
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
 
 task dependenciesToLibDir(type: Copy) {
     into "$buildDir/release/lib"

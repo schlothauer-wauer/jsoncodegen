@@ -25,7 +25,7 @@ class SwaggerExt {
 
     @Test
     void createUserModel_BuiltIn() {
-        def destFile='tmp/user_model.swagger'
+        def destFile='tmp/userModel.swagger'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
         doCodeGen.model='src/test/resources/test_schemas/ds/user.json'
         doCodeGen.generators.add('swagger_ext')
@@ -38,7 +38,7 @@ class SwaggerExt {
 
     @Test
     void createLicenseModel_BuiltIn() {
-        def destFile='tmp/license_model.swagger'
+        def destFile='tmp/licenseModel.swagger'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
         doCodeGen.model='src/test/resources/test_schemas/ds/license.json'
         doCodeGen.generators.add('swagger_ext')

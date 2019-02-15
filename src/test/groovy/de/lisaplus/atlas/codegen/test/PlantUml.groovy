@@ -231,7 +231,7 @@ class PlantUml {
 
     @Test
     void createUserModel_BuiltIn() {
-        def destFile = 'tmp/user_model.puml'
+        def destFile = 'tmp/userModel.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
         doCodeGen.model = 'src/test/resources/test_schemas/ds/user.json'
         doCodeGen.generators.add('plantuml')
@@ -243,7 +243,7 @@ class PlantUml {
 
     @Test
     void createJunctionModel_BuiltIn() {
-        def destFile = 'tmp/junction_model.puml'
+        def destFile = 'tmp/junctionModel.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
         doCodeGen.model = 'src/test/resources/test_schemas/ds/junction2.json'
         doCodeGen.generators.add('plantuml')
