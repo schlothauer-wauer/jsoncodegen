@@ -216,7 +216,7 @@ class HandlingTemplate {
      * Closure which actually looks for the array of ref or complex properties, for which a method removeXXX(pojo, UUID)
      * needs to be created. This closure calls itself recursively!
      */
-    def evalRemoveKeys = { Type type, List<String> keys ->
+    def evalDeepNestedListKeys = { Type type, List<String> keys ->
         // find all ref & complex properties, which are hold in arrays! These are the candidates for the methods removeXXX(pojo, UUID)
         type.properties.findAll{ Property prop -> prop.isRefTypeOrComplexType() && prop.type.isArray }.each { Property prop ->
             putStacks.call(prop)
@@ -231,7 +231,7 @@ class HandlingTemplate {
         // recurse into all ref & complex properties, which are not hold in arrays!
         type.properties.findAll{ Property prop -> prop.isRefTypeOrComplexType() && !prop.type.isArray }.each { Property prop ->
             putStacks.call(prop)
-            evalRemoveKeys.call(prop.type.type, keys)
+            evalDeepNestedListKeys.call(prop.type.type, keys)
             popStacks.call()
         }
     }
@@ -240,13 +240,14 @@ class HandlingTemplate {
      * Closure, which kicks off the search for the keys, which are candidates for the method removeXXX(pojo, UUID)
      * -> find array of ref or complex properties
      */
-    def evalRemoveKeysForType = { Type type ->
+    def evalDeepNestedListKeysForType = { Type type ->
         // find keys for method removeXXX(pojo, UUID) -> find array of ref or complex properties
         List<String> keys = []
         prepareStacks.call()
-        evalRemoveKeys.call(type, keys)
+        evalDeepNestedListKeys.call(type, keys)
         return keys
     }
+
 
     /**
      * Take a key / chain of property names, and builds a matching property stack. e.g location.streets
@@ -265,7 +266,82 @@ class HandlingTemplate {
     }
 
     /**
+     * Prints the method addXXX(pojo, additional) associated with one key
+     * of a nested array property.
+     */
+    Closure<String> printAddForKey = { String key ->
+        List<Property> localPropStack = propStackFromKey.call(key)
+        def keyUpper = localPropStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        def typeNameInner = data.upperCamelCase.call(localPropStack.last().type.type.name)
+        def typeName = data.upperCamelCase.call(currentType.name)
+        // usually one of entryId, guid or refId!
+        def idProp = data.upperCamelCase.call(findIdProperty.call(localPropStack.last()))
+        List<Property> parentStack = localPropStack.clone()
+        parentStack.pop()
+        def keyUpperParent = parentStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        def upperSecondLast = data.upperCamelCase.call(parentStack.last().name)
+        def upperLast = data.upperCamelCase.call(localPropStack.last().name)
+        // FIXME improve generation of add line for localPropStack.size() != 2. See template for mask / test mask?!?
+        def ret = """
+    /**
+     * Tries to add a ${typeNameInner} object to a ${typeName}.
+     * @param pojo the parent object to extend
+     * @param additional The ${typeNameInner} object to add to the ${typeName}
+     * @return <i>True</i>, if the ${typeNameInner} object could be added to the ${typeName},
+     *         <i>false</i> otherwise.
+     */
+    public static boolean add${keyUpper}(final ${typeName} pojo, final ${typeNameInner} additional) {
+        if (check${keyUpper}Exists(pojo)) {
+            get${keyUpper}(pojo).add(additional);
+            return true;
+        }
+        if (!check${keyUpperParent}Exists(pojo)) {
+            return false;
+        }
+        List<${typeNameInner}> list =  new ArrayList<>();
+        list.add(additional);
+        pojo.get${upperSecondLast}().set${upperLast}(list);
+        return true;
+    }"""
+        return ret
+    }
+
+    /**
+     * Prints the method replaceXXX(pojo, UUID, replacement) associated with one key
+     * of a nested array property.
+     */
+    Closure<String> printReplaceForKey = { String key ->
+        List<Property> localPropStack = propStackFromKey.call(key)
+        def keyUpper = localPropStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        def typeNameInner = data.upperCamelCase.call(localPropStack.last().type.type.name)
+        def typeName = data.upperCamelCase.call(currentType.name)
+        // usually one of entryId, guid or refId!
+        def idProp = data.upperCamelCase.call(findIdProperty.call(localPropStack.last()))
+        def ret = """
+    /**
+     * Tries to replace a specific ${typeNameInner} object of a ${typeName}.
+     * @param pojo The ${typeName} object to process
+     * @param targetId The ID of the ${typeNameInner}, which is to be replaced.
+     * @param replacement The ${typeNameInner} object to assign to the ${typeName}
+     * @return <i>True</i>, if a ${typeNameInner} of that id was found and subsequently replaced,
+     *         <i>false</i> if no object with that id could be found and therefore replaced.
+     */
+    public static boolean replace${keyUpper}ById(final ${typeName} pojo, final UUID targetId, final ${typeNameInner} replacement) {
+        final ListIterator<${typeNameInner}> iter = get${keyUpper}(pojo).listIterator();
+        while (iter.hasNext()) {
+            if (iter.next().get${idProp}().equals(targetId.toString())) {
+                iter.set(replacement);
+                return true;
+            }
+        }
+        return false;
+    }"""
+        return ret
+    }
+
+    /**
      * Prints the method removeXXX(pojo, UUID) associated with one key
+     * of a nested array property.
      */
     Closure<String> printRemoveForKey = { String key ->
         List<Property> localPropStack = propStackFromKey.call(key)
@@ -282,7 +358,7 @@ class HandlingTemplate {
      * @return <i>True</i>, if a ${typeNameInner} of that id was found and subsequently removed,
      *         <i>false</i> if no object with that id could be found and therefore removed.
      */
-    public static boolean remove${keyUpper}ById(${typeName} pojo, UUID targetId) {
+    public static boolean remove${keyUpper}ById(final ${typeName} pojo, final UUID targetId) {
         final Iterator<${typeNameInner}> iter = get${keyUpper}(pojo).iterator();
         while (iter.hasNext()) {
             if (iter.next().get${idProp}().equals(targetId.toString())) {
@@ -553,8 +629,8 @@ class HandlingTemplate {
         tuneType.call(tunedType)
 
         // find keys for method removeXXX(pojo, UUID) -> find array of ref or complex properties
-        List<String> removeKeys = evalRemoveKeysForType.call(tunedType)
-        println "type=${currentType.name} removeKeys=${removeKeys}"
+        List<String> deepNestedListKeys = evalDeepNestedListKeysForType.call(tunedType)
+        println "type=${currentType.name} deepNestedListKeys=${deepNestedListKeys}"
 
         // start printing class content
         String fileHead = """
@@ -573,6 +649,7 @@ import java.util.Iterator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -583,8 +660,7 @@ import de.lisaplus.lisa.junction.model.*;
 /**
  * This class contains the Unit test for masking of class $targetType. 
  */
-public class ${targetType}Handling {
-"""
+public class ${targetType}Handling {"""
 
         println fileHead
 
@@ -628,7 +704,9 @@ public class ${targetType}Handling {
         printGetForType.call(tunedType)
 
 
-        for(String key : removeKeys) {
+        for(String key : deepNestedListKeys) {
+            println printAddForKey.call(key)
+            println printReplaceForKey.call(key)
             println printRemoveForKey.call(key)
         }
 
