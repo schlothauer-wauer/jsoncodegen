@@ -19,7 +19,7 @@ class HandlingTemplate {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'JunctionContact' // 'JunctionJoined' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'ObjectBase' // ''JunctionContact' // 'JunctionJoined' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
 
         /*
         // service service-op-message
@@ -48,7 +48,7 @@ class HandlingTemplate {
         template.execute(typeName, typeName.endsWith('Joined'))
 
         // Check for exception while running code generation for all available types
-        // template.generateAll()
+        template.generateAll()
     }
 
     /** The path to the model definition file */
@@ -270,6 +270,7 @@ class HandlingTemplate {
      * of a nested array property.
      */
     Closure<String> printAddForKey = { String key ->
+        if (verbose) println "// printAddForKey for key $key"
         List<Property> localPropStack = propStackFromKey.call(key)
         def keyUpper = localPropStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
         def typeNameInner = data.upperCamelCase.call(localPropStack.last().type.type.name)
@@ -279,9 +280,24 @@ class HandlingTemplate {
         List<Property> parentStack = localPropStack.clone()
         parentStack.pop()
         def keyUpperParent = parentStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
-        def upperSecondLast = data.upperCamelCase.call(parentStack.last().name)
-        def upperLast = data.upperCamelCase.call(localPropStack.last().name)
-        // FIXME improve generation of add line for localPropStack.size() != 2. See template for mask / test mask?!?
+        def parentCheck
+        def assign
+        switch (localPropStack.size()) {
+            case 1:
+                def upperLast = data.upperCamelCase.call(localPropStack.last().name)
+                parentCheck = '\n'
+                assign = "pojo.set${upperLast}(list);"
+                break
+            default:
+                def upperSecondLast = data.upperCamelCase.call(parentStack.last().name)
+                def upperLast = data.upperCamelCase.call(localPropStack.last().name)
+                parentCheck = """
+        if (!check${keyUpperParent}Exists(pojo)) {
+            return false;
+        }"""
+                assign = "pojo.get${upperSecondLast}().set${upperLast}(list);"
+                break
+        }
         def ret = """
     /**
      * Tries to add a ${typeNameInner} object to a ${typeName}.
@@ -294,13 +310,10 @@ class HandlingTemplate {
         if (check${keyUpper}Exists(pojo)) {
             get${keyUpper}(pojo).add(additional);
             return true;
-        }
-        if (!check${keyUpperParent}Exists(pojo)) {
-            return false;
-        }
+        }${parentCheck}
         List<${typeNameInner}> list =  new ArrayList<>();
         list.add(additional);
-        pojo.get${upperSecondLast}().set${upperLast}(list);
+        ${assign}
         return true;
     }"""
         return ret
@@ -382,7 +395,7 @@ class HandlingTemplate {
         def propStackParent = []; propStackParent.addAll(propStack)
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
-        if (verbose)  println "key=${key} parentCollection=${parentCollection} parCollClass=${parentCollection.class.getName()}"
+        if (verbose)  println "// key=${key} parentCollection=${parentCollection} parCollClass=${parentCollection.class.getName()}"
         if (propStack.size() == 1) {
             // in case of normal type and tag 'prepLookup' add suffix Id to method name -> getObjectBaseId()!
             def suffix = !joined && property.hasTag('prepLookup') ? 'Id' : ''
