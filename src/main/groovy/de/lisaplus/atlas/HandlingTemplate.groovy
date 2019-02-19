@@ -188,6 +188,25 @@ class HandlingTemplate {
         propIsCollectionStack.pop()
     }
 
+    /**
+     * Processes a ref or complex property.
+     * Take the property's type, looks through it properties and returns the one of type UUID.
+     * That should usually be the entryId or guid!
+     */
+    def findIdProperty = { Property property ->
+        Type type = property.type.type
+        List candidates = type.properties.findAll { Property prop -> prop.type.name() == 'UUID'} // (${type.type.name()})
+        if (candidates.isEmpty() && type.name == 'ListEntry') {
+            // ListEntry usually have a StringType property refId (wanted) and text (to be avoided)
+            candidates.addAll( type.properties.findAll { Property prop -> prop.type.name() == 'STRING' && prop.name == 'refId'} )
+        }
+        /*
+        assert candidates.size() == 1 : "property=${property.name} type=${type.name} props=${type.properties.collect{ it.name }.join(', ')}"
+        assert candidates[0].name == 'guid' || candidates[0].name == 'entryId' || candidates[0].name == 'refId'  : "property=${property.name} type=${type.name} props=${type.properties.collect{ it.name }.join(', ')}"
+        */
+        return candidates.isEmpty() ? null : candidates[0].name
+    }
+
     /** Creates a key from current state of propStack, e.g. gis.area */
     Closure<String> currentKey = {
         return propStack.collect { prop -> prop.name}.join('.')
@@ -210,7 +229,6 @@ class HandlingTemplate {
             popStacks.call()
         }
         // recurse into all ref & complex properties, which are not hold in arrays!
-        data.findPro
         type.properties.findAll{ Property prop -> prop.isRefTypeOrComplexType() && !prop.type.isArray }.each { Property prop ->
             putStacks.call(prop)
             evalRemoveKeys.call(prop.type.type, keys)
@@ -234,47 +252,28 @@ class HandlingTemplate {
      * Take a key / chain of property names, and builds a matching property stack. e.g location.streets
      */
     def propStackFromKey = { String key ->
-        List propStack = []
+        List localPropStack = []
         def curType = currentType
         def curProp
         for (String propName : key.split('\\.')) {
             curProp = curType.properties.find { it.name == propName }
             assert curProp && curProp.isRefTypeOrComplexType() : "propChain=${propChain} propName=${propName}"
-            propStack.add(curProp)
+            localPropStack.add(curProp)
             curType = curProp.type.type
         }
-        return propStack
-    }
-
-    /**
-     * Processes a ref or complex property.
-     * Take the property's type, looks through it properties and returns the one of type UUID.
-     * That should usually be the entryId or guid!
-     */
-    def findIdProperty = { Property property ->
-        Type type = property.type.type
-        List candidates = type.properties.findAll { Property prop -> prop.type.name() == 'UUID'} // (${type.type.name()})
-        if (candidates.isEmpty() && type.name == 'ListEntry') {
-            // ListEntry usually have a StringType property refId (wanted) and text (to be avoided)
-            candidates.addAll( type.properties.findAll { Property prop -> prop.type.name() == 'STRING' && prop.name == 'refId'} )
-        }
-        /*
-        assert candidates.size() == 1 : "property=${property.name} type=${type.name} props=${type.properties.collect{ it.name }.join(', ')}"
-        assert candidates[0].name == 'guid' || candidates[0].name == 'entryId' || candidates[0].name == 'refId'  : "property=${property.name} type=${type.name} props=${type.properties.collect{ it.name }.join(', ')}"
-        */
-        return candidates.isEmpty() ? null : candidates[0].name
+        return localPropStack
     }
 
     /**
      * Prints the method removeXXX(pojo, UUID) associated with one key
      */
     Closure<String> printRemoveForKey = { String key ->
-        List<Property> propStack = propStackFromKey.call(key)
-        def keyUpper = propStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
-        def typeNameInner = data.upperCamelCase.call(propStack.last().type.type.name)
+        List<Property> localPropStack = propStackFromKey.call(key)
+        def keyUpper = localPropStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        def typeNameInner = data.upperCamelCase.call(localPropStack.last().type.type.name)
         def typeName = data.upperCamelCase.call(currentType.name)
         // usually one of entryId, guid or refId!
-        def idProp = data.upperCamelCase.call(findIdProperty.call(propStack.last()))
+        def idProp = data.upperCamelCase.call(findIdProperty.call(localPropStack.last()))
         def ret = """
     /**
      * Tries to remove a specific ${typeNameInner} object from a ${typeName}.
@@ -549,15 +548,6 @@ class HandlingTemplate {
         println '###################################################################'
         println "Start of $targetType:"
         println '###################################################################'
-
-        /* 1st loop: find property names and mask keys */
-        prepareStacks.call()
-
-        /* 2nd loop: find property names affected by masking a mask key */
-        prepareStacks.call()
-
-        /* 3rd loop: find mapping of mask key to the number of deleted property occurrences triggered by actually masking that key. */
-        prepareStacks.call()
 
         Type tunedType = data.copyType.call(currentType)
         tuneType.call(tunedType)
