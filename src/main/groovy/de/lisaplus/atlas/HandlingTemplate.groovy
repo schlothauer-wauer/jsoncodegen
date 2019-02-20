@@ -530,7 +530,75 @@ class HandlingTemplate {
     }
 
     /**
-     * Prints the methods checkXXX(target) for a certain type, calls itself recursively for reference and complex types!
+     * Prints the methods checkXXXExists(target, boolean) for a certain type, calls itself recursively for reference and complex types!
+     * @param type The type to process
+     */
+    def printEnsureExistsForType = { Type type ->
+        int size = propIsCollectionStack.size()
+        if ( size > 2 && propIsCollectionStack.get(size-2)) {
+            // can not check for null in children of array property -> stop creating more methods checkXXXExists()!
+            return
+        }
+        if (!propStack.isEmpty()) {
+            /*
+                public static void ensureObjectBaseGisAreaPointsExists(JunctionJoined target, boolean isParent)
+                        throws MissingParentException, MissingTargetException {
+                    ensureObjectBaseGisAreaExists(target, true);
+                    if (target.getObjectBase().getGis().getArea().getPoints() == null) {
+                        if (isParent) {
+                            throw new MissingParentException("objectBase.gis.area.points");
+                        }
+                        throw new MissingTargetException("objectBase.gis.area.points");
+                    }
+                }
+             */
+            def ensureMethodPart = propStack.collect{ data.upperCamelCase.call(it.name) }.join('')       // e.g. AddressPersonsContact
+            def key = currentKey.call()
+            List<String> getCalls = propStack.collect { "get${data.upperCamelCase.call(it.name)}()"}
+            def getCall = getCalls.join('.')
+            def parentCall
+            int stackDim = propStack.size()
+            if (stackDim == 1) {
+                parentCall = ''
+            } else {
+                def ensureMethodPartParent = propStack.subList(0, stackDim-1).collect{ data.upperCamelCase.call(it.name) }.join('')
+                parentCall = "\n        ensure${ensureMethodPartParent}Exists(target, false);"
+            }
+            def output = """
+    /**
+     * Before performing an operation on an attribute like e.g. replacing or removing it, this method checks whether
+     * that attribute and all its parent objects actually exist.
+     * @param target The object, which is to be processed.
+     * @param isParent Indicates whether the attribute is regarded as the target of the operation. This parameter
+     *            controls, which Exception is emitted when all parent objects are available but the attribute itself is
+     *            missing!
+     * @throws MissingTargetException If the attribute is missing and parameter <i>isParent</i> indicates that it is
+     *             regarded as the target of the operation.
+     * @throws MissingParentException If either any of the parent objects of the attribute is missing or if the
+     *             attribute itself is missing and parameter <i>isParent</i> indicates that the attribute is not
+     *             regarded as the target of the operation.
+     */
+    public static void ensure${ensureMethodPart}Exists(${targetType} target, boolean isParent)
+            throws MissingParentException, MissingTargetException {${parentCall}
+        if (target.${getCall} == null) {
+            if (isParent) {
+                throw new MissingParentException("${key}");
+            }
+            throw new MissingTargetException("${key}");
+        }
+    }"""
+            println output
+        }
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            // recursive call!
+            putStacks.call(prop)
+            printEnsureExistsForType.call(prop.type.type)
+            popStacks.call()
+        }
+    }
+
+    /**
+     * Prints the methods checkXXXExists(target) for a certain type, calls itself recursively for reference and complex types!
      * @param type The type to process
      */
     def printCheckExistsForType = { Type type ->
@@ -556,7 +624,14 @@ class HandlingTemplate {
                 lines.add("target.${cond} != null")
             }
             def conditions = lines.join('\n                && ')
-            def output = "\n    public static boolean check${checkMethodPart}Exists(${targetType} target) {\n        return ${conditions};\n    }"
+            def output = """
+    /**
+     * @param target The object, which is to be processed.
+     * @return <i>True</i>, if the attribute and all its parents exist, <i>false</i> otherwise.
+     */
+    public static boolean check${checkMethodPart}Exists(${targetType} target) {
+        return ${conditions};
+    }"""
             println output
         }
 
@@ -697,6 +772,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import de.lisaplus.lisa.junction.model.*;
+import de.schlothauer.services.exceptions.*;
 
 /**
  * This class contains the Unit test for masking of class $targetType. 
@@ -736,14 +812,17 @@ public class ${targetType}Handling {"""
             throw new RuntimeException(String.format("Unsupported mask key '%s'!", maskKey));
         }
     }"""
-        /* 5th loop: method checkXXXExists() */
+        /* 1st loop: method checkXXXExists() */
         prepareStacks.call()
         printCheckExistsForType.call(tunedType)
 
-        /* 6th loop: method getXXX() */
+        /* 2nd loop: methods ensureXXXExists() */
+        prepareStacks.call()
+        printEnsureExistsForType.call(tunedType)
+
+        /* 3rd loop: method getXXX() */
         prepareStacks.call()
         printGetForType.call(tunedType)
-
 
         for(String key : deepNestedListKeys) {
             println printAddForKey.call(key)
