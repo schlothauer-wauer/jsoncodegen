@@ -381,6 +381,53 @@ class HandlingTemplate {
     }
 
     /**
+     * Prints the method void getXXX(pojo, UUID, replacement) throws MissingXXXException associated with one key
+     * of a nested array property.
+     */
+    Closure<String> printGetForKeyThrows = { String key ->
+        /*
+            public static AddressPerson getAddressPersonsById(final JunctionContact pojo, final UUID targetId)
+                    throws MissingParentException, MissingTargetException {
+                final ListIterator<AddressPerson> iter = getAddressPersonsThrows(pojo).listIterator();
+                while (iter.hasNext()) {
+                    if (iter.next().getAddressId().equals(targetId.toString())) {
+                        return iter.previous();
+                    }
+                }
+                throw new MissingTargetException("address.persons", targetId);
+            }
+         */
+        List<Property> localPropStack = propStackFromKey.call(key)
+        def keyUpper = localPropStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        def typeNameInner = data.upperCamelCase.call(localPropStack.last().type.type.name)
+        def typeName = data.upperCamelCase.call(currentType.name)
+        // usually one of entryId, guid or refId!
+        def idProp = data.upperCamelCase.call(findIdProperty.call(localPropStack.last()))
+        def ret = """
+    /**
+     * Returns a specific ${typeNameInner} object of a ${typeName}.
+     * @param pojo The ${typeName} object to process
+     * @param targetId The ID of the ${typeNameInner}, which is to be returned.
+     * @throws MissingTargetException if no ${typeNameInner} of that id was found and subsequently returned,
+     * @throws MissingParentException if the attribute holding the ${typeNameInner} objects or any of its parent objects is
+     *             missing.
+     */
+    public static ${typeNameInner} get${keyUpper}ById(final ${typeName} pojo, final UUID targetId)
+            throws MissingParentException, MissingTargetException {
+        ensure${keyUpper}Exists(pojo, true);
+        final ListIterator<${typeNameInner}> iter = get${keyUpper}(pojo).listIterator();
+        // final ListIterator<${typeNameInner}> iter = get${keyUpper}Throws(pojo).listIterator();f
+        while (iter.hasNext()) {
+            if (iter.next().get${idProp}().equals(targetId.toString())) {
+                return iter.previous();
+            }
+        }
+        throw new MissingTargetException("${key}", targetId);
+    }"""
+        return ret
+    }
+
+    /**
      * Prints the method boolean replaceXXX(pojo, UUID, replacement) associated with one key
      * of a nested array property.
      */
@@ -452,6 +499,7 @@ class HandlingTemplate {
             final ${typeNameInner} replacement) throws MissingParentException, MissingTargetException {
         ensure${keyUpper}Exists(pojo, true);
         final ListIterator<${typeNameInner}> iter = get${keyUpper}(pojo).listIterator();
+        // final ListIterator<${typeNameInner}> iter = get${keyUpper}Throws(pojo).listIterator();
         while (iter.hasNext()) {
             if (iter.next().get${idProp}().equals(targetId.toString())) {
                 iter.set(replacement);
@@ -533,6 +581,7 @@ class HandlingTemplate {
             throws MissingParentException, MissingTargetException {
         ensure${keyUpper}Exists(pojo, true);
         final Iterator<${typeNameInner}> iter = get${keyUpper}(pojo).iterator();
+        // final Iterator<${typeNameInner}> iter = get${keyUpper}Throws(pojo).iterator();
         while (iter.hasNext()) {
             if (iter.next().get${idProp}().equals(targetId.toString())) {
                 iter.remove();
@@ -842,6 +891,14 @@ class HandlingTemplate {
             def retType = data.upperCamelCase.call(type.name)
             def stream = parts[0] + parts.subList(1,parts.size()).collect {"\n                    .$it"}.join('')
             def output = """
+    /**
+     * This method is lenient: It will always return at least an empty list, even if the parent objects of the
+     * ${retType} are missing. Actions performed on the returned list will not change the state of the ${targetType}
+     * object, changes to the list entries do change the ${targetType} object!
+     * @param target The ${targetType} object to process
+     * @return The ${retType} objects hold by the ${targetType} or an empty list, if the attribute holding the
+     *         ${retType} objects or any of its parent objects is missing.
+     */
     public static List<${retType}> get${methodName}(${targetType} target) {
         if (check${checkName}Exists(target)) {
             return target.${stream};
@@ -958,6 +1015,7 @@ public class ${targetType}Handling {"""
 
         for(String key : deepNestedListKeys) {
             println printAddForKeyThrows.call(key)
+            println printGetForKeyThrows.call(key)
             println printReplaceForKeyThrows.call(key)
             println printRemoveForKeyThrows.call(key)
         }
