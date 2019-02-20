@@ -826,7 +826,7 @@ class HandlingTemplate {
     }
 
     /**
-     * Prints the methods checkXXX(target) for a certain type, calls itself recursively for reference and complex types!
+     * Prints the methods getXXX(target) for a certain type, calls itself recursively for reference and complex types!
      * @param type The type to process
      */
     def printGetForType = { Type type ->
@@ -894,7 +894,7 @@ class HandlingTemplate {
     /**
      * This method is lenient: It will always return at least an empty list, even if the parent objects of the
      * ${retType} are missing. Actions performed on the returned list will not change the state of the ${targetType}
-     * object, changes to the list entries do change the ${targetType} object!
+     * object, changes to the ${retType} objects itself do change the ${targetType} object!
      * @param target The ${targetType} object to process
      * @return The ${retType} objects hold by the ${targetType} or an empty list, if the attribute holding the
      *         ${retType} objects or any of its parent objects is missing.
@@ -913,6 +913,97 @@ class HandlingTemplate {
             // recursive call!
             putStacks.call(prop)
             printGetForType.call(prop.type.type)
+            popStacks.call()
+        }
+    }
+    /**
+     * Prints the methods getXXXThrows(target) for a certain type, calls itself recursively for reference and complex types!
+     * @param type The type to process
+     */
+    def printGetThrowsForType = { Type type ->
+        if (propIsCollectionStack.last()) {
+            // Example for key address.persons.contact where persons is the only array type
+            // In case of multiple array types use .flatMap() for 2. to last array type!
+            // We can not check for null references for objects in the object tree after hitting the first array property.
+            // ->
+            // A: the method checkXXXExists only checks for null references up to the first array property.
+            // B: do use Stream.filter() with a predicate for filtering out the null references!
+            /*
+                public static List<ContactData> getAddressPersonsContactThrows(JunctionContact target) throws MissingParentException {
+                    // Assumption: List attributes are never null, only empty!
+                    ensureAddressPersonsExists(target, true);
+                    return target.getAddress()
+                            .getPersons()
+                            .stream()
+                            .filter(p -> p.getContact() != null)
+                            .map(p -> p.getContact())
+                            .collect(Collectors.toList());
+                }
+             */
+            def methodName = propStack.subList(0, propStack.size()).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersonsContact
+            int maxCheckProp = propIsCollectionStack.last() ? propIsCollectionStack.indexOf(Boolean.TRUE) : propStack.size() // The index of the first entry of propIsCollectionStack indicating value collection
+            def checkName = propStack.subList(0, maxCheckProp).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. AddressPersons
+
+            // iterate through propStack and propIsArrayStack
+            // Before first array type is encountered, add getter calls
+            // When first array type is encountered, add .stream() and switch mode to .map(...)
+            // Whenever another array type is encountered, use .flatMap(...) instead of .map(...)
+            List parts = []
+            boolean useGetter = true
+            for (int i = 0; i < propStack.size(); i++) {
+                def currUpper = data.upperCamelCase.call(propStack[i].name)
+                if (useGetter) {
+                    // getXXX()
+                    parts.add("get${currUpper}()")
+                } else {
+                    // TODO Teach Eiko and Stephan
+                    def parentProp = propStack[i-1].name.take(1)
+                    if (propIsArrayStack[i]) {
+                        // flatMap(), e.g. flatMap(contact -> contact.getEmail().stream())
+                        parts.add("filter(${parentProp} -> ${parentProp}.get${currUpper}() != null)")
+                        parts.add("flatMap(${parentProp} -> ${parentProp}.get${currUpper}().stream())")
+                    } else {
+                        // map(), e.g. map(person -> person.getContact())
+                        parts.add("filter(${parentProp} -> ${parentProp}.get${currUpper}() != null)")
+                        parts.add("map(${parentProp} -> ${parentProp}.get${currUpper}())")
+                    }
+                }
+                if (useGetter && propIsArrayStack[i]) {
+                    parts.add("stream()")
+                    useGetter = false
+                }
+            }
+            parts.add('collect(Collectors.toList())')
+
+            // If the very last entry is the first array type, then these is no need to appending
+            // .stream() and .collect(Collectors.toList()) -> just discard these two entries!
+            if (parts[parts.size()-2] == "stream()") {
+                parts = parts.subList(0, parts.size() - 2)
+            }
+            def retType = data.upperCamelCase.call(type.name)
+            def stream = parts[0] + parts.subList(1,parts.size()).collect {"\n                    .$it"}.join('')
+            def output = """
+    /**
+     * Actions performed on the returned list will not change the state of the ${targetType} object, changes to the
+     * ${retType} objects itself do change the ${targetType} object!
+     * @param target The ${targetType} object to process
+     * @return The ${retType} objects hold by the ${targetType}
+     * @throws MissingParentException if the attribute holding the ${retType} objects or any of its parent objects are
+     *             missing.
+     */
+    public static List<${retType}> get${methodName}Throws(${targetType} target) throws MissingParentException {
+        // Assumption: List attributes are never null, only empty!
+        ensure${checkName}Exists(target,true);
+        return target.${stream};
+    }"""
+            println output
+        }
+
+//        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() }.each { prop ->
+        data.filterProps.call(type, [refComplex:true]).each { Property prop ->
+            // recursive call!
+            putStacks.call(prop)
+            printGetThrowsForType.call(prop.type.type)
             popStacks.call()
         }
     }
@@ -1012,6 +1103,10 @@ public class ${targetType}Handling {"""
         /* 3rd loop: method getXXX() */
         prepareStacks.call()
         printGetForType.call(tunedType)
+
+        /* 4th loop: method getXXXTrhows() */
+        prepareStacks.call()
+        printGetThrowsForType.call(tunedType)
 
         for(String key : deepNestedListKeys) {
             println printAddForKeyThrows.call(key)
