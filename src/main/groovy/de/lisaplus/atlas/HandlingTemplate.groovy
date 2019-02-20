@@ -48,7 +48,7 @@ class HandlingTemplate {
         template.execute(typeName, typeName.endsWith('Joined'))
 
         // Check for exception while running code generation for all available types
-        template.generateAll()
+        // template.generateAll()
     }
 
     /** The path to the model definition file */
@@ -266,38 +266,16 @@ class HandlingTemplate {
     }
 
     /**
-     * Prints the method addXXX(pojo, additional) associated with one key
-     * of a nested array property.
+     * Prints the method addXXX(pojo, additional) associated with one key,
+     * where the array property is a child of the main type
      */
-    Closure<String> printAddForKey = { String key ->
-        if (verbose) println "// printAddForKey for key $key"
+    Closure<String> printAddForKeyShallow = { String key ->
+        if (verbose) println "// printAddForKeyShallow for key $key"
         List<Property> localPropStack = propStackFromKey.call(key)
         def keyUpper = localPropStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
         def typeNameInner = data.upperCamelCase.call(localPropStack.last().type.type.name)
         def typeName = data.upperCamelCase.call(currentType.name)
-        // usually one of entryId, guid or refId!
-        def idProp = data.upperCamelCase.call(findIdProperty.call(localPropStack.last()))
-        List<Property> parentStack = localPropStack.clone()
-        parentStack.pop()
-        def keyUpperParent = parentStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
-        def parentCheck
-        def assign
-        switch (localPropStack.size()) {
-            case 1:
-                def upperLast = data.upperCamelCase.call(localPropStack.last().name)
-                parentCheck = '\n'
-                assign = "pojo.set${upperLast}(list);"
-                break
-            default:
-                def upperSecondLast = data.upperCamelCase.call(parentStack.last().name)
-                def upperLast = data.upperCamelCase.call(localPropStack.last().name)
-                parentCheck = """
-        if (!check${keyUpperParent}Exists(pojo)) {
-            return false;
-        }"""
-                assign = "pojo.get${upperSecondLast}().set${upperLast}(list);"
-                break
-        }
+        def upperLast = data.upperCamelCase.call(localPropStack.last().name)
         def ret = """
     /**
      * Tries to add a ${typeNameInner} object to a ${typeName}.
@@ -310,13 +288,63 @@ class HandlingTemplate {
         if (check${keyUpper}Exists(pojo)) {
             get${keyUpper}(pojo).add(additional);
             return true;
-        }${parentCheck}
+        }
         List<${typeNameInner}> list =  new ArrayList<>();
         list.add(additional);
-        ${assign}
+        pojo.set${upperLast}(list);
         return true;
     }"""
         return ret
+    }
+
+    /**
+     * Prints the method addXXX(pojo, additional) associated with one key
+     * of a deep nested array property.
+     */
+    Closure<String> printAddForKeyDeep = { String key ->
+        if (verbose) println "// printAddForKeyDeep for key $key"
+        List<Property> localPropStack = propStackFromKey.call(key)
+        def keyUpper = localPropStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        def typeNameInner = data.upperCamelCase.call(localPropStack.last().type.type.name)
+        def typeName = data.upperCamelCase.call(currentType.name)
+        List<Property> parentStack = localPropStack.clone()
+        parentStack.pop()
+        def keyUpperParent = parentStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        def upperSecondLast = data.upperCamelCase.call(parentStack.last().name)
+        def upperLast = data.upperCamelCase.call(localPropStack.last().name)
+        def ret = """
+    /**
+     * Tries to add a ${typeNameInner} object to a ${typeName}.
+     * @param pojo the parent object to extend
+     * @param additional The ${typeNameInner} object to add to the ${typeName}
+     * @return <i>True</i>, if the ${typeNameInner} object could be added to the ${typeName},
+     *         <i>false</i> otherwise.
+     */
+    public static boolean add${keyUpper}(final ${typeName} pojo, final ${typeNameInner} additional) {
+        if (check${keyUpper}Exists(pojo)) {
+            get${keyUpper}(pojo).add(additional);
+            return true;
+        }if (!check${keyUpperParent}Exists(pojo)) {
+            return false;
+        }
+        List<${typeNameInner}> list =  new ArrayList<>();
+        list.add(additional);
+        pojo.get${upperSecondLast}().set${upperLast}(list);
+        return true;
+    }"""
+        return ret
+    }
+
+    /**
+     * Prints the method addXXX(pojo, additional) associated with one key.
+     * Delegates to either to printAddForKeyShallow or to printAddForKeyDeep
+     */
+    Closure<String> printAddForKey = { String key ->
+        int depth = key.split('\\.').size()
+        if (depth == 1) {
+            return printAddForKeyShallow.call(key)
+        }
+        return printAddForKeyDeep.call(key)
     }
 
     /**
