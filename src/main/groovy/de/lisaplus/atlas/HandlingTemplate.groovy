@@ -19,7 +19,7 @@ class HandlingTemplate {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'ObjectBase' // ''JunctionContact' // 'JunctionJoined' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'JunctionJoined' // 'ObjectBase' // ''JunctionContact' // 'JunctionJoined' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
 
         /*
         // service service-op-message
@@ -266,7 +266,7 @@ class HandlingTemplate {
     }
 
     /**
-     * Prints the method addXXX(pojo, additional) associated with one key,
+     * Prints the method boolean addXXX(pojo, additional) associated with one key,
      * where the array property is a child of the main type
      */
     Closure<String> printAddForKeyShallow = { String key ->
@@ -298,7 +298,7 @@ class HandlingTemplate {
     }
 
     /**
-     * Prints the method addXXX(pojo, additional) associated with one key
+     * Prints the method boolean addXXX(pojo, additional) associated with one key
      * of a deep nested array property.
      */
     Closure<String> printAddForKeyDeep = { String key ->
@@ -336,7 +336,7 @@ class HandlingTemplate {
     }
 
     /**
-     * Prints the method addXXX(pojo, additional) associated with one key.
+     * Prints the method boolean addXXX(pojo, additional) associated with one key.
      * Delegates to either to printAddForKeyShallow or to printAddForKeyDeep
      */
     Closure<String> printAddForKey = { String key ->
@@ -348,7 +348,50 @@ class HandlingTemplate {
     }
 
     /**
-     * Prints the method replaceXXX(pojo, UUID, replacement) associated with one key
+     * Prints the method void addXXX(pojo, additional) throws MissingXXXException associated with one key.
+     */
+    Closure<String> printAddForKeyThrows = { String key ->
+        /*
+            public static void addObjectBaseTags(final JunctionJoined pojo, final ListEntry additional)
+                    throws MissingParentException, MissingTargetException {
+                if (additional == null) {
+                    throw new MissingTargetException("objectBase.tags");
+                }
+
+                ensureObjectBaseTagsExists(pojo, false);
+                getObjectBaseTags(pojo).add(additional);
+            }
+         */
+        // the method ensureXXXExists() throws the checked exception MissingTargetException, which needs to be declared
+        // So give a halfway reasonable cause for throwing a MissingTargetException by checking additional against null!
+        if (verbose) println "// printAddForKeyThrows for key $key"
+        List<Property> localPropStack = propStackFromKey.call(key)
+        def keyUpper = localPropStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        def typeNameInner = data.upperCamelCase.call(localPropStack.last().type.type.name)
+        def typeName = data.upperCamelCase.call(currentType.name)
+        def ret = """
+    /**
+     * Tries to add a ${typeNameInner} object to a ${typeName}.
+     * @param pojo the parent object to extend
+     * @param additional The ${typeNameInner} object to add to the ${typeName}
+     * @throws MissingTargetException if parameter <i>additional</i> is null!
+     * @throws MissingParentException if the attribute holding the ListEntry objects or any of its parent objects is
+     *             missing.
+     */
+    public static void add${keyUpper}(final ${typeName} pojo, final ${typeNameInner} additional)
+            throws MissingParentException, MissingTargetException {
+        if (additional == null) {
+            throw new MissingTargetException("${key}");
+        }
+        
+        ensure${keyUpper}Exists(pojo, false); 
+        get${keyUpper}(pojo).add(additional);
+    }"""
+        return ret
+    }
+
+    /**
+     * Prints the method boolean replaceXXX(pojo, UUID, replacement) associated with one key
      * of a nested array property.
      */
     Closure<String> printReplaceForKey = { String key ->
@@ -381,7 +424,57 @@ class HandlingTemplate {
     }
 
     /**
-     * Prints the method removeXXX(pojo, UUID) associated with one key
+     * Prints the method void replaceXXX(pojo, UUID, replacement) throws MissingXXXException  associated with one key
+     * of a nested array property.
+     */
+    Closure<String> printReplaceForKeyThrows = { String key ->
+        /*
+            public static void replaceObjectBaseTagsById(final JunctionJoined pojo, final UUID targetId,
+                    final ListEntry replacement) throws MissingParentException, MissingTargetException {
+                ensureObjectBaseTagsExists(pojo, true);
+                final ListIterator<ListEntry> iter = getObjectBaseTags(pojo).listIterator();
+                while (iter.hasNext()) {
+                    if (iter.next().getRefId().equals(targetId.toString())) {
+                        iter.set(replacement);
+                        return;
+                    }
+                }
+                throw new MissingTargetException("objectBase.tags", targetId);
+            }
+         */
+        List<Property> localPropStack = propStackFromKey.call(key)
+        def keyUpper = localPropStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        def typeNameInner = data.upperCamelCase.call(localPropStack.last().type.type.name)
+        def typeName = data.upperCamelCase.call(currentType.name)
+        // usually one of entryId, guid or refId!
+        def idProp = data.upperCamelCase.call(findIdProperty.call(localPropStack.last()))
+        def ret = """
+    /**
+     * Replaces a specific ${typeNameInner} object of a ${typeName}.
+     * @param pojo The ${typeName} object to process
+     * @param targetId The ID of the ${typeNameInner}, which is to be replaced.
+     * @param replacement The ${typeNameInner} object to assign to the ${typeName}
+     * @throws MissingTargetException if no ${typeNameInner}  of that id was found and subsequently replaced,
+     * @throws MissingParentException if the attribute holding the ${typeNameInner}  objects or any of its parent objects is
+     *             missing.
+     */
+    public static void replace${keyUpper}ById(final ${typeName} pojo, final UUID targetId,
+            final ${typeNameInner} replacement) throws MissingParentException, MissingTargetException {
+        ensure${keyUpper}Exists(pojo, true);
+        final ListIterator<${typeNameInner}> iter = get${keyUpper}(pojo).listIterator();
+        while (iter.hasNext()) {
+            if (iter.next().get${idProp}().equals(targetId.toString())) {
+                iter.set(replacement);
+                return;
+            }
+        }
+        throw new MissingTargetException("${key}", targetId);
+    }"""
+        return ret
+    }
+
+    /**
+     * Prints the method boolean removeXXX(pojo, UUID) associated with one key
      * of a nested array property.
      */
     Closure<String> printRemoveForKey = { String key ->
@@ -408,6 +501,56 @@ class HandlingTemplate {
             }
         }
         return false;
+    }"""
+        return ret
+    }
+
+
+    /**
+     * Prints the method void removeXXX(pojo, UUID) associated with one key
+     * of a nested array property.
+     */
+    Closure<String> printRemoveForKeyThrows = { String key ->
+        /*
+            public static void removeLocationStreetsById(final JunctionJoined pojo, final UUID targetId)
+                    throws MissingParentException, MissingTargetException {
+                ensureLocationStreetsExists(pojo, true);
+                final Iterator<JunctionLocationStreetsItem> iter = getLocationStreets(pojo).iterator();
+                while (iter.hasNext()) {
+                    if (iter.next().getEntryId().equals(targetId.toString())) {
+                        iter.remove();
+                        return;
+                    }
+                }
+                throw new MissingTargetException("location.streets", targetId);
+            }
+         */
+        List<Property> localPropStack = propStackFromKey.call(key)
+        def keyUpper = localPropStack.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        def typeNameInner = data.upperCamelCase.call(localPropStack.last().type.type.name)
+        def typeName = data.upperCamelCase.call(currentType.name)
+        // usually one of entryId, guid or refId!
+        def idProp = data.upperCamelCase.call(findIdProperty.call(localPropStack.last()))
+        def ret = """
+    /**
+     * Removes a specific ${typeNameInner} object from a ${typeName}.
+     * @param pojo The object to process
+     * @param targetId The ID of the ${typeNameInner}, which is to be removed.
+     * @throws MissingTargetException if no ${typeNameInner}  of that id was found and subsequently removed,
+     * @throws MissingParentException if the attribute holding the ${typeNameInner}  objects or any of its parent objects is
+     *             missing.
+     */
+    public static void remove${keyUpper}ById(final ${typeName} pojo, final UUID targetId)
+            throws MissingParentException, MissingTargetException {
+        ensure${keyUpper}Exists(pojo, true);
+        final Iterator<${typeNameInner}> iter = get${keyUpper}(pojo).iterator();
+        while (iter.hasNext()) {
+            if (iter.next().get${idProp}().equals(targetId.toString())) {
+                iter.remove();
+                return;
+            }
+        }
+        throw new MissingTargetException("${key}", targetId);
     }"""
         return ret
     }
@@ -825,9 +968,9 @@ public class ${targetType}Handling {"""
         printGetForType.call(tunedType)
 
         for(String key : deepNestedListKeys) {
-            println printAddForKey.call(key)
-            println printReplaceForKey.call(key)
-            println printRemoveForKey.call(key)
+            println printAddForKeyThrows.call(key)
+            println printReplaceForKeyThrows.call(key)
+            println printRemoveForKeyThrows.call(key)
         }
 
         println '}\n'
