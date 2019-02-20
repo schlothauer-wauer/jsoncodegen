@@ -405,7 +405,7 @@ class HandlingTemplate {
         def idProp = data.upperCamelCase.call(findIdProperty.call(localPropStack.last()))
         def ret = """
     /**
-     * Returns a specific ${typeNameInner} object of a ${typeName}.
+     * Returns a specific ${typeNameInner} object from a ${typeName}.
      * @param pojo The ${typeName} object to process
      * @param targetId The ID of the ${typeNameInner}, which is to be returned.
      * @throws MissingTargetException if no ${typeNameInner} of that id was found and subsequently returned,
@@ -466,8 +466,7 @@ class HandlingTemplate {
         /*
             public static void replaceObjectBaseTagsById(final JunctionJoined pojo, final UUID targetId,
                     final ListEntry replacement) throws MissingParentException, MissingTargetException {
-                ensureObjectBaseTagsExists(pojo, true);
-                final ListIterator<ListEntry> iter = getObjectBaseTags(pojo).listIterator();
+                final ListIterator<ListEntry> iter = getObjectBaseTagsThrows(pojo).listIterator();
                 while (iter.hasNext()) {
                     if (iter.next().getRefId().equals(targetId.toString())) {
                         iter.set(replacement);
@@ -547,8 +546,7 @@ class HandlingTemplate {
         /*
             public static void removeLocationStreetsById(final JunctionJoined pojo, final UUID targetId)
                     throws MissingParentException, MissingTargetException {
-                ensureLocationStreetsExists(pojo, true);
-                final Iterator<JunctionLocationStreetsItem> iter = getLocationStreets(pojo).iterator();
+                final Iterator<JunctionLocationStreetsItem> iter = getLocationStreetsThrows(pojo).iterator();
                 while (iter.hasNext()) {
                     if (iter.next().getEntryId().equals(targetId.toString())) {
                         iter.remove();
@@ -910,6 +908,7 @@ class HandlingTemplate {
             popStacks.call()
         }
     }
+
     /**
      * Prints the methods getXXXThrows(target) for a certain type, calls itself recursively for reference and complex types!
      * @param type The type to process
@@ -987,7 +986,7 @@ class HandlingTemplate {
      */
     public static List<${retType}> get${methodName}Throws(${targetType} target) throws MissingParentException {
         // Assumption: List attributes are never null, only empty!
-        ensure${checkName}Exists(target,true);
+        ensure${checkName}Exists(target, true);
         return target.${stream};
     }"""
             println output
@@ -1094,7 +1093,7 @@ public class ${targetType}Handling {"""
         prepareStacks.call()
         printGetForType.call(tunedType)
 
-        /* 4th loop: method getXXXTrhows() */
+        /* 4th loop: method getXXXThrows() */
         prepareStacks.call()
         printGetThrowsForType.call(tunedType)
 
