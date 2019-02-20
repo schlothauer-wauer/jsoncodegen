@@ -414,9 +414,7 @@ class HandlingTemplate {
      */
     public static ${typeNameInner} get${keyUpper}ById(final ${typeName} pojo, final UUID targetId)
             throws MissingParentException, MissingTargetException {
-        ensure${keyUpper}Exists(pojo, true);
-        final ListIterator<${typeNameInner}> iter = get${keyUpper}(pojo).listIterator();
-        // final ListIterator<${typeNameInner}> iter = get${keyUpper}Throws(pojo).listIterator();f
+        final ListIterator<${typeNameInner}> iter = get${keyUpper}Throws(pojo).listIterator();
         while (iter.hasNext()) {
             if (iter.next().get${idProp}().equals(targetId.toString())) {
                 return iter.previous();
@@ -497,9 +495,7 @@ class HandlingTemplate {
      */
     public static void replace${keyUpper}ById(final ${typeName} pojo, final UUID targetId,
             final ${typeNameInner} replacement) throws MissingParentException, MissingTargetException {
-        ensure${keyUpper}Exists(pojo, true);
-        final ListIterator<${typeNameInner}> iter = get${keyUpper}(pojo).listIterator();
-        // final ListIterator<${typeNameInner}> iter = get${keyUpper}Throws(pojo).listIterator();
+        final ListIterator<${typeNameInner}> iter = get${keyUpper}Throws(pojo).listIterator();
         while (iter.hasNext()) {
             if (iter.next().get${idProp}().equals(targetId.toString())) {
                 iter.set(replacement);
@@ -579,9 +575,7 @@ class HandlingTemplate {
      */
     public static void remove${keyUpper}ById(final ${typeName} pojo, final UUID targetId)
             throws MissingParentException, MissingTargetException {
-        ensure${keyUpper}Exists(pojo, true);
-        final Iterator<${typeNameInner}> iter = get${keyUpper}(pojo).iterator();
-        // final Iterator<${typeNameInner}> iter = get${keyUpper}Throws(pojo).iterator();
+        final Iterator<${typeNameInner}> iter = get${keyUpper}Throws(pojo).iterator();
         while (iter.hasNext()) {
             if (iter.next().get${idProp}().equals(targetId.toString())) {
                 iter.remove();
@@ -1042,12 +1036,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
