@@ -818,7 +818,8 @@ class HandlingTemplate {
     }
 
     /**
-     * Prints the methods getXXX(target) for a certain type, calls itself recursively for reference and complex types!
+     * Prints the methods getXXX(target) (returning a list of objects) for a certain type, calls itself recursively for
+     * reference and complex types!
      * @param type The type to process
      */
     def printGetForType = { Type type ->
@@ -910,7 +911,8 @@ class HandlingTemplate {
     }
 
     /**
-     * Prints the methods getXXXThrows(target) for a certain type, calls itself recursively for reference and complex types!
+     * Prints the methods getXXXThrows(target) (returning a list of objects) for a certain type, calls itself
+     * recursively for reference and complex types!
      * @param type The type to process
      */
     def printGetThrowsForType = { Type type ->
@@ -997,6 +999,46 @@ class HandlingTemplate {
             // recursive call!
             putStacks.call(prop)
             printGetThrowsForType.call(prop.type.type)
+            popStacks.call()
+        }
+    }
+
+    /**
+     * Prints the methods getXXXThrows(target) (returning single object) for a certain type, calls itself recursively
+     * for reference and complex types!
+     * @param type The type to process
+     */
+    def printGetSingleThrowsForType = { Type type ->
+        int stackDim = propStack.size()
+        if (stackDim > 0) {
+            /*
+                public static ObjectBaseGis getObjectBaseGisThrows(JunctionJoined target) throws MissingParentException {
+                    ensureObjectBaseExists(target, true);
+                    return target.getObjectBase().getGis();
+                }
+             */
+            def methodName = propStack.collect { data.upperCamelCase.call(it.name) }.join('') // e.g. ObjectBaseGis
+            def checkName = propStack.subList(0, stackDim - 1).collect { data.upperCamelCase.call(it.name) }.join('') // e.g. ObjectBase
+            def checkLine = stackDim > 1 ? "\n        ensure${checkName}Exists(target, true);" : ''
+            def getterChain = 'get' + propStack.collect { data.upperCamelCase.call(it.name) }.join('().get') + '()' // e.g. getObjectBase().getGis()
+            def retType = data.upperCamelCase.call(type.name)
+            def output = """
+    /**
+     * @param target The ${targetType} object to process
+     * @return The ${retType} object hold by the ${targetType}
+     * @throws MissingParentException if the attribute holding the ${retType} objects or any of its parent objects is
+     *             missing.
+     */
+    public static ${retType} get${methodName}Throws(${targetType} target) throws MissingParentException {${checkLine}
+        return target.${getterChain};
+    }"""
+            println output
+        }
+
+        data.filterProps.call(type, [refComplex:true, array:false]).each { Property prop ->
+            // recursive call!
+            putStacks.call(prop)
+            printGetSingleThrowsForType.call(prop.type.type)
             popStacks.call()
         }
     }
@@ -1089,13 +1131,18 @@ public class ${targetType}Handling {"""
         prepareStacks.call()
         printEnsureExistsForType.call(tunedType)
 
-        /* 3rd loop: method getXXX() */
+        /* 3rd loop: method getXXX() for lists */
         prepareStacks.call()
         printGetForType.call(tunedType)
 
-        /* 4th loop: method getXXXThrows() */
+        /* 4th loop: method getXXXThrows() for lists */
         prepareStacks.call()
         printGetThrowsForType.call(tunedType)
+
+
+        /* 5th loop: methods getXXXThrows() for single objects */
+        prepareStacks.call()
+        printGetSingleThrowsForType.call(tunedType)
 
         for(String key : deepNestedListKeys) {
             println printAddForKeyThrows.call(key)
