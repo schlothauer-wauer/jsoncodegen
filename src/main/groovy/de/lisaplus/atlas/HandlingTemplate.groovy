@@ -1009,6 +1009,9 @@ class HandlingTemplate {
      * @param type The type to process
      */
     def printGetSingleThrowsForType = { Type type ->
+        // change templates to handle shallow gets inline and switch to stackDim > 1
+        // This would make checkLine become mandatory and its content could therefore be moved into GString
+        // See printSetSingleForType!
         int stackDim = propStack.size()
         if (stackDim > 0) {
             /*
@@ -1039,6 +1042,48 @@ class HandlingTemplate {
             // recursive call!
             putStacks.call(prop)
             printGetSingleThrowsForType.call(prop.type.type)
+            popStacks.call()
+        }
+    }
+
+    /**
+     * Prints the methods setXXX(target, replacement) throws MissingParentException for a certain type, calls itself recursively
+     * for reference and complex types!
+     * @param type The type to process
+     */
+    def printSetSingleForType = { Type type ->
+        int stackDim = propStack.size()
+        if (stackDim > 1) {
+            /*
+                public static void setObjectBaseGisArea(JunctionJoined target, GeoArea replacement) throws MissingParentException {
+                    ensureObjectBaseGisExists(target, true);
+                    target.getObjectBase().getGis().setArea(replacement);
+                }
+             */
+            def methodName = propStack.collect { data.upperCamelCase.call(it.name) }.join('') // e.g. ObjectBaseGisArea
+            def typeNameInner = data.upperCamelCase.call(propStack.last().type.type.name)
+            List<?> parentStack = propStack.subList(0, stackDim - 1)
+            def checkName = parentStack.collect { data.upperCamelCase.call(it.name) }.join('') // e.g. ObjectBaseGis
+            def getterChain = 'get' + parentStack.collect { data.upperCamelCase.call(it.name) }.join('().get') + '()' // e.g. getObjectBase().getGis()
+            def setterName = data.upperCamelCase.call(propStack.last().name) // e.g. Area
+            def output = """
+    /**
+     * @param target The ${targetType} object to process
+     * @param replacement The ${typeNameInner} object to assign to the ${targetType}
+     * @throws MissingParentException if the attribute holding the ${typeNameInner} objects or any of its parent objects is
+     *             missing.
+     */
+    public static void set${methodName}(${targetType} target, ${typeNameInner} replacement) throws MissingParentException {
+        ensure${checkName}Exists(target, true);
+        target.${getterChain}.set${setterName}(replacement);
+    }"""
+            println output
+        }
+
+        data.filterProps.call(type, [refComplex:true, array:false]).each { Property prop ->
+            // recursive call!
+            putStacks.call(prop)
+            printSetSingleForType.call(prop.type.type)
             popStacks.call()
         }
     }
@@ -1139,10 +1184,13 @@ public class ${targetType}Handling {"""
         prepareStacks.call()
         printGetThrowsForType.call(tunedType)
 
-
         /* 5th loop: methods getXXXThrows() for single objects */
         prepareStacks.call()
         printGetSingleThrowsForType.call(tunedType)
+
+        /* 6th loop: methods setXXX() */
+        prepareStacks.call()
+        printSetSingleForType.call(tunedType)
 
         for(String key : deepNestedListKeys) {
             println printAddForKeyThrows.call(key)
