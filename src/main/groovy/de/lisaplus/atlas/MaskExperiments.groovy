@@ -611,20 +611,18 @@ class MaskExperiments {
                     target.setDomainId(null);
                     break;
               */
+            def assignLine
             if (prop.hasTag('join')) {
-                lines = /            case "${prop.name}":
-                target.set${R}(null);
-                target.set${upperPropName}Id(null);
-                break;/
+                assignLine = "target.set${upperPropName}(null);"
+                assignLine += "\n                target.set${upperPropName}Id(null);"
             } else if (prop.hasTag('prepLookup')) {
-                lines = /            case "${prop.name}":
-                target.set${upperPropName}Id(null);
-                break;/
+                assignLine = "target.set${upperPropName}Id(null);"
             } else {
-                lines = /            case "${prop.name}":
-                target.set${upperPropName}(null);
-                break;/
+                assignLine = "target.set${upperPropName}(null);"
             }
+            lines = /            case "${prop.name}":
+                ${assignLine}
+                break;/
         } else if (propIsCollectionStack.last()) {
             // Example:
             /*
@@ -643,26 +641,20 @@ class MaskExperiments {
             propStack.add(prop)
             def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
+            def assignLine
             if (prop.hasTag('join')) {
-                lines = /            case "${key}":
-                for (final ${parentJavaType} ${parent} : get${methodName}(target)) {
-                    ${parent}.set${upperPropName}(null);
-                    ${parent}.set${upperPropName}Id(null);
-                }
-                break;/
+                assignLine = "${parent}.set${upperPropName}(null);"
+                assignLine += "\n                    ${parent}.set${upperPropName}Id(null);"
             } else if (prop.hasTag('prepLookup')) {
-                lines = /            case "${key}":
-                for (final ${parentJavaType} ${parent} : get${methodName}(target)) {
-                    ${parent}.set${upperPropName}Id(null);
-                }
-                break;/
+                assignLine = "${parent}.set${upperPropName}Id(null);"
             } else {
-                lines = /            case "${key}":
+                assignLine = "${parent}.set${upperPropName}(null);"
+            }
+            lines = /            case "${key}":
                 for (final ${parentJavaType} ${parent} : get${methodName}(target)) {
-                    ${parent}.set${upperPropName}(null);
+                    ${assignLine}
                 }
                 break;/
-            }
         } else {
             // Example:
             /*
@@ -677,26 +669,20 @@ class MaskExperiments {
             propStack.add(prop)
             def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
+            def assignLine
             if (prop.hasTag('join')) {
-                lines = /            case "${key}":
-                if (check${checkMethodPart}Exists(target)) {
-                    target.${getChain}().set${upperPropName}(null);
-                    target.${getChain}().set${upperPropName}Id(null);
-                }
-                break;/
-            } else if  (prop.hasTag('prepLookup')) {
-                lines = /            case "${key}":
-                if (check${checkMethodPart}Exists(target)) {
-                    target.${getChain}().set${upperPropName}Id(null);
-                }
-                break;/
+                assignLine = "target.${getChain}().set${upperPropName}(null);"
+                assignLine += "\n                    target.${getChain}().set${upperPropName}Id(null);"
+            } else if (prop.hasTag('prepLookup')) {
+                assignLine = "target.${getChain}().set${upperPropName}Id(null);"
             } else {
-                lines = /            case "${key}":
+                assignLine = "target.${getChain}().set${upperPropName}(null);"
+            }
+            lines = /            case "${key}":
                 if (check${checkMethodPart}Exists(target)) {
                     target.${getChain}().set${upperPropName}(null);
                 }
                 break;/
-            }
         }
         println lines
         // allCaseLines.add(lines)
