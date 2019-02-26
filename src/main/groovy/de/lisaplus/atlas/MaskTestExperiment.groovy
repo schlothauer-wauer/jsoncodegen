@@ -418,20 +418,21 @@ public class TestMask${targetType} {
 
         println """
         final Map<String, Integer> propName2Count = new HashMap<>();
-        maskKey2propName2deleteCount = new HashMap<>();"""
+        maskKey2propName2deleteCount = new HashMap<>();
+"""
 
         maskKeys.each { maskKey ->
             println '        propName2Count.clear(); // ' + maskKey
             Map<String, Integer> propName2Count = maskKey2propName2deleteCount.get(maskKey)
+            sorted.clear(); sorted.addAll( propName2Count.keySet().findAll {key -> propName2Count.get(key) > 0} ); Collections.sort(sorted)
             sorted.each { key ->
                 println "        propName2Count.put(\"$key\", ${propName2Count.get(key)});"
             }
-            println "        maskKey2propName2deleteCount.put(\"$maskKey\", new HashMap<>(propName2Count));"
+            println "        maskKey2propName2deleteCount.put(\"$maskKey\", new HashMap<>(propName2Count));\n"
 
         }
 
-        println """
-    }
+        println """    }
 
     @AfterClass
     public static void after() {
@@ -780,7 +781,7 @@ public class TestMask${targetType} {
             // We are currently processing a complex property with the wanted name
             def count = entryPerArray.power(arrayCount)
             def maskKey = propStack.collect {prop2 -> prop2.name}.join('.')
-            println "Found $count occurrences in complex property of wanted name $propName at ${maskKey}"
+            if (verbose) println "Found $count occurrences in complex property of wanted name $propName at ${maskKey}"
             countSum += count
         }
 
