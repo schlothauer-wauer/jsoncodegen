@@ -23,7 +23,6 @@ class MaskExperiments {
     // TODO        Loop1: writer method mask(JunctionContactJoined target, PojoMask mask)
     // TODO        Loop2: write methods chechXXXExists(JunctionContact target) and getXXX(JunctionContactJoined target) below method mask
 
-    String typeName
     Model model
 
     static main(args) {
@@ -47,7 +46,7 @@ class MaskExperiments {
         def type = args.length > 0 ?
                 args[1]
                 : 'ObjectGroup' // 'OpMessage' // 'OpMessageJoined'
-        */
+         */
 
         /*
         // service incident
@@ -58,20 +57,30 @@ class MaskExperiments {
         def type = args.length > 0 ?
                 args[1]
                 : 'Incident' // 'ObjectBase'
-        */
+         */
 
-        def joined = type.endsWith('Joined')
 
-        def maskExp = new MaskExperiments(type, modelPath)
-        maskExp.execute(joined)
+        // ines-network
+        /*
+        def base = '/home/stefan/Entwicklung/lisa-service-template/models/models-lisa-server/model/'
+        def modelPath = args.length == 0 ?
+                base + 'ines_network.json'
+                : args[0]
+        def typeName = args.length > 0 ?
+                args[1]
+                : 'InesNetwork' // 'InesNetworkJoined'
+         */
+
+
+        def maskExp = new MaskExperiments(modelPath)
+        maskExp.execute(type)
 
         // Check for exception while running code generation for all available types
-//        maskExp.generateAll()
+        // maskExp.generateAll()
 
     }
 
-    MaskExperiments(typeName, modelPath) {
-        this.typeName = typeName
+    MaskExperiments(String modelPath) {
         this.model = readModel(modelPath)
     }
 
@@ -114,9 +123,10 @@ class MaskExperiments {
 
     /**
      * Execute code generation for the type defined by MaskExperiments#typeName
-     * @param joined
+     * @param typeName The name of the type, which is to be processed!
      */
-    void execute(boolean joined) {
+    void execute(String typeName) {
+        def joined = typeName.endsWith('Joined')
         GeneratorBase generator = new DummyGenerator()
         data = generator.createTemplateDataMap(model)
         Type type = data.model.types.find {type -> type.name == typeName}
@@ -139,7 +149,7 @@ class MaskExperiments {
      * @param target The masked and potentially altered object, where the masked information is to be restored.
      * @param mask The mask defining the attributes, which are to be restored.
      */
-    public static void restoreMasked2(${targetType} source, ${targetType} target, PojoMask mask) {
+        public static void restoreMasked2(${targetType} source, ${targetType} target, PojoMask mask) {
         for (final String key : mask.hiddenKeys()) {
             switch(key) {
 """
@@ -596,7 +606,7 @@ class MaskExperiments {
                 target.set${data.upperCamelCase.call(prop.name)}(null);
                 target.set${data.upperCamelCase.call(prop.name)}Id(null);
                 break;/
-            } else if ( prop.hasTag('prepLookup')){
+            } else if (prop.hasTag('prepLookup')) {
                 lines = /            case "${prop.name}":
                 target.set${data.upperCamelCase.call(prop.name)}Id(null);
                 break;/
@@ -623,12 +633,26 @@ class MaskExperiments {
             propStack.add(prop)
             def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
-            lines = /            case "${key}":
+            if (prop.hasTag('join')) {
+                lines = /            case "${key}":
+                for (final ${parentJavaType} ${parent} : get${methodName}(target)) {
+                    ${parent}.set${data.upperCamelCase.call(prop.name)}(null);
+                    ${parent}.set${data.upperCamelCase.call(prop.name)}Id(null);
+                }
+                break;/
+            } else if (prop.hasTag('prepLookup')) {
+                lines = /            case "${key}":
+                for (final ${parentJavaType} ${parent} : get${methodName}(target)) {
+                    ${parent}.set${data.upperCamelCase.call(prop.name)}Id(null);
+                }
+                break;/
+            } else {
+                lines = /            case "${key}":
                 for (final ${parentJavaType} ${parent} : get${methodName}(target)) {
                     ${parent}.set${data.upperCamelCase.call(prop.name)}(null);
                 }
                 break;/
-
+            }
         } else {
             // Example:
             /*
@@ -643,11 +667,26 @@ class MaskExperiments {
             propStack.add(prop)
             def key = propStack.collect{ it.name }.join('.')
             propStack.pop()
-            lines = /            case "${key}":
+            if (prop.hasTag('join')) {
+                lines = /            case "${key}":
+                if (check${checkMethodPart}Exists(target)) {
+                    target.${getChain}().set${data.upperCamelCase.call(prop.name)}(null);
+                    target.${getChain}().set${data.upperCamelCase.call(prop.name)}Id(null);
+                }
+                break;/
+            } else if  (prop.hasTag('prepLookup')) {
+                lines = /            case "${key}":
+                if (check${checkMethodPart}Exists(target)) {
+                    target.${getChain}().set${data.upperCamelCase.call(prop.name)}Id(null);
+                }
+                break;/
+            } else {
+                lines = /            case "${key}":
                 if (check${checkMethodPart}Exists(target)) {
                     target.${getChain}().set${data.upperCamelCase.call(prop.name)}(null);
                 }
                 break;/
+            }
         }
         println lines
         // allCaseLines.add(lines)
