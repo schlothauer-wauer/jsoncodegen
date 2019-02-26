@@ -238,6 +238,15 @@ class MaskExperiments {
         propStack.add(prop)
         def key = propStack.collect{ it.name }.join('.')
         propStack.pop()
+        def assignLine
+        if (prop.hasTag('joined')) {
+            assignLine = "targetItem.set${upperPropName}(entry.getValue().get${upperPropName}());"
+            assignLine += "\n                                targetItem.set${upperPropName}Id(entry.getValue().get${upperPropName}Id());"
+        } else if (prop.hasTag('prepLookup')) {
+            assignLine  = "targetItem.set${upperPropName}Id(entry.getValue().get${upperPropName}Id());"
+        } else {
+            assignLine  = "targetItem.set${upperPropName}(entry.getValue().get${upperPropName}());"
+        }
         def lines = /            case "${key}":
                 final Map<Object, $parentJavaType> sourceMapping${idx} =  get${methodName}(source)
                     .stream()
@@ -250,7 +259,7 @@ class MaskExperiments {
                         for (final Entry<Object, $parentJavaType> entry : sourceMapping${idx}.entrySet()) {
                             final $parentJavaType targetItem = targetMapping.get(entry.getKey());
                             if (targetItem != null) {
-                                targetItem.set${upperPropName}(entry.getValue().get${upperPropName}());
+                                ${assignLine}
                             }
                         }
                     }
@@ -592,8 +601,9 @@ class MaskExperiments {
      * Actually creates the case of the mask method for properties of a complex or reference class.
      * @param prop The property to process
      */
-    def evalMakCaseSimple = { Property prop ->
+    def evalMaskCaseSimple = { Property prop ->
         def lines
+        def upperPropName = data.upperCamelCase.call(prop.name) // e.g. TenantId
         if (propStack.isEmpty()) {
             // Example:
             /*
@@ -603,16 +613,16 @@ class MaskExperiments {
               */
             if (prop.hasTag('join')) {
                 lines = /            case "${prop.name}":
-                target.set${data.upperCamelCase.call(prop.name)}(null);
-                target.set${data.upperCamelCase.call(prop.name)}Id(null);
+                target.set${R}(null);
+                target.set${upperPropName}Id(null);
                 break;/
             } else if (prop.hasTag('prepLookup')) {
                 lines = /            case "${prop.name}":
-                target.set${data.upperCamelCase.call(prop.name)}Id(null);
+                target.set${upperPropName}Id(null);
                 break;/
             } else {
                 lines = /            case "${prop.name}":
-                target.set${data.upperCamelCase.call(prop.name)}(null);
+                target.set${upperPropName}(null);
                 break;/
             }
         } else if (propIsCollectionStack.last()) {
@@ -636,20 +646,20 @@ class MaskExperiments {
             if (prop.hasTag('join')) {
                 lines = /            case "${key}":
                 for (final ${parentJavaType} ${parent} : get${methodName}(target)) {
-                    ${parent}.set${data.upperCamelCase.call(prop.name)}(null);
-                    ${parent}.set${data.upperCamelCase.call(prop.name)}Id(null);
+                    ${parent}.set${upperPropName}(null);
+                    ${parent}.set${upperPropName}Id(null);
                 }
                 break;/
             } else if (prop.hasTag('prepLookup')) {
                 lines = /            case "${key}":
                 for (final ${parentJavaType} ${parent} : get${methodName}(target)) {
-                    ${parent}.set${data.upperCamelCase.call(prop.name)}Id(null);
+                    ${parent}.set${upperPropName}Id(null);
                 }
                 break;/
             } else {
                 lines = /            case "${key}":
                 for (final ${parentJavaType} ${parent} : get${methodName}(target)) {
-                    ${parent}.set${data.upperCamelCase.call(prop.name)}(null);
+                    ${parent}.set${upperPropName}(null);
                 }
                 break;/
             }
@@ -670,20 +680,20 @@ class MaskExperiments {
             if (prop.hasTag('join')) {
                 lines = /            case "${key}":
                 if (check${checkMethodPart}Exists(target)) {
-                    target.${getChain}().set${data.upperCamelCase.call(prop.name)}(null);
-                    target.${getChain}().set${data.upperCamelCase.call(prop.name)}Id(null);
+                    target.${getChain}().set${upperPropName}(null);
+                    target.${getChain}().set${upperPropName}Id(null);
                 }
                 break;/
             } else if  (prop.hasTag('prepLookup')) {
                 lines = /            case "${key}":
                 if (check${checkMethodPart}Exists(target)) {
-                    target.${getChain}().set${data.upperCamelCase.call(prop.name)}Id(null);
+                    target.${getChain}().set${upperPropName}Id(null);
                 }
                 break;/
             } else {
                 lines = /            case "${key}":
                 if (check${checkMethodPart}Exists(target)) {
-                    target.${getChain}().set${data.upperCamelCase.call(prop.name)}(null);
+                    target.${getChain}().set${upperPropName}(null);
                 }
                 break;/
             }
@@ -720,12 +730,12 @@ class MaskExperiments {
 //        type.properties.findAll { prop -> return !prop.isRefTypeOrComplexType() && !prop.hasTag('notDisplayed') }.each { prop ->
         data.filterProps.call(type, [refComplex:false, withoutTag:'notDisplayed', withoutTag:'recursion']).each { Property prop ->
             println "// evalMaskCaseForType/RefTypeOrComplexType=false: type=${type.name} prop=${prop.name}"
-            evalMakCaseSimple.call(prop)
+            evalMaskCaseSimple.call(prop)
         }
 
 //        type.properties.findAll { prop -> return prop.isRefTypeOrComplexType() && !prop.hasTag('notDisplayed') }.each { prop ->
         data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed', withoutTag:'recursion']).each { Property prop ->
-            evalMakCaseSimple.call(prop)
+            evalMaskCaseSimple.call(prop)
             // recursive call!
             putStacks.call(prop)
             evalMaskCaseComplex.call(prop)
