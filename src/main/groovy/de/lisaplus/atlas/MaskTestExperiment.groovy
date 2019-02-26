@@ -13,6 +13,7 @@ class MaskTestExperiment {
 
 
         // service service-junction
+        /*
         def base = '/home/stefan/Entwicklung/service-junction/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'junction.json'
@@ -21,6 +22,7 @@ class MaskTestExperiment {
         def typeName = args.length > 0 ?
                 args[1]
                 : 'Junction' // 'JunctionContact' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+         */
 
         /*
         // service service-op-message
@@ -44,7 +46,6 @@ class MaskTestExperiment {
                 : 'Incident' // 'ObjectBase'
          */
 
-        /*
         // ines-network
         def base = '/home/stefan/Entwicklung/lisa-service-template/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
@@ -53,7 +54,6 @@ class MaskTestExperiment {
         def typeName = args.length > 0 ?
                 args[1]
                 : 'InesNetwork' // 'InesNetworkJoined'
-         */
 
         def maskExp = new MaskTestExperiment(modelPath)
         maskExp.execute(typeName, typeName.endsWith('Joined'))
@@ -682,7 +682,7 @@ public class TestMask${targetType} {
      */
     def searchPrepLookupProps = { Type type  ->
         // search property pairs for handling joined objects
-        String baseMsg = 'The assumption that all properties with tag "prepLookup" have a suffix "Id" and have a associated mask key without that suffix seams to be broken!'
+        String baseMsg = '${targetType}: The assumption that all properties with tag "prepLookup" have a suffix "Id" and have a associated mask key without that suffix seams to be brokenfor type ${type.name}:\n!'
         if (joined) {
             // Assume (and check) that the names off all properties tagged with prepLookup are ending with Id have a
             // corresponding property tagged join / mask key without the suffix Id at the end of the name.
@@ -695,7 +695,7 @@ public class TestMask${targetType} {
             prepLookupProps.each { name ->
                 String maskKey = name.substring(0, name.length()-2)
                 if (!joinProps.contains(maskKey)) {
-                    throw new RuntimeException(baseMsg + " Property $name with tag prepLookup is misses corresponding property with tag joned. Candidates: $joinProps")
+                    throw new RuntimeException(baseMsg + " Property $name with tag 'prepLookup' is misses corresponding property with tag 'join'. Candidates: $joinProps")
                 }
                 println "Attention: Overwriting maskKey of property $name: $maskKey!"
                 maskKeyOverwrites.put(name, maskKey)
@@ -954,9 +954,9 @@ public class TestMask${targetType} {
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
         if (verbose)  println "// key=${key} parentCollection=${parentCollection} parCollClass=${parentCollection.class.getName()}"
+        def suffix = !joined && property.hasTag('prepLookup') ? 'Id' : ''
         if (propStack.size() == 1) {
             // in case of normal type and tag 'prepLookup' add suffix Id to method name -> getObjectBaseId()!
-            def suffix = !joined && property.hasTag('prepLookup') ? 'Id' : ''
             lines.add("""        case "${key}":
             return pojo.get${data.firstUpperCase.call(property.name)}${suffix}();""" )
         } else if (parentCollection) {
@@ -968,7 +968,7 @@ public class TestMask${targetType} {
             String methodName = propStackParent.collect{ prop -> data.upperCamelCase.call(prop.name) }.join('')
             String parentChar = parentProp.name.take(1)
             lines.add("""        case "${key}":
-            return get${methodName}(pojo).stream().map(${parentChar} -> ${parentChar}.get${data.upperCamelCase.call(property.name)}()).collect(Collectors.toList());""")
+            return get${methodName}(pojo).stream().map(${parentChar} -> ${parentChar}.get${data.upperCamelCase.call(property.name)}${suffix}()).collect(Collectors.toList());""")
             // lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}": return null; // TODO""" )
         } else {
             // parent not a collection: simple parent null check and return value
