@@ -581,25 +581,10 @@ class MaskExperiments {
      * @param type The type to process.
      */
     def tuneType = { Type type ->
-        /*
-        Closure<Void> action
-        if (joined) {
-            action = { Property prop ->
-                println "// ATTENTION: Removing lookup property ${prop.name}"
-                type.properties.remove(prop)
-            }
-        } else {
-            action = { Property prop ->
-                def orig = prop.name
-                def shorten = prop.name.take(prop.name.length() - 2)
-                println "// ATTENTION: Renaming lookup property from $orig to $shorten"
-                prop.setName(shorten)
-            }
-        }
-         */
         Collection<Property> lookupProps = type.properties.findAll { Property prop -> prop.hasTag('prepLookup') && prop.name.endsWith('Id') }
         type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   && !prop.isSelfReference() } each { Property prop -> tuneType.call(prop.implicitRef.type) }
         type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() && !prop.isSelfReference() } each { Property prop -> tuneType.call(prop.type.type) }
+
         Closure<Void> renameAction = { Property prop ->
             def orig = prop.name
             def shorten = prop.name.take(prop.name.length() - 2)
