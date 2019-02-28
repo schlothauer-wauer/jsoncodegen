@@ -12,6 +12,7 @@ class HandlingTemplate {
     static main(args) {
 
         // service service-junction
+        /*
         def base = '/home/stefan/Entwicklung/service-junction/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'junction.json'
@@ -19,7 +20,8 @@ class HandlingTemplate {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'JunctionJoined' // 'ObjectBase' // ''JunctionContact' // 'JunctionJoined' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+                : 'JunctionContact' // 'ObjectBase' // ''JunctionContact' // 'JunctionJoined' // 'JunctionLocationStreetsItem' // 'JunctionContactJoined' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+         */
 
         /*
         // service service-op-message
@@ -30,7 +32,7 @@ class HandlingTemplate {
         def typeName = args.length > 0 ?
                 args[1]
                 : 'ObjectGroup' // 'OpMessage' // 'OpMessageJoined'
-        */
+         */
 
         /*
         // service incident
@@ -41,8 +43,16 @@ class HandlingTemplate {
         def typeName = args.length > 0 ?
                 args[1]
                 : 'Incident' // 'ObjectBase'
-        */
+         */
 
+        // ines-network
+        def base = '/home/stefan/Entwicklung/lisa-service-template/models/models-lisa-server/model/'
+        def modelPath = args.length == 0 ?
+                base + 'ines_network.json'
+                : args[0]
+        def typeName = args.length > 0 ?
+                args[1]
+                : 'InesNetwork' // 'InesNetworkJoined'
 
         def template = new HandlingTemplate(modelPath)
         template.execute(typeName, typeName.endsWith('Joined'))
@@ -213,11 +223,13 @@ class HandlingTemplate {
     }
 
     /**
-     * Closure which actually looks for the array of ref or complex properties, for which a method removeXXX(pojo, UUID)
+     * Closure which actually looks for the array of ref or complex properties, for which a method removeXXXById(pojo, targetId)
      * needs to be created. This closure calls itself recursively!
+     * @param type The type, which is to be processed
+     * @param keys The list of keys, which is to be extended while traversing the model.
      */
     def evalDeepNestedListKeys = { Type type, List<String> keys ->
-        // find all ref & complex properties, which are hold in arrays! These are the candidates for the methods removeXXX(pojo, UUID)
+        // find all ref & complex properties, which are hold in arrays! These are the candidates for the methods removeXXXById(pojo, UUID)
         type.properties.findAll{ Property prop -> prop.isRefTypeOrComplexType() && prop.type.isArray }.each { Property prop ->
             putStacks.call(prop)
             def key = currentKey.call()
@@ -237,17 +249,17 @@ class HandlingTemplate {
     }
 
     /**
-     * Closure, which kicks off the search for the keys, which are candidates for the method removeXXX(pojo, UUID)
+     * Closure, which kicks off the search for the keys, which are candidates for the method removeXXXById(pojo, targetId)
      * -> find array of ref or complex properties
+     * @param type The type, which is to be processed
      */
     def evalDeepNestedListKeysForType = { Type type ->
-        // find keys for method removeXXX(pojo, UUID) -> find array of ref or complex properties
+        // find keys for method removeXXXById(pojo, targetid) -> find array of ref or complex properties
         List<String> keys = []
         prepareStacks.call()
         evalDeepNestedListKeys.call(type, keys)
         return keys
     }
-
 
     /**
      * Take a key / chain of property names, and builds a matching property stack. e.g location.streets
@@ -263,6 +275,41 @@ class HandlingTemplate {
             curType = curProp.type.type
         }
         return localPropStack
+    }
+// Closures, which call themselfe, need a forward declaration!
+    /**
+     * Closure which actually looks for the single ref or complex child of array of ref or complex properties, for which
+     * a method setXXXById(pojo, targetId, value) needs to be created. This closure calls itself recursively!
+     * @param type The type, which is to be processed
+     * @param key Defines the array of ref or complex properties, where single ref or complex child properties are to be found.
+     * @param listKey2childKey The mapping of array key to child key,  which is to be extended while traversing the model.
+     */
+    def evalDeepNestedListChildKeys = { Type type, String key, Map<String, String> listKey2childKey  ->
+        type.properties.findAll{ Property prop -> prop.isRefTypeOrComplexType() && !prop.type.isArray }.each { Property prop ->
+            putStacks.call(prop)
+            def childKey = currentKey.call()
+            listKey2childKey.put(key, childKey)
+            // recurse into all ref & complex properties, which are not hold in arrays!
+            evalDeepNestedListChildKeys.call(prop.type.type, key, listKey2childKey)
+            popStacks.call()
+        }
+    }
+
+    /**
+     * Closure which kicks off the search for the keys, which are candidates for the method setXXXById(pojo, targetId, value)
+     * -> find single ref or complex children of array of ref or complex properties
+     */
+    def evalDeepNestedListChildKeysForType = { Type type, List<String> keys ->
+        Map<String, String> listKey2childKey = [:]
+        for (String key : keys) {
+            prepareStacks.call()
+            // use key to restore prop stack of array property
+            propStackFromKey.call(key).each { prop -> putStacks.call(prop) }
+            // start recursive search for single ref or complex child
+            assert propStack.last().isRefTypeOrComplexType() && propStack.last().type.isArray : key
+            evalDeepNestedListChildKeys.call(propStack.last().type.type, key, listKey2childKey)
+        }
+        return listKey2childKey
     }
 
     /**
@@ -459,7 +506,7 @@ class HandlingTemplate {
     }
 
     /**
-     * Prints the method void replaceXXX(pojo, UUID, replacement) throws MissingXXXException  associated with one key
+     * Prints the method void replaceXXXById(pojo, targetId, replacement) throws MissingXXXException  associated with one key
      * of a nested array property.
      */
     Closure<String> printReplaceForKeyThrows = { String key ->
@@ -502,6 +549,78 @@ class HandlingTemplate {
             }
         }
         throw new MissingTargetException("${key}", targetId);
+    }"""
+        return ret
+    }
+
+    /**
+     * Prints the method void setXXXById(pojo, targetId, value) throws MissingXXXException associated for a the single ref
+     * or complex child of an arrays of ref or complex properties
+     * @param keyArray the key associated with an array of ref or complex property
+     * @param keyChild the key associated with the the single ref or complex child of the array property.
+     */
+    Closure<String> printSetForKeyThrows = { String keyArray, String keyChild  ->
+        /*
+            public static void setAddressPersonsContactById(final JunctionContact pojo, final UUID targetId,
+                    final ContactData value) throws MissingParentException, MissingTargetException {
+                final ListIterator<AddressPerson> iter = getAddressPersonsThrows(pojo).listIterator();
+                while (iter.hasNext()) {
+                    iter.previous().setContact(value);
+                    // TODO Add missing parents check here in case of deep nested value property!
+                    // Or introduce AddressPersonHandling and utilize here!
+                    // AddressPersonHandling.setContact(iter.previous(), value);
+                    return;
+                }
+                throw new MissingTargetException("address.persons", targetId);
+            }
+         */
+        List<Property> propStackChild = propStackFromKey.call(keyChild)
+        List<Property> propStackArray = propStackFromKey.call(keyArray)
+        List<Property> propStackInner = propStackChild.subList(propStackArray.size(), propStackChild.size())
+        /*
+        List<Property> propStackInner = propStackFromKey.clone()
+        propStackArray.forEach(propStackInner.remove(0))
+        */
+        def keyUpper = propStackChild.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        def keyUpperIntermediate = propStackArray.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        // in case of deep nested child
+        def keyUpperInner = propStackInner.collect { prop -> data.upperCamelCase.call(prop.name) }.join('')
+        // in case of shallow child
+        def setterName = data.upperCamelCase.call(propStackChild.last().name)
+
+        def typeName = data.upperCamelCase.call(currentType.name)
+        def typeNameIntermediate = data.upperCamelCase.call(propStackArray.last().type.type.name)
+        def typeNameInner = data.upperCamelCase.call(propStackChild.last().type.type.name)
+        // usually one of entryId, guid or refId!
+        def idProp = data.upperCamelCase.call(findIdProperty.call(propStackArray.last()))
+        def ret = """
+    /**
+     * Replaces the ${typeNameInner} of a specific ${typeNameIntermediate} object of a ${typeName}.
+     * @param pojo The ${typeName} object to process
+     * @param targetId The ID of the ${typeNameIntermediate}, which is to be altered.
+     * @param value The ${typeNameInner} object to assign to the ${typeNameIntermediate}
+     * @throws MissingTargetException if no ${typeNameIntermediate} of that id was found and subsequently altered,
+     * @throws MissingParentException if
+     *             <ul>
+     *             <li> the attribute holding the ${typeNameIntermediate} objects or any of its parent objects is missing.</li>
+     *             <li> the attribute holding the ${typeNameInner} objects or any of its parent objects is missing.</li>
+     *             </ul>
+     */
+    public static void set${keyUpper}ById(final ${typeName} pojo, final UUID targetId,
+            final ${typeNameInner} value) throws MissingParentException, MissingTargetException {
+        final ListIterator<${typeNameIntermediate}> iter = get${keyUpperIntermediate}Throws(pojo).listIterator();
+        while (iter.hasNext()) {
+            if (iter.next().get${idProp}().equals(targetId.toString())) {
+                // in case of shallow ref or complex child:
+                iter.previous().set${setterName}(value);
+                // in case of deep nested ref or complex child:
+                // TODO Add missing parents check here in case of deep nested value property!
+                // Or introduce ${typeNameIntermediate}Handling and utilize here!
+                // ${typeNameIntermediate}Handling.set${keyUpperInner}(iter.previous(), value);
+                return;
+            }
+        }
+        throw new MissingTargetException("${keyArray}", targetId);
     }"""
         return ret
     }
@@ -596,10 +715,10 @@ class HandlingTemplate {
         def propStackParent = []; propStackParent.addAll(propStack)
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
+        def suffix = !joined && property.hasTag('prepLookup') ? 'Id' : ''
         if (verbose) println "// key=${key} parentCollection=${parentCollection} parCollClass=${parentCollection.class.getName()}"
         if (propStack.size() == 1) {
             // in case of normal type and tag 'prepLookup' add suffix Id to method name -> getObjectBaseId()!
-            def suffix = !joined && property.hasTag('prepLookup') ? 'Id' : ''
             lines.add("""        case "${key}":
             return pojo.get${data.firstUpperCase.call(property.name)}${suffix}();""" )
         } else if (parentCollection) {
@@ -611,7 +730,7 @@ class HandlingTemplate {
             String methodName = propStackParent.collect{ prop -> data.upperCamelCase.call(prop.name) }.join('')
             String parentChar = parentProp.name.take(1)
             lines.add("""        case "${key}":
-            return get${methodName}(pojo).stream().map(${parentChar} -> ${parentChar}.get${data.upperCamelCase.call(property.name)}()).collect(Collectors.toList());""")
+            return get${methodName}(pojo).stream().map(${parentChar} -> ${parentChar}.get${data.upperCamelCase.call(property.name)}${suffix}()).collect(Collectors.toList());""")
             // lines.add("""        case "${propStack.collect {prop -> prop.name}.join('.')}": return null; // TODO""" )
         } else {
             // parent not a collection: simple parent null check and return value
@@ -628,7 +747,7 @@ class HandlingTemplate {
 
             lines.add("""        case "${key}":
             if (check${methodName}Exists(pojo)) {
-                return pojo.get${getChain}();
+                return pojo.get${getChain}${suffix}();
             } else {
                 return null;
             }""" )
@@ -1104,8 +1223,11 @@ class HandlingTemplate {
         Type tunedType = data.copyType.call(currentType)
         tuneType.call(tunedType)
 
-        // find keys for method removeXXX(pojo, UUID) -> find array of ref or complex properties
+        // find keys for method removeXXXById(pojo, targetId) -> find array of ref or complex properties
         List<String> deepNestedListKeys = evalDeepNestedListKeysForType.call(tunedType)
+        // find keys for method setXXXById(pojo, targetId, value) -> find ref or complex children of arrays of ref or complex properties
+        Map<String, String> deepNestedList2SingleChildKeys = evalDeepNestedListChildKeysForType.call(tunedType, deepNestedListKeys)
+
         println "type=${currentType.name} deepNestedListKeys=${deepNestedListKeys}"
 
         // start printing class content
@@ -1192,14 +1314,18 @@ public class ${targetType}Handling {"""
         prepareStacks.call()
         printSetSingleForType.call(tunedType)
 
-        for(String key : deepNestedListKeys) {
+        for (String key : deepNestedListKeys) {
             println printAddForKeyThrows.call(key)
             println printGetForKeyThrows.call(key)
             println printReplaceForKeyThrows.call(key)
             println printRemoveForKeyThrows.call(key)
         }
 
+        for (Map.Entry entry : deepNestedList2SingleChildKeys.entrySet()) {
+            // Parameter: keyArray, keyChild
+            println printSetForKeyThrows.call(entry.key, entry.value)
+        }
+
         println '}\n'
     }   // end of executeForType
-
 }
