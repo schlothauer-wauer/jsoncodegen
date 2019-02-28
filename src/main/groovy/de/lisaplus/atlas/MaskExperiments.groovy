@@ -28,6 +28,7 @@ class MaskExperiments {
     static main(args) {
 
         // service service-junction
+        /*
         def base = '/home/stefan/Entwicklung/service-junction/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'junction.json'
@@ -36,6 +37,7 @@ class MaskExperiments {
         def type = args.length > 0 ?
                 args[1]
                 : 'Junction' // 'ObjectBaseGis' // 'Contact' // 'Junction' // 'JunctionJoined' // 'JunctionNumber'  // 'Contact_type' // 'JunctionLocation' // 'JunctionContact'
+         */
 
         /*
         // service service-op-message
@@ -61,15 +63,13 @@ class MaskExperiments {
 
 
         // ines-network
-        /*
         def base = '/home/stefan/Entwicklung/lisa-service-template/models/models-lisa-server/model/'
         def modelPath = args.length == 0 ?
                 base + 'ines_network.json'
                 : args[0]
-        def typeName = args.length > 0 ?
+        def type = args.length > 0 ?
                 args[1]
-                : 'InesNetwork' // 'InesNetworkJoined'
-         */
+                : 'InesNetworkJoined' // 'InesNetwork' // 'InesNetworkJoined'
 
 
         def maskExp = new MaskExperiments(modelPath)
@@ -592,8 +592,8 @@ class MaskExperiments {
             }
         }
         Collection<Property> lookupProps = type.properties.findAll { Property prop -> prop.hasTag('prepLookup') && prop.name.endsWith('Id') }
-        type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   } each { Property prop -> tuneType.call(prop.implicitRef.type) }
-        type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() } each { Property prop -> tuneType.call(prop.type.type) }
+        type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   && !prop.isSelfReference() } each { Property prop -> tuneType.call(prop.implicitRef.type) }
+        type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() && !prop.isSelfReference() } each { Property prop -> tuneType.call(prop.type.type) }
         lookupProps.each(action)
     }
 
