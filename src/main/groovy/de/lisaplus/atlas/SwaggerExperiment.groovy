@@ -139,7 +139,76 @@ class SwaggerExperiment {
     void execute() {
         GeneratorBase generator = new DummyGenerator()
         data = generator.createTemplateDataMap(model)
+        /*
+        // service-junction
+        testSubPathToProperty(['/junctionContact/{junctionContact_id}/address.persons', '/junction/{junction_id}/location.streets'])
+         */
         executeForModel()
+    }
+
+    void testSubPathToProperty(List<String> paths) {
+        paths.each { path ->
+            Property prop = subPathToProperty.call(model, path)
+            assert prop.isRefTypeOrComplexType(): path
+            println "path=$path type=$prop.type.type.name"
+
+            List propStack = propStackFromPath.call(model, path)
+            println "path=$path key=${propStack.collect { it.name }.join('.')} typeLast=${propStack.last().type.type.name}"
+        }
+    }
+
+    Closure<List> propStackFromPath = { model, String path ->
+        List<String> parts = path.substring(1).split("[/,\\.]")
+        // parts[0] defines mainType
+        // In parts[1] to parts[n] drop entries {xxx_id}
+        def mainTypeName = parts.remove(0)
+        def propChain = parts.findAll { !(it.startsWith('{') && it.endsWith('_id}')) }
+
+        List propStack = []
+        def currentType = model.types.find { data.lowerCamelCase.call(it.name) == mainTypeName }
+        def currentProp
+        for (String propName : propChain) {
+            currentProp = currentType.properties.find { it.name == propName }
+            assert currentProp && currentProp.isRefTypeOrComplexType() : "propChain=${propChain} propName=${propName}"
+            propStack.add(currentProp)
+            currentType = currentProp.type.type
+        }
+        return propStack
+    }
+
+    Closure<Property> subPathToProperty = { Model model, String path ->
+        def isSubPath = path.substring(1).split('/').length > 1
+        // Split path at / and .
+        assert path.startsWith('/') : path
+        /*
+        def paramNames = path.substring(1).split("[/,\\.]").findAll { part -> part.startsWith('{') && part.endsWith('_id}') }.collect { it[1..-2] }
+        println paramNames.toString()
+        */
+
+        List<String> parts = path.substring(1).split("[/,\\.]")
+
+        /*
+        int idx = 1
+        def dummyParam = parts.collect{ "arg${idx++}" }
+        println dummyParam
+        */
+
+        // parts[0] defines mainType
+        // In parts[1] to parts[n] drop entries {xxx_id}
+        // chain of property names should remain!
+        def mainTypeName = parts.remove(0)
+        def propChain = parts.findAll { !(it.startsWith('{') && it.endsWith('_id}')) }
+        println "mainType=$mainTypeName propChain=${propChain.join('.')}"
+        // model.types.each { println "${data.lowerCamelCase.call(it.name)}" }
+        Type mainType = model.types.find { data.lowerCamelCase.call(it.name) == mainTypeName }
+        Type currentType = mainType
+        Property currentProp
+        for (String propName : propChain) {
+            currentProp = currentType.properties.find { it.name == propName }
+            assert currentProp.isRefTypeOrComplexType() : currentProp
+            currentType = currentProp.type.type
+        }
+        return currentProp
     }
 
     def printOperationId = { operationStr, pathStr ->
