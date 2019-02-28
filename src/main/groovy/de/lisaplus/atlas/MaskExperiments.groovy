@@ -581,6 +581,7 @@ class MaskExperiments {
      * @param type The type to process.
      */
     def tuneType = { Type type ->
+        /*
         Closure<Void> action
         if (joined) {
             action = { Property prop ->
@@ -595,10 +596,38 @@ class MaskExperiments {
                 prop.setName(shorten)
             }
         }
+         */
         Collection<Property> lookupProps = type.properties.findAll { Property prop -> prop.hasTag('prepLookup') && prop.name.endsWith('Id') }
         type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   && !prop.isSelfReference() } each { Property prop -> tuneType.call(prop.implicitRef.type) }
         type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() && !prop.isSelfReference() } each { Property prop -> tuneType.call(prop.type.type) }
-        lookupProps.each(action)
+        Closure<Void> renameAction = { Property prop ->
+            def orig = prop.name
+            def shorten = prop.name.take(prop.name.length() - 2)
+            println "// ATTENTION: Renaming ${type.name}'s lookup property from $orig to $shorten"
+            prop.setName(shorten)
+        }
+        Closure<Void> removeAction = { Property prop ->
+            println "// ATTENTION: Removing ${type.name}'s lookup property ${prop.name}"
+            type.properties.remove(prop)
+        }
+        Closure<Boolean> hasSibling = { Property prop, Type parentType ->
+            String siblingName = prop.name.substring(0, prop.name.length() - 2)
+            !parentType.properties.findAll { prop2 -> prop2.hasTag('join') && prop2.name == siblingName}.isEmpty()
+        }
+        if (joined) {
+            // Only remove property tagged 'prepLookup' with suffix 'Id' if sibling property tagged 'join' without suffix 'Id' is actually available!
+            // Otherwise just drop Suffix 'Id'
+            lookupProps.each { prop ->
+                if (hasSibling.call(prop, type)) {
+                    removeAction.call(prop)
+                } else {
+                    renameAction.call(prop)
+                }
+            }
+        } else {
+            // Always just drop suffix 'Id'
+            lookupProps.each(renameAction)
+        }
     }
 
     /**

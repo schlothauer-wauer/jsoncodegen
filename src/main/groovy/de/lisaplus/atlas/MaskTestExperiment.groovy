@@ -53,7 +53,7 @@ class MaskTestExperiment {
                 : args[0]
         def typeName = args.length > 0 ?
                 args[1]
-                : 'InesNetwork' // 'InesNetworkJoined'
+                : 'InesNetworkJoined' // ''InesNetwork' // 'InesNetworkJoined'
 
         def maskExp = new MaskTestExperiment(modelPath)
         maskExp.execute(typeName, typeName.endsWith('Joined'))
@@ -139,6 +139,7 @@ class MaskTestExperiment {
         executeForType(type, joined)
     }
 
+    // unused!
     def applyMaskKeyOverwritesLoop1 = { List<String> maskKeys, Map<String, String> overwrites ->
         if (joined) {
             // Kick out the original maskKey and add the corrected one if that is missing
@@ -164,6 +165,7 @@ class MaskTestExperiment {
         }
     }
 
+    // unused!
     def applyMaskKeyOverwritesLoop2 = { Map<String,Set<String>> maskKey2affectedProps, Map<String, String> overwrites ->
         if (joined) {
             overwrites.each {entry ->
@@ -188,6 +190,7 @@ class MaskTestExperiment {
         }
     }
 
+    // unused!
     def applyMaskKeyOverwritesLoop3a = { Map<String,Map<String,Integer>> maskKey2propName2deleteCount, Map<String, String> overwrites ->
         if (joined) {
             overwrites.each { entry ->
@@ -205,6 +208,18 @@ class MaskTestExperiment {
                 } else {
                     throw new RuntimeException("No counts for maskKey ${entry.key}?!?")
                 }
+            }
+        }
+    }
+
+    def applyMaskKeyOverwritesLoop3b = { Map<String,Map<String,Integer>> maskKey2propName2deleteCount, Map<String, String> overwrites ->
+        if (joined) {
+            overwrites.each { entry ->
+                // When masking using key 'objectBase', then the same amount of properties named 'objectBase'
+                // and 'objectBaseId' are deleted, but the later one is missing!
+                Map<String, Integer> prop2delCount = maskKey2propName2deleteCount.get(entry.value)
+                if (prop2delCount == null) println "applyMaskKeyOverwritesLoop3b: maskKey2propName2deleteCount misses entry for ${entry.value}!"
+                prop2delCount.put(entry.key, prop2delCount.get(entry.value))
             }
         }
     }
@@ -229,6 +244,8 @@ class MaskTestExperiment {
         // The mask keys, which are available for the current type
         List<String> maskKeys = []
         findNamesKeysForType.call(currentType, propNames, maskKeys)
+        Set<String> maskKeySet = new HashSet<>(maskKeys)
+        assert maskKeys.size() == maskKeySet.size() ///  : maskKeys.sort().join('-')
 
         // apply maskKey overwrites
 //        applyMaskKeyOverwritesLoop1.call(maskKeys, maskKeyOverwrites)
@@ -265,13 +282,22 @@ class MaskTestExperiment {
         Map<String,Map<String,Integer>> maskKey2propName2deleteCount = ['.': [:]]
         maskKeys.each { key -> maskKey2propName2deleteCount.put(key, [:]) }
         for (String propName : propNames) {
+            println propName
             findMaskKey2propName2CountForType.call(currentType, propName, entryPerArray, 0, maskKey2propName2deleteCount)
         }
+        def maskKey2 = 'objectBase'
+        Map<String, Integer> prop2Count2 = maskKey2propName2deleteCount.get(maskKey2)
+        sorted.clear(); sorted.addAll(prop2Count2.keySet()); Collections.sort(sorted)
+        // display all counts
+        sorted.each { prop -> println "prop=$prop maskKey='$maskKey2' count=${prop2Count2.get(prop)}" }
+
+        // println maskKey2propName2deleteCount.get('objectBase')
 
         // apply maskKey overwrites
-        applyMaskKeyOverwritesLoop1.call(maskKeys, maskKeyOverwrites)
+        // applyMaskKeyOverwritesLoop1.call(maskKeys, maskKeyOverwrites)
         // applyMaskKeyOverwritesLoop2.call(maskKey2PropNames, maskKeyOverwrites)
-        applyMaskKeyOverwritesLoop3a.call(maskKey2propName2deleteCount, maskKeyOverwrites)
+        // applyMaskKeyOverwritesLoop3a.call(maskKey2propName2deleteCount, maskKeyOverwrites)
+        applyMaskKeyOverwritesLoop3b.call(maskKey2propName2deleteCount, maskKeyOverwrites)
 
         // Debug output of 3rd loop:
         if (printDebug) {
@@ -296,6 +322,7 @@ class MaskTestExperiment {
         // node's children, even when the parent node is already masked / null!
         prepareStacks.call()
         List<String> masksOfPropsWithChildren = []
+        // HERE force mask keys without suffix Id?
         findMaskOfPropsWithChildren.call( currentType, masksOfPropsWithChildren)
 
         // Debug output of 4th loop:
@@ -652,21 +679,46 @@ public class TestMask${targetType} {
     }
 
     /**
+     * Creates the mask key from the current property stack!
+     */
+    def createMaskKey = { ->
+        // Drop suffix Id on properties with tag 'prepLookup'
+        return propStack.isEmpty() ? '.' : propStack.collect { prop -> prop.hasTag('prepLookup') ? prop.name.substring(0, prop.name.length()-2) : prop.name }.join('.')
+    }
+
+    /**
+     * Checks whether a property - tagged with 'propLookup' and with suffix 'Id' - has a sibling property tagged with
+     * 'join' but without suffix 'Id'.
+     * @param prop the property tagged with 'propLookup' and with suffix 'Id'
+     * @return True, if such a sibling property exists, false otherwise.
+     */
+    Closure<Boolean> hasSibling = { prop, parentType ->
+        assert prop.hasTag('prepLookup') && prop.name.endsWith('Id')
+        String siblingName = prop.name.substring(0, prop.name.length() - 2)
+        !parentType.properties.findAll { prop2 -> prop2.hasTag('join') && prop2.name == siblingName}.isEmpty()
+    }
+
+    /**
      * Traverse the properties of a type and collect the mask keys and property names.
      * This method calls itself recursively if the type contains properties of complex or reference types.
      */
     def findNamesKeysForType = { Type type, Set<String> propNames, List<String> maskKeys ->
         // for delete count evaluation all property names are necessary!
         type.properties.each { prop -> propNames.add(prop.name) }
-        // The mask keys associated with properties holding tag 'notDisplayed' are to be ignored!
-        type.properties.findAll{ prop -> !prop.hasTag('notDisplayed') }.each { prop ->
-            propStack.add(prop)
-            maskKeys.add(propStack.collect { prop2 -> prop2.name }.join('.'))
-            propStack.pop()
-        }
 
         // search property pairs for handling joined objects
         searchPrepLookupProps.call(type)
+
+        // The mask keys associated with properties holding tag 'notDisplayed' are to be ignored!
+        type.properties.findAll{ prop -> !prop.hasTag('notDisplayed') }.each { prop ->
+            // skip objectBaseId if objectBase is available!
+            if (prop.hasTag('prepLookup') && prop.name.endsWith('Id') && hasSibling.call(prop, type)) {
+                return // continues each with next prop
+            }
+            propStack.add(prop)
+            maskKeys.add(createMaskKey.call())
+            propStack.pop()
+        }
 
         data.filterProps.call(type, [refComplex:true, withoutTag:'notDisplayed']).each { Property prop ->
             // recursive call!
@@ -682,7 +734,7 @@ public class TestMask${targetType} {
      */
     def searchPrepLookupProps = { Type type  ->
         // search property pairs for handling joined objects
-        String baseMsg = '${targetType}: The assumption that all properties with tag "prepLookup" have a suffix "Id" and have a associated mask key without that suffix seams to be brokenfor type ${type.name}:\n!'
+        String baseMsg = "${targetType}: The assumption that all properties with tag 'prepLookup' have a suffix 'Id' and have a associated mask key without that suffix seams to be brokenfor type ${type.name}:\n"
         if (joined) {
             // Assume (and check) that the names off all properties tagged with prepLookup are ending with Id have a
             // corresponding property tagged join / mask key without the suffix Id at the end of the name.
@@ -694,8 +746,10 @@ public class TestMask${targetType} {
             }
             prepLookupProps.each { name ->
                 String maskKey = name.substring(0, name.length()-2)
-                if (!joinProps.contains(maskKey)) {
-                    throw new RuntimeException(baseMsg + " Property $name with tag 'prepLookup' is misses corresponding property with tag 'join'. Candidates: $joinProps")
+                if (joinProps.isEmpty()) {
+                    if (verbose) println "${targetType}: Property $name of type ${type.name} with tag 'prepLookup' and suffix 'Id' does not have any corresponding property with tag 'join' so just drop suffix 'Id'!"
+                } else if (!joinProps.contains(maskKey)) {
+                    throw new RuntimeException(baseMsg + "Property $name with tag 'prepLookup' is misses corresponding property with tag 'join'. Candidates: $joinProps")
                 }
                 println "Attention: Overwriting maskKey of property $name: $maskKey!"
                 maskKeyOverwrites.put(name, maskKey)
@@ -705,7 +759,7 @@ public class TestMask${targetType} {
             List<String> prepLookupProps = type.properties.findAll { prop -> prop.hasTag('prepLookup')}.collect { prop -> prop.name}
             List<String> prepLookupWrongSuffix = prepLookupProps.findAll { name -> !name.endsWith('Id')}
             if (!prepLookupWrongSuffix.isEmpty()) {
-                throw new RuntimeException(baseMsg + " Properties with missing suffix: " + prepLookupWrongSuffix)
+                throw new RuntimeException(baseMsg + "Properties with missing suffix: " + prepLookupWrongSuffix)
             }
             prepLookupProps.each { name ->
                 String maskKey = name.substring(0, name.length()-2)
@@ -780,24 +834,41 @@ public class TestMask${targetType} {
         if (!propStack.isEmpty() && propStack.last().name == propName) {
             // We are currently processing a complex property with the wanted name
             def count = entryPerArray.power(arrayCount)
-            def maskKey = propStack.collect {prop2 -> prop2.name}.join('.')
+            def maskKey = createMaskKey.call()
             if (verbose) println "Found $count occurrences in complex property of wanted name $propName at ${maskKey}"
             countSum += count
         }
 
         // process nodes with children
+        List joinTypes = []
         data.filterProps.call(type, [refComplex:true]).each { Property prop ->
             putStacks.call(prop)
             countSum += findMaskKey2propName2CountForType.call(prop.type.type, propName, entryPerArray, childArrayCount, maskKey2propName2deleteCount)
             popStacks.call()
+
+            // In case of joined types collect the properties with tag 'join', e.g. objectBase, so that processing the
+            // sibling properties tagged with 'prepLookup' and suffix Id (e.g. objectBaseId) can be skipped.
+            if (prop.hasTag('join')) {
+                joinTypes.add(prop)
+            }
         }
         // process nodes without children
         data.filterProps.call(type, [refComplex:false]).each { Property prop ->
+
+            // In case if joined types, do not recurse into the property tagged with 'prepLookup' and suffix Id, if its
+            // sibling property without suffix Id and same type is available
+            if (prop.hasTag('prepLookup') && prop.name.endsWith('Id')) {
+                String siblingName = prop.name.substring(0, prop.name.length() - 2)
+                if (joinTypes.find { prop2 -> prop2.name == siblingName} ) {
+                    return // continues with the next prop returned by each!
+                }
+            }
+
             putStacks.call(prop)
             def count
             if (prop.name == propName) {
                 count = entryPerArray.power(childArrayCount)
-                def maskKey = propStack.collect {prop2 -> prop2.name}.join('.')
+                def maskKey = createMaskKey.call()
                 println "Found $count occurrences in simple property of wanted name $propName at ${maskKey}"
             } else {
                 count = 0
@@ -821,7 +892,7 @@ public class TestMask${targetType} {
     Closure<Void> addCount2 = { String propName,
                                 int count,
                                 Map<String, Map<String, Integer>> maskKey2propName2deleteCount ->
-        String maskKey = propStack.isEmpty() ? '.' : propStack.collect { prop2 -> prop2.name }.join('.')
+        String maskKey = createMaskKey.call()
         Map propName2deleteCount = maskKey2propName2deleteCount.get(maskKey)
         if (propName2deleteCount == null) {
             if (verbose) println "addCount2: maskKey2propName2deleteCount misses entry for key ${maskKey}"
@@ -846,7 +917,7 @@ public class TestMask${targetType} {
         List<Property> complex = data.filterProps.call(type, [refComplex: true, withoutTag:'notDisplayed'])
         complex.each { prop ->
             putStacks.call(prop)
-            def maskKey = propStack.collect { prop2 -> prop2.name }.join('.')
+            def maskKey = createMaskKey.call()
             masksOfPropsWithChildren.add(0,  maskKey)
             popStacks.call()
         }
@@ -868,6 +939,7 @@ public class TestMask${targetType} {
      * @param type The type to process.
      */
     def tuneType = { Type type ->
+        /*
         Closure<Void> action
         if (joined) {
             action = { Property prop ->
@@ -882,10 +954,42 @@ public class TestMask${targetType} {
                 prop.setName(shorten)
             }
         }
+         */
         Collection<Property> lookupProps = type.properties.findAll { Property prop -> prop.hasTag('prepLookup') && prop.name.endsWith('Id') }
         type.properties.findAll { Property prop -> prop.implicitRefIsRefType()   && !prop.isSelfReference() } each { Property prop -> tuneType.call(prop.implicitRef.type) }
         type.properties.findAll { Property prop -> prop.isRefTypeOrComplexType() && !prop.isSelfReference() } each { Property prop -> tuneType.call(prop.type.type) }
-        lookupProps.each(action)
+
+        // lookupProps.each(action)
+
+        Closure<Void> renameAction = { prop ->
+            def orig = prop.name
+            def shorten = prop.name.take(prop.name.length() - 2)
+            println "// ATTENTION: Renaming ${type.name}'s lookup property from $orig to $shorten"
+            prop.setName(shorten)
+        }
+        Closure<Void> removeAction = { prop ->
+            println "// ATTENTION: Removing ${type.name}'s lookup property ${prop.name}"
+            type.properties.remove(prop)
+        }
+        Closure<Boolean> hasSibling = { prop, parentType ->
+            String siblingName = prop.name.substring(0, prop.name.length() - 2)
+            !parentType.properties.findAll { prop2 -> prop2.hasTag('join') && prop2.name == siblingName}.isEmpty()
+        }
+
+        if (joined) {
+            // Only remove property tagged 'prepLookup' with suffix 'Id' if sibling property tagged 'join' without suffix 'Id' is actually available!
+            // Otherwise just drop Suffix 'Id'
+            lookupProps.each { prop ->
+                if (hasSibling.call(prop, type)) {
+                    removeAction.call(prop)
+                } else {
+                    renameAction.call(prop)
+                }
+            }
+        } else {
+            // Always just drop suffix 'Id'
+            lookupProps.each(renameAction)
+        }
     }
 
     /**
@@ -895,7 +999,8 @@ public class TestMask${targetType} {
      */
     def createTestRestoreSimple = { Property property, List<String> lines ->
         putStacks.call(property)
-        def key = propStack.collect {prop -> prop.name}.join('.')
+        // def key = createMaskKey.call() // when called using called with currentType
+        def key = propStack.collect {prop -> prop.name}.join('.') // when called using tunedType
         lines.add("""
         /* mask key '${key}': */
         key = "${key}";
@@ -954,7 +1059,8 @@ public class TestMask${targetType} {
         putStacks.call(property)
         def key = propStack.collect {prop -> prop.name}.join('.')
         if (verbose)  println "// key=${key} parentCollection=${parentCollection} parCollClass=${parentCollection.class.getName()}"
-        def suffix = !joined && property.hasTag('prepLookup') ? 'Id' : ''
+        // def suffix = !joined && property.hasTag('prepLookup') ? 'Id' : ''
+        def suffix = property.hasTag('prepLookup') ? 'Id' : ''
         if (propStack.size() == 1) {
             // in case of normal type and tag 'prepLookup' add suffix Id to method name -> getObjectBaseId()!
             lines.add("""        case "${key}":
