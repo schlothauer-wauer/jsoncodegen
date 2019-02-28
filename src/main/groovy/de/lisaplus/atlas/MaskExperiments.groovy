@@ -109,6 +109,8 @@ class MaskExperiments {
     List<String> allCaseLines
     /** Index for generating unique identifiers, e.g. in the case statements. */
     int idx
+    /** The tuned type, mimics template environment */
+    Type tunedType
 
     /**
      * Execute code generation for all types
@@ -136,6 +138,8 @@ class MaskExperiments {
     private void executeForType(Type type, boolean joined) {
         this.joined = joined
         targetType = data.upperCamelCase.call(type.name)
+        tunedType = data.copyType.call(type)
+        tuneType.call(tunedType)
         println '###################################################################'
         println "Start of $targetType:"
         println '###################################################################'
@@ -154,7 +158,7 @@ class MaskExperiments {
             switch(key) {
 """
         // TODO iterate over model and insert case statements!
-        evalAllRestoreCases.call(type)
+        evalAllRestoreCases.call(tunedType)
 
 
         println """            default:
@@ -173,7 +177,7 @@ class MaskExperiments {
         for (final String key : mask.hiddenKeys()) {
             switch(key) {"""
         /* NOTE: The data model is being altered: tune propLookup parameter to loose Suffix Id !!!*/
-        evalAllMaskCases.call(type)
+        evalAllMaskCases.call(tunedType)
 
         println """           default:
                 throw new IllegalArgumentException(String.format("Unsupported key '%s' for model class ${targetType}!", key));
@@ -183,11 +187,11 @@ class MaskExperiments {
 
         /* Second loop: method checkXXXExists() */
         prepareStacks.call()
-        printCheckExistsForType.call(type)
+        printCheckExistsForType.call(tunedType)
 
         /* Third loop: method getXXX() */
         prepareStacks.call()
-        printGetForType.call(type)
+        printGetForType.call(tunedType)
 
         println '}'
     }
@@ -543,7 +547,7 @@ class MaskExperiments {
      */
     def evalAllRestoreCases = { Type currentType ->
         // The data model is being altered: tune propLookup properties to loose suffix Id!!!
-        tuneType.call(currentType)
+        // tuneType.call(currentType)
         prepareStacks.call()
         allCaseLines = []
         idx = 0
