@@ -32,6 +32,10 @@ abstract class BaseType {
                 BooleanType copyB = new BooleanType()
                 copyB.isArray = type.isArray
                 return copyB
+            case ByteType:
+                ByteType copyB = new ByteType()
+                copyB.isArray = type.isArray
+                return copyB
             case VoidType:
                 VoidType copyV = new VoidType()
                 copyV.isArray = type.isArray
@@ -139,4 +143,11 @@ class BooleanType extends BaseType {
         return NAME
     }
     final static NAME='BOOLEAN'
+}
+
+class ByteType extends BaseType {
+    String name () {
+        return NAME
+    }
+    final static NAME='BYTE'
 }

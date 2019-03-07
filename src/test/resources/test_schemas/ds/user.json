@@ -144,6 +144,15 @@
                   "one",
                   "two"
                 ]
+              },
+              "byteTest": {
+                "type": "byte"
+              },
+              "byteArrayTest": {
+                "type": "array",
+                "items": {
+                    "type": "byte"
+                }
               }
             }
           }
@@ -152,9 +161,10 @@
           "description": "is this entry still active",
           "type": "boolean"
         }
-      }
+      },
+      "__version": 2
     }
   },
   "type": "object",
-  "version": 1
+  "__version": 3
 }

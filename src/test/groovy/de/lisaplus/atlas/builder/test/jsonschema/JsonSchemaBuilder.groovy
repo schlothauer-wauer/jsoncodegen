@@ -213,8 +213,18 @@ class JsonSchemaBuilder {
                     assertTrue (it.name.equals('grant') || it.name.equals('moduleGrants'))
                 }
             }
+            if (it.name=="Role") {
+                assertEquals(2,it.version)
+            }
+            else if (it.name=="Domain") {
+                assertEquals(4,it.version)
+            }
+            else {
+                assertEquals(0,it.version)
+            }
         }
         assertEquals(2,propsWithTags)
+        assertEquals(3,model.version)
     }
 
     @Test
@@ -289,6 +299,12 @@ class JsonSchemaBuilder {
             }
             else {
                 assertFalse (type.isMainType('junction'))
+            }
+            if (type.name=="Domain") {
+                assertEquals(4,type.version)
+            }
+            else {
+                assertEquals(0,type.version)
             }
         }
     }

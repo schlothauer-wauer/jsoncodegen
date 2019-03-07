@@ -122,6 +122,7 @@ class JavaBeans {
         doCodeGen.model = modelFile
         doCodeGen.generators.add('java_beans')
         doCodeGen.outputBaseDir = destDir
+        doCodeGen.generator_parameters.add('versionConst=true')
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
         doCodeGen.generator_parameters.add('ignoreTag=rest')
         doCodeGen.generator_parameters.add('packageName=de.test3')

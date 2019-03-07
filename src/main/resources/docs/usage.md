@@ -45,7 +45,8 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
   - containsAttrib - name of an attribute that is needed for the generation
   - missingAttrib - name of an attribute that the type doesn't contain for generation
-  
+  - versionConst - set with any value will add a version const into the bean
+
 * java_interfaces - creates a set of Java interfaces from the model 
   - packageName - what is the package for the generated beans (!)
   - removeEmptyLines - if set, then empty lines will be removed before file is written 

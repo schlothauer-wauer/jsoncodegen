@@ -4,6 +4,7 @@ import de.lisaplus.atlas.codegen.helper.java.TypeToColor
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.AggregationType
 import de.lisaplus.atlas.model.BooleanType
+import de.lisaplus.atlas.model.ByteType
 import de.lisaplus.atlas.model.ComplexType
 import de.lisaplus.atlas.model.DateTimeType
 import de.lisaplus.atlas.model.DateType
@@ -157,6 +158,9 @@ class XSDBuilder implements IModelBuilder {
                     case 'boolean':
                         newProp.type = new BooleanType()
                         break
+                    case 'byte':
+                        newProp.type = new ByteType()
+                        break
                     case 'long':
                         newProp.type = new IntType()
                         break
@@ -219,6 +223,9 @@ class XSDBuilder implements IModelBuilder {
                 break
             case 'boolean':
                 t = new BooleanType()
+                break
+            case 'byte':
+                t = new ByteType()
                 break
             case 'long':
                 t = new IntType()

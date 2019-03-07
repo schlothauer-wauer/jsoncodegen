@@ -6,6 +6,7 @@ import de.lisaplus.atlas.model.AggregationType
 import de.lisaplus.atlas.model.ArrayType
 import de.lisaplus.atlas.model.BaseType
 import de.lisaplus.atlas.model.BooleanType
+import de.lisaplus.atlas.model.ByteType
 import de.lisaplus.atlas.model.ComplexType
 import de.lisaplus.atlas.model.DateTimeType
 import de.lisaplus.atlas.model.DateType
@@ -128,6 +129,9 @@ class JsonSchemaBuilder implements IModelBuilder {
         if (objectModel.'__tags') {
             newType.tags=objectModel.'__tags'
         }
+        if (objectModel.'__version') {
+            newType.version = objectModel.'__version'
+        }
 
         // TODO initialize extra stuff
         addNewType(newType,model)
@@ -189,6 +193,9 @@ class JsonSchemaBuilder implements IModelBuilder {
             }
             if (typeObj.value.'__tags') {
                 newType.tags=typeObj.value.'__tags'
+            }
+            if (typeObj.value.'__version') {
+                newType.version = typeObj.value.'__version'
             }
             // TODO  initialize extra stuff
             addNewType(newType,model)
@@ -503,6 +510,8 @@ class JsonSchemaBuilder implements IModelBuilder {
                 return new NumberType()
             case 'boolean':
                 return new BooleanType()
+            case 'byte':
+                return new ByteType()
             case 'object':
                 if (propObjMap.patternProperties) {
                     log.warn("unsupported 'patternProperties' entry found")
@@ -536,6 +545,12 @@ class JsonSchemaBuilder implements IModelBuilder {
                             if (! (ret instanceof UUIDType)) {
                                 // ... so set it also for complex inner types
                                 ret.type.tags=propObjMap.'__tags'
+                            }
+                        }
+                        if (propObjMap.'__version') {
+                            if (! (ret instanceof UUIDType)) {
+                                // ... so set it also for complex inner types
+                                ret.type.version=propObjMap.'__version'
                             }
                         }
                         return ret
@@ -604,6 +619,9 @@ class JsonSchemaBuilder implements IModelBuilder {
         }
         else if (objectModel.version) {
             model.version = objectModel.version
+        }
+        else if (objectModel.__version) {
+            model.version = objectModel.__version
         }
         return model
     }
