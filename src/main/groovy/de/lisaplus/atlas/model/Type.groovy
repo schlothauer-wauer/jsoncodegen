@@ -69,6 +69,12 @@ class Type {
      */
     List<String> tags=[]
 
+    /**
+     * What is the version of a complex or reference type.
+     * A "__version" entry in the type is used to populate this
+     */
+    int version=0
+
     Type() {}
 
     /**
@@ -105,6 +111,7 @@ class Type {
     void initFromType (Type t) {
         // TODO Check whether incomplete initialization is necessary / intended!
         this.name = t.name
+        this.version = t.version
         this.tags = t.tags
         this.schemaPath = t.schemaPath
         this.schemaFileName = t.schemaFileName

@@ -54,6 +54,8 @@ class JavaTypeConvert {
                 return type.isArray? 'java.util.List<String>' : 'String'
             case BooleanType.NAME:
                 return type.isArray? 'java.util.List<Boolean>' : 'Boolean'
+            case ByteType.NAME:
+                return type.isArray? 'java.util.List<Byte>' : 'Byte'
             case DateType.NAME:
                 return type.isArray? "java.util.List<${preset.dateClass}>" : "${preset.dateClass}"
             case DateTimeType.NAME:
@@ -104,6 +106,8 @@ class JavaTypeConvert {
                 return 'String'
             case BooleanType.NAME:
                 return 'Boolean'
+            case ByteType.NAME:
+                return 'Byte'
             case DateType.NAME:
                 return "${preset.dateClass}"
             case DateTimeType.NAME:

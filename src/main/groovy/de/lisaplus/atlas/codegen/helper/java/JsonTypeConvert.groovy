@@ -22,6 +22,8 @@ class JsonTypeConvert {
                 return 'string'
             case BooleanType.NAME:
                 return 'boolean'
+            case ByteType.NAME:
+                return 'byte'
             case DateType.NAME:
                 return 'string'
             case DateTimeType.NAME:
@@ -52,6 +54,8 @@ class JsonTypeConvert {
                 return 'string/uuid'
             case BooleanType.NAME:
                 return 'boolean'
+            case ByteType.NAME:
+                return 'byte'
             case DateType.NAME:
                 return 'string/date'
             case DateTimeType.NAME:

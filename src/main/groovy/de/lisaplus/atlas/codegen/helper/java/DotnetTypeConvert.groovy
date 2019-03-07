@@ -22,6 +22,8 @@ class DotnetTypeConvert {
                 return type.isArray? 'List<Guid>' : 'Guid'
             case BooleanType.NAME:
                 return type.isArray? 'List<bool>' : 'bool'
+            case ByteType.NAME:
+                return type.isArray? 'List<byte>' : 'byte'
             case DateType.NAME:
                 return type.isArray? 'List<DateTime>' : 'DateTime'
             case DateTimeType.NAME:
@@ -54,6 +56,8 @@ class DotnetTypeConvert {
                 return 'string/uuid'
             case BooleanType.NAME:
                 return 'boolean'
+            case ByteType.NAME:
+                return 'byte'
             case DateType.NAME:
                 return 'string/date'
             case DateTimeType.NAME:
