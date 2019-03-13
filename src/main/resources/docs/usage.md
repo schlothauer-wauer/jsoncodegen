@@ -26,7 +26,7 @@ de.lisaplus.atlas.DoCodeGen -o ./test/mein_output -m ./test/mein_modell.json -g 
 ```
 ```bash
 # creates a json schema from test schema - only for test cases
-build/release/jsonCodeGen.sh -o /tmp -m src/test/resources/test_schemas/multiType.json \
+    build/release/jsonCodeGen.sh -o /tmp -m src/test/resources/test_schemas/multiType.json \
     -g singlefile=src/main/resources/templates/meta/json_schema.txt \
     -gp destFileName=test.json
 

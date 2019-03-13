@@ -35,6 +35,20 @@ class JavaBeans {
     }
 
     @Test
+    void createFromXsd() {
+        def destDir = 'tmp/xsd_java_beans'
+        FileHelper.removeDirectoryIfExists(destDir)
+        def modelFile = new File('src/test/resources/xsd/ui-tlc.xsd')
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = modelFile
+        doCodeGen.generators.add('java_beans')
+        doCodeGen.outputBaseDir = destDir
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.generator_parameters.add('packageName=de.test.jsoncodegen.impl')
+        doCodeGen.run()
+    }
+
+    @Test
     void testMapObjMulti() {
         def destDir = 'tmp/java_beans'
         FileHelper.removeDirectoryIfExists(destDir)

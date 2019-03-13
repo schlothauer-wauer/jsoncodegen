@@ -1,0 +1,840 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema
+        targetNamespace="http://swarco.com/scs/ui/tlc/0.1.3"
+        xmlns:tlcg="http://swarco.com/scs/ui/tlc/0.1.3"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:simpleType name="DetectedEdgeType">
+    <xsd:restriction base="xsd:NCName">
+      <xsd:enumeration value="UNKNOWN"/>
+      <xsd:enumeration value="FALLING"/>
+      <xsd:enumeration value="RISING"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="SignalGroupStateType">
+    <xsd:restriction base="xsd:NCName">
+      <xsd:enumeration value="UNKNOWN"/>
+      <xsd:enumeration value="DARK"/>
+      <xsd:enumeration value="RED"/>
+      <xsd:enumeration value="AMBER"/>
+      <xsd:enumeration value="GREEN"/>
+      <xsd:enumeration value="RED_AMBER"/>
+      <xsd:enumeration value="RED_GREEN"/>
+      <xsd:enumeration value="RED_AMBER_GREEN"/>
+      <xsd:enumeration value="AMBER_GREEN"/>
+      <xsd:enumeration value="RED_FLASHING"/>
+      <xsd:enumeration value="AMBER_FLASHING"/>
+      <xsd:enumeration value="GREEN_FLASHING"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="DetectorStateType">
+    <xsd:restriction base="xsd:NCName">
+      <xsd:enumeration value="UNKNOWN"/>
+      <xsd:enumeration value="FREE"/>
+      <xsd:enumeration value="OCCUPIED"/>
+      <xsd:enumeration value="REQUEST"/>
+      <xsd:enumeration value="PERMANENTLY_OCCUPIED"/>
+      <xsd:enumeration value="ERROR"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="OutputStateType">
+    <xsd:restriction base="xsd:NCName">
+      <xsd:enumeration value="UNKNOWN"/>
+      <xsd:enumeration value="OFF"/>
+      <xsd:enumeration value="ON"/>
+      <xsd:enumeration value="BLINK_START_ON"/>
+      <xsd:enumeration value="BLINK_START_ON_2Hz"/>
+      <xsd:enumeration value="BLINK_START_OFF"/>
+      <xsd:enumeration value="BLINK_START_OFF_2Hz"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="SortType">
+    <xsd:restriction base="xsd:NCName">
+      <xsd:enumeration value="ASC"/>
+      <xsd:enumeration value="DESC"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="NodeStateType">
+    <xsd:restriction base="xsd:NCName">
+      <xsd:enumeration value="UNKNOWN"/>
+      <xsd:enumeration value="NONE"/>
+      <xsd:enumeration value="ENABLED"/>
+      <xsd:enumeration value="DISABLED_DEFAULT"/>
+      <xsd:enumeration value="DISABLED_FLASHING_NON_PRIORITY_APPROACH"/>
+      <xsd:enumeration value="DISABLED_DARK"/>
+      <xsd:enumeration value="DISABLED_FLASHING"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ModificationStateType">
+    <xsd:restriction base="xsd:NCName">
+      <xsd:enumeration value="NONE"/>
+      <xsd:enumeration value="DISABLED"/>
+      <xsd:enumeration value="ENABLED"/>
+      <xsd:enumeration value="COUNT"/>
+      <xsd:enumeration value="UNKNOWN"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ModificationType">
+    <xsd:restriction base="xsd:NCName">
+      <xsd:enumeration value="GENERAL"/>
+      <xsd:enumeration value="TRAFFIC_DEPENDENT"/>
+      <xsd:enumeration value="PUBLIC_TRANSPORT"/>
+      <xsd:enumeration value="INDIVIDUAL_TRAFFIC_DEPENDENT"/>
+      <xsd:enumeration value="PROJECT"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="TimeSourceType">
+    <xsd:restriction base="xsd:NCName">
+      <xsd:enumeration value="POWER_SUPPLY"/>
+      <xsd:enumeration value="QUARZ"/>
+      <xsd:enumeration value="CONTROL_CENTER"/>
+      <xsd:enumeration value="DCF"/>
+      <xsd:enumeration value="GPS"/>
+      <xsd:enumeration value="OTHER"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ParameterValueType">
+    <xsd:restriction base="xsd:NCName">
+      <xsd:enumeration value="String"/>
+      <xsd:enumeration value="Integer"/>
+      <xsd:enumeration value="Boolean"/>
+      <xsd:enumeration value="Long"/>
+      <xsd:enumeration value="Float"/>
+      <xsd:enumeration value="Double"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="StatusType">
+    <xsd:restriction base="xsd:NCName">
+      <xsd:enumeration value="NO_FAILURE"/>
+      <xsd:enumeration value="FAILURE"/>
+      <xsd:enumeration value="FAILURE_SWITCHOFF"/>
+      <xsd:enumeration value="FAILURE_PARTIAL_SWITCHOFF"/>
+      <xsd:enumeration value="MESSAGE"/>
+      <xsd:enumeration value="STATE"/>
+      <xsd:enumeration value="INTERNAL_ERROR"/>
+      <xsd:enumeration value="CONNECTION_ERROR"/>
+      <xsd:enumeration value="OTHER"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="TLCDevice">
+    <xsd:annotation>
+      <xsd:documentation>TrafficLightController model used in the API-Gateway.
+        It is a flat representation of the TLC device, optimized for UI or other
+        third party systems. Most of the attributes are optional, to enable this object to have a complex set of data,
+        but provide subsets of information using projection
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="1" minOccurs="0" name="deviceInformation" type="tlcg:TLCDeviceInfo">
+        <xsd:annotation>
+          <xsd:documentation>The complex device information</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="status" type="tlcg:TLCStatus">
+        <xsd:annotation>
+          <xsd:documentation>The detailed status of the TLC device.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element maxOccurs="1" minOccurs="0" name="clientConfiguration" type="tlcg:TLCClientConfiguration">
+        <xsd:annotation>
+          <xsd:documentation>The configuration for the connection client. Usually the device driver uses this
+            information to establish a connection and activate the configured features.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element maxOccurs="1" minOccurs="0" name="controllerConfiguration" type="tlcg:TLCConfiguration"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="1" name="deviceGroup" type="tlcg:DeviceGroup">
+        <xsd:annotation>
+          <xsd:documentation>Device groups coming from the User-Manager. there is the assignment from user-group to
+            devices.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="guid" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>The unique identifier of a TLC device</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fqdn" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>The full qualified device name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="alias" type="xsd:string"/>
+    <xsd:attribute name="name" type="xsd:string"/>
+    <xsd:attribute name="deviceType" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>A type of the device like OCITV1, OCITV2, ACTROS.xxx. Maybe we can use an Enum here
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="TLCDevice" type="tlcg:TLCDevice">
+    <xsd:annotation>
+      <xsd:documentation>TrafficLightController model used in the API-Gateway.
+        It is a flat representation of the TLC device, optimized for UI or other
+        third party systems. Most of the attributes are optional, to enable this object to have a complex set of data,
+        but provide subsets of information using projection
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="TLCClientConfiguration">
+    <xsd:annotation>
+      <xsd:documentation>The configuration of the device drvier client, that communicates with the TLC device
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:attribute default="false" name="variableArchive" type="xsd:boolean">
+      <xsd:annotation>
+        <xsd:documentation>If the variables should be read from the TLC device.
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute default="false" name="detectorArchive" type="xsd:boolean">
+      <xsd:annotation>
+        <xsd:documentation>If the aggregated detector values should be read from the TLC device.
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute default="false" name="publicTransportArchive" type="xsd:boolean">
+      <xsd:annotation>
+        <xsd:documentation>If the public transport telegrams should be read from the TLC device.
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute default="false" name="signalStateArchive" type="xsd:boolean">
+      <xsd:annotation>
+        <xsd:documentation>If the signal state information should be read from the TLC device.
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="checkPeriodSeconds" type="xsd:int">
+      <xsd:annotation>
+        <xsd:documentation>Default period to check the controller for new data. Unit: seconds</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="detectorAggregationInterval" type="xsd:int">
+      <xsd:annotation>
+        <xsd:documentation>The interval, to aggregate the detector values. Unit: seconds
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="startRecordingSignalState" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>The start time-stamp for recording signal state data, when signalStateArchive=true
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="endRecordingSignalState" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>The end time-stamp for a recording of signal state data, when signalStateArchive=true
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="connectionTimeout" type="xsd:int">
+      <xsd:annotation>
+        <xsd:documentation>A general connection timeout. Unit: seconds</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="detectorValidDays" type="xsd:int">
+      <xsd:annotation>
+        <xsd:documentation>House-keeping information: How long to keep aggregated detector values. Unit:day
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="messagesValidDays" type="xsd:int">
+      <xsd:annotation>
+        <xsd:documentation>House-keeping information: How long to keep system messages. Unit:day</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="operationalStateValidDays" type="xsd:int">
+      <xsd:annotation>
+        <xsd:documentation>House-keeping information: How long to keep operational state values. Unit:day
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="publicTransportValidDays" type="xsd:int">
+      <xsd:annotation>
+        <xsd:documentation>House-keeping information: How long to keep public transport values. Unit:day
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute default="14" name="signalStateValidDays" type="xsd:int">
+      <xsd:annotation>
+        <xsd:documentation>House-keeping information: How long to keep signal state values. Unit:day</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute default="14" name="variableValidDays" type="xsd:int">
+      <xsd:annotation>
+        <xsd:documentation>House-keeping information: How long to keep variable data values. Unit:day
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="TLCClientConfiguration" type="tlcg:TLCClientConfiguration">
+    <xsd:annotation>
+      <xsd:documentation>The configuration of the device drvier client, that communicates with the TLC device
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="TLCStatus">
+    <xsd:annotation>
+      <xsd:documentation>The current operational hardware and software status of the TLC device.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="defectDetectors" type="tlcg:Detector">
+        <xsd:annotation>
+          <xsd:documentation>A list of defect detectors</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="defectSignalChambers" type="tlcg:SignalChamber">
+        <xsd:annotation>
+          <xsd:documentation>A list of defect signal chambers.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="operationalState" type="tlcg:OperationalState">
+        <xsd:annotation>
+          <xsd:documentation>A list of operational states. There can be multiple states, because one hardware can handle
+            more than one relative node. So there is an operational state for each relative node.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:string" use="required"/>
+    <xsd:attribute name="occurred" type="xsd:string"/>
+    <xsd:attribute name="received" type="xsd:string"/>
+    <xsd:attribute name="version" type="xsd:long" use="required"/>
+    <xsd:attribute name="timestamp" type="xsd:string" use="required"/>
+    <xsd:attribute name="doorOpen" type="xsd:boolean" use="required"/>
+    <xsd:attribute name="emergencyOff" type="xsd:boolean" use="required"/>
+    <xsd:attribute name="timeSource" type="tlcg:TimeSourceType" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Returns the timesource. The TLC device can run on different time modes like lokal, DCF77,
+          central, NTP ...
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="powerOk" type="xsd:boolean" use="required"/>
+    <xsd:attribute name="persistenceOk" type="xsd:boolean" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="TLCStatus" type="tlcg:TLCStatus">
+    <xsd:annotation>
+      <xsd:documentation>The current operational hardware and software status of the TLC device.</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="OperationalState">
+    <xsd:annotation>
+      <xsd:documentation>The operational state of a relative node. It contains several information about the current
+        state like running signal program, state, modification and interventions
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:RelativeNode">
+        <xsd:sequence>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="subNodeStates" type="tlcg:SubNodeState">
+            <xsd:annotation>
+              <xsd:documentation>Sub node states
+              </xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="modifications" type="tlcg:ModificationState">
+            <xsd:annotation>
+              <xsd:documentation>Traffic related modifications</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element maxOccurs="1" minOccurs="0" name="intervention" type="tlcg:InterventionState"/>
+        </xsd:sequence>
+        <xsd:attribute name="nodeState" type="xsd:int">
+          <xsd:annotation>
+            <xsd:documentation>The state of this relative node
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="stateText" type="xsd:string"/>
+        <xsd:attribute name="state" type="xsd:int" use="required"/>
+        <xsd:attribute name="communicationState" type="xsd:int" use="required">
+          <xsd:annotation>
+            <xsd:documentation>
+            </xsd:documentation>
+          </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="signalProgram" type="xsd:int"/>
+        <xsd:attribute name="failure" type="xsd:int">
+          <xsd:annotation>
+            <xsd:documentation/>
+          </xsd:annotation>
+        </xsd:attribute>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="OperationalState" type="tlcg:OperationalState">
+    <xsd:annotation>
+      <xsd:documentation>The operational state of a relative node. It contains several information about the current
+        state like running signal program, state, modification and interventions
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="TLCDeviceInfo">
+    <xsd:annotation>
+      <xsd:documentation>Specific device information. It belongs to revision, manufactorer, device designation.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:attribute name="designation" type="xsd:string"/>
+    <xsd:attribute name="manufacturer" type="xsd:string"/>
+    <xsd:attribute name="hardwareRevision" type="xsd:string"/>
+    <xsd:attribute name="softwareRevision" type="xsd:string"/>
+    <xsd:attribute name="ipAddress" type="xsd:string"/>
+    <xsd:attribute name="latitude" type="xsd:double"/>
+    <xsd:attribute name="longitude" type="xsd:double"/>
+    <xsd:attribute name="description" type="xsd:string"/>
+  </xsd:complexType>
+  <xsd:element name="TLCDeviceInfo" type="tlcg:TLCDeviceInfo">
+    <xsd:annotation>
+      <xsd:documentation>Specific device information. It belongs to revision, manufactorer, device designation.
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType abstract="true" name="DataObject">
+    <xsd:annotation>
+      <xsd:documentation>Represents one data entry. It refers to its TLC device. There are several timestamps and
+        indeces. They defined the timestamp, when the data occur on the device and on the other hand, when the data are
+        processed on the device driver. The same is for indeces, because it can happen, that indeces are resetted on a
+        device, when it was restarted. So, the devive driver has to handle its own index.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:attribute name="id" type="xsd:string"/>
+    <xsd:attribute name="controllerId" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Link to the TLCDevice</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="index" type="xsd:long" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Index from the device driver</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="indexDevice" type="xsd:long">
+      <xsd:annotation>
+        <xsd:documentation>Index on the TLC device
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="timestamp" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Timestmap on the TLC device</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="timestampDevice" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Timestamp when data was fetched by the DeviceDriver</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="SignalStateEntry">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:DataObject">
+        <xsd:sequence>
+          <xsd:element maxOccurs="unbounded" minOccurs="1" name="signalGroupStates" type="tlcg:SignalGroupState"/>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="detectorStates" type="tlcg:DetectorState"/>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="outputStates" type="tlcg:OutputState"/>
+          <xsd:element maxOccurs="unbounded" minOccurs="1" name="nodeStates" type="tlcg:SignalNodeState"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="SignalStateEntry" type="tlcg:SignalStateEntry"/>
+  <xsd:complexType name="SignalGroupState">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:SignalGroup">
+        <xsd:attribute name="signalState" type="tlcg:SignalGroupStateType" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="SignalGroupState" type="tlcg:SignalGroupState"/>
+  <xsd:complexType name="DetectorState">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:Detector">
+        <xsd:sequence>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="detectedEdges" type="tlcg:DetectedEdge"/>
+        </xsd:sequence>
+        <xsd:attribute name="state" type="tlcg:DetectorStateType" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="DetectorState" type="tlcg:DetectorState"/>
+  <xsd:complexType name="OutputState">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:Output">
+        <xsd:attribute name="state" type="tlcg:OutputStateType" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="OutputState" type="tlcg:OutputState"/>
+  <xsd:complexType name="SignalNodeState">
+    <xsd:sequence>
+      <xsd:element maxOccurs="1" minOccurs="1" name="signalTimingPlan" type="tlcg:SignalTimingPlan"/>
+    </xsd:sequence>
+    <xsd:attribute default="-1" name="cycleCounter" type="xsd:int"/>
+    <xsd:attribute default="-1" name="phase" type="xsd:int"/>
+    <xsd:attribute default="-1" name="phaseCounter" type="xsd:int"/>
+    <xsd:attribute default="-1" name="phaseTransition" type="xsd:int"/>
+  </xsd:complexType>
+  <xsd:element name="SignalNodeState" type="tlcg:SignalNodeState"/>
+  <xsd:complexType name="NamedElement">
+    <xsd:attribute name="id" type="xsd:int"/>
+    <xsd:attribute name="name" type="xsd:string"/>
+  </xsd:complexType>
+  <xsd:element name="NamedElement" type="tlcg:NamedElement"/>
+  <xsd:complexType name="SwitchObject">
+    <xsd:sequence>
+      <xsd:element maxOccurs="1" minOccurs="0" name="intervention" type="tlcg:InterventionState"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="modifications" type="tlcg:ModificationState"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="subNodeStates" type="tlcg:SubNodeState"/>
+      <xsd:element maxOccurs="1" minOccurs="0" name="nodeStates" type="tlcg:RelativeNodeState"/>
+    </xsd:sequence>
+    <xsd:attribute name="requestId" type="xsd:int"/>
+    <xsd:attribute name="nodeId" type="xsd:int"/>
+    <xsd:attribute name="signalProgram" type="xsd:int"/>
+    <xsd:attribute name="controllerId" type="xsd:string" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="SwitchObject" type="tlcg:SwitchObject"/>
+  <xsd:complexType name="Container">
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="controller" type="tlcg:TLCDevice"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="entry" type="tlcg:DataObject"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="Container" type="tlcg:Container"/>
+  <xsd:complexType name="SignalTimingPlan">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:NamedElement"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="SignalTimingPlan" type="tlcg:SignalTimingPlan"/>
+  <xsd:complexType name="SignalGroup">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:NamedElement"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="SignalGroup" type="tlcg:SignalGroup"/>
+  <xsd:complexType name="Detector">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:NamedElement"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Detector" type="tlcg:Detector"/>
+  <xsd:complexType name="Output">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:NamedElement"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Output" type="tlcg:Output"/>
+  <xsd:complexType name="SignalChamber">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:NamedElement"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="SignalChamber" type="tlcg:SignalChamber"/>
+  <xsd:complexType name="SubNode">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:NamedElement"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="SubNode" type="tlcg:SubNode"/>
+  <xsd:complexType name="SubNodeState">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:SubNode">
+        <xsd:attribute name="state" type="xsd:int"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="SubNodeState" type="tlcg:SubNodeState"/>
+  <xsd:complexType name="Intervention">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:NamedElement"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Intervention" type="tlcg:Intervention"/>
+  <xsd:complexType name="InterventionState">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:Intervention">
+        <xsd:attribute name="state" type="xsd:int" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="InterventionState" type="tlcg:InterventionState"/>
+  <xsd:complexType name="Modification">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:NamedElement"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Modification" type="tlcg:Modification"/>
+  <xsd:complexType name="ModificationState">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:Modification">
+        <xsd:attribute name="state" type="tlcg:ModificationStateType" use="required"/>
+        <xsd:attribute name="type" type="tlcg:ModificationType" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="ModificationState" type="tlcg:ModificationState"/>
+  <xsd:complexType name="RelativeNode">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:NamedElement">
+        <xsd:sequence>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="signalGroup" type="tlcg:SignalGroup"/>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="detector" type="tlcg:Detector"/>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="signalTimingPlan" type="tlcg:SignalTimingPlan"/>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="signalElement" type="tlcg:SignalElement"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="RelativeNode" type="tlcg:RelativeNode"/>
+  <xsd:complexType name="DetectedEdge">
+    <xsd:attribute name="timeOffsetInMilliSec" type="xsd:int" use="required"/>
+    <xsd:attribute name="edge" type="tlcg:DetectedEdgeType" use="required"/>
+    <xsd:attribute default="10" name="resolution" type="xsd:int"/>
+  </xsd:complexType>
+  <xsd:element name="DetectedEdge" type="tlcg:DetectedEdge"/>
+  <xsd:complexType name="Request">
+    <xsd:annotation>
+      <xsd:documentation>A default request object, to define a query.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="objectId" nillable="true" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>The object id filter. What kind of object defines the requestType.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="projection" nillable="true" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>A list of attributes, that are neccessary to be submitted. If this list is empty, all
+            values are submitted, if available, the given attributes are returned, as they are available in the model
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="sort" type="tlcg:SortEntry"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="filter" type="tlcg:FilterEntry"/>
+    </xsd:sequence>
+    <xsd:attribute name="startTimeRange" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>Start value for a time range query</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="endTimeRange" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>End value for a time range query</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="pageSize" type="xsd:long">
+      <xsd:annotation>
+        <xsd:documentation>Size of data entries per page</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="startOffset" type="xsd:long">
+      <xsd:annotation>
+        <xsd:documentation>The start offset is the number of entries to skip, when start getting the entries. Together
+          with the page size, paging can be handled
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="requestType" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Specifies, that kind of object ids are given, e.g. Device ids, Message ids
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="Request" type="tlcg:Request">
+    <xsd:annotation>
+      <xsd:documentation>A default request object, to define a query.</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="Response">
+    <xsd:annotation>
+      <xsd:documentation>A default response object, that is returned from the gateway.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="data" type="xsd:anyType">
+        <xsd:annotation>
+          <xsd:documentation>A container object, that hold the data</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="timestamp" type="xsd:long">
+      <xsd:annotation>
+        <xsd:documentation>The response timestamp in ms</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="entrySize" type="xsd:int">
+      <xsd:annotation>
+        <xsd:documentation>Number of entries in the container</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute default="false" name="error" type="xsd:boolean">
+      <xsd:annotation>
+        <xsd:documentation>True</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute default="0" name="errorCode" type="xsd:int">
+      <xsd:annotation>
+        <xsd:documentation>The error code for the response. Default is 0 = OK</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="errorMessage" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>An additional human readable message, about the error that occured</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="Response" type="tlcg:Response">
+    <xsd:annotation>
+      <xsd:documentation>A default response object, that is returned from the gateway.</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="RelativeNodeState">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:RelativeNode">
+        <xsd:attribute name="state" type="tlcg:NodeStateType"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="RelativeNodeState" type="tlcg:RelativeNodeState"/>
+  <xsd:complexType name="TLCConfiguration">
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="node" type="tlcg:RelativeNode"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="TLCConfiguration" type="tlcg:TLCConfiguration"/>
+  <xsd:complexType name="SignalElement">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:NamedElement"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="SignalElement" type="tlcg:SignalElement"/>
+  <xsd:complexType name="TLCGatewayAPI"/>
+  <xsd:element name="TLCGatewayAPI" type="tlcg:TLCGatewayAPI"/>
+  <xsd:complexType name="DeviceGroup">
+    <xsd:attribute name="id" type="xsd:string" use="required"/>
+    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="description" type="xsd:string"/>
+  </xsd:complexType>
+  <xsd:element name="DeviceGroup" type="tlcg:DeviceGroup"/>
+  <xsd:complexType name="SortEntry">
+    <xsd:annotation>
+      <xsd:documentation>Entry that defines a field (key) and the corresponding sort-type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:attribute name="key" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>The dort key attribute</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="type" type="tlcg:SortType" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="SortEntry" type="tlcg:SortEntry">
+    <xsd:annotation>
+      <xsd:documentation>Entry that defines a field (key) and the corresponding sort-type</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="FilterEntry">
+    <xsd:annotation>
+      <xsd:documentation>Entry that defines a filter field (key) and the corresponding filter values. If there multiple
+        values they have to be ORed
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="value" nillable="true" type="xsd:string"/>
+    </xsd:sequence>
+    <xsd:attribute name="key" type="xsd:string" use="required"/>
+  </xsd:complexType>
+  <xsd:element name="FilterEntry" type="tlcg:FilterEntry">
+    <xsd:annotation>
+      <xsd:documentation>Entry that defines a filter field (key) and the corresponding filter values. If there multiple
+        values they have to be ORed
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="DeviceManagerAPI"/>
+  <xsd:element name="DeviceManagerAPI" type="tlcg:DeviceManagerAPI"/>
+  <xsd:complexType name="DetectorReadingEntry">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:DataObject">
+        <xsd:sequence>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="states" type="tlcg:DetectorReadingState"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="DetectorReadingEntry" type="tlcg:DetectorReadingEntry"/>
+  <xsd:complexType name="DetectorReadingState">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:Detector">
+        <xsd:attribute name="occupancy" type="xsd:int"/>
+        <xsd:attribute name="vehiclesPerInterval" type="xsd:int"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="DetectorReadingState" type="tlcg:DetectorReadingState"/>
+  <xsd:complexType name="PublicTransportEntry">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:DataObject">
+        <xsd:attribute name="detectionPointID" type="xsd:int" use="required"/>
+        <xsd:attribute name="lineId" type="xsd:int" use="required"/>
+        <xsd:attribute name="routeId" type="xsd:int" use="required"/>
+        <xsd:attribute name="directionId" type="xsd:int" use="required"/>
+        <xsd:attribute name="priorityLevel" type="xsd:int" use="required"/>
+        <xsd:attribute name="vehicleLength" type="xsd:int" use="required"/>
+        <xsd:attribute name="vehicleDirection" type="xsd:int" use="required"/>
+        <xsd:attribute name="offsetToTimetableInSec" type="xsd:int" use="required"/>
+        <xsd:attribute name="prioritization" type="xsd:boolean" use="required"/>
+        <xsd:attribute name="nextPhase" type="xsd:int" use="required"/>
+        <xsd:attribute name="travelTime" type="xsd:int" use="required"/>
+        <xsd:attribute name="releaseStateStartTimeInSecToCycleCounter" type="xsd:int" use="required"/>
+        <xsd:attribute name="releaseStateEndTimeInSecToCycleCounter" type="xsd:int" use="required"/>
+        <xsd:attribute name="receptionTime" type="xsd:string"/>
+        <xsd:attribute name="nodeState" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="PublicTransportEntry" type="tlcg:PublicTransportEntry"/>
+  <xsd:complexType name="ParameterEntry">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:DataObject">
+        <xsd:sequence>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="nodeParameter" type="tlcg:ParameterState"/>
+          <xsd:element maxOccurs="unbounded" minOccurs="0" name="globalParameter" type="tlcg:ParameterState"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="ParameterEntry" type="tlcg:ParameterEntry"/>
+  <xsd:complexType name="ParameterState">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:NamedElement">
+        <xsd:sequence>
+          <xsd:element maxOccurs="1" minOccurs="0" name="node" type="tlcg:RelativeNode"/>
+        </xsd:sequence>
+        <xsd:attribute name="type" type="tlcg:ParameterValueType" use="required"/>
+        <xsd:attribute name="writable" type="xsd:boolean"/>
+        <xsd:attribute name="persistable" type="xsd:boolean" use="required"/>
+        <xsd:attribute name="value" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="ParameterState" type="tlcg:ParameterState"/>
+  <xsd:complexType name="StatusEntry">
+    <xsd:complexContent>
+      <xsd:extension base="tlcg:DataObject">
+        <xsd:sequence>
+          <xsd:element maxOccurs="1" minOccurs="0" name="deviceStatus" type="tlcg:TLCStatus"/>
+        </xsd:sequence>
+        <xsd:attribute name="messageId" type="xsd:long"/>
+        <xsd:attribute name="message" type="xsd:string"/>
+        <xsd:attribute name="deviceName" type="xsd:string"/>
+        <xsd:attribute name="deviceAlias" type="xsd:string"/>
+        <xsd:attribute name="status" type="tlcg:StatusType" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="StatusEntry" type="tlcg:StatusEntry"/>
+</xsd:schema>

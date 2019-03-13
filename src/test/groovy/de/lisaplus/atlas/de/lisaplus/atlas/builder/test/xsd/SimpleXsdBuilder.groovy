@@ -78,4 +78,27 @@ class SimpleXsdBuilder {
         assertTrue(new File(destFile).exists())
     }
 
+    @Test
+    void plantuml_4() {
+        def fileName = 'tlc.puml'
+        def destFile = "tmp/$fileName"
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.model = 'src/test/resources/xsd/ui-tlc.xsd'
+        doCodeGen.generators.add('plantuml')
+        doCodeGen.generator_parameters.add("destFileName=$fileName")
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
+
+    @Test
+    void simple2() {
+        def modelFile = new File('src/test/resources/xsd/ui-tlc.xsd')
+        assertTrue(modelFile.isFile())
+        def builder = new XSDBuilder()
+        def model = builder.buildModel(modelFile)
+        assertNotNull(model)
+    }
+
 }

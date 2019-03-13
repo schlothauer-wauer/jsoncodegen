@@ -37,6 +37,7 @@ class XSDBuilder implements IModelBuilder {
      */
     def createdTypes=[:] // typeName: TypeObj
     def restrictionTypes=[:] // typeName: PropertyType
+    def globalTypes // to avoid late additional parameter
 
     @Override
     Model buildModel(File modelFile) {
@@ -44,7 +45,8 @@ class XSDBuilder implements IModelBuilder {
         List<XmlObject> objectList = []
         objectList.add(object)
         SchemaTypeSystem sts = XmlBeans.compileXsd((XmlObject[])objectList.toArray(), XmlBeans.getBuiltinTypeSystem(), null);
-        def globalTypes = sts.globalTypes()
+        globalTypes = sts.globalTypes()
+
         Model model = new Model()
         // two interations needed because to replace pure restriction types they must be known
         collectPureRestrictionTypes(model,globalTypes)
@@ -189,9 +191,28 @@ class XSDBuilder implements IModelBuilder {
                         newProp.type = new UnsupportedType()
                         println "FOUND UNSUPPORTED TIME-TYPE"
                         break
+                    case 'NCName':
+                        newProp.type = new StringType()
+                        break
                     default:
                         if (restrictionTypes[propTypeName] != null) {
                             newProp.type = restrictionTypes[propTypeName]
+                        }
+                        else if (createdTypes[propTypeName] != null) {
+                            // type is currently in the model
+                            newProp.type = new RefType()
+                            def alreadyCreated = createdTypes[propTypeName]
+                            if (alreadyCreated instanceof DummyType) {
+                                ((DummyType)alreadyCreated).referencesToChange.add(newProp.type)
+                            }
+                            newProp.type.type = alreadyCreated
+                        }
+                        else if (globalTypes.find{ it.getName().localPart==propTypeName }) {
+                            newProp.type = new RefType()
+                            Type t = new DummyType()
+                            ((DummyType)t).referencesToChange.add(newProp.type)
+                            createdTypes[propTypeName] = t
+                            newProp.type.type = t
                         }
                         else {
                             newProp.type = new UnsupportedType()
@@ -253,6 +274,9 @@ class XSDBuilder implements IModelBuilder {
                 break
             case 'time':
                 t = new DateTimeType()
+                break
+            case 'NCName':
+                t = new StringType()
                 break
             default:
                 t = new UnsupportedType()

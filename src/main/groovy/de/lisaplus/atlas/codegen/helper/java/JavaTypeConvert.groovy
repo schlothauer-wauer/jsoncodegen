@@ -83,7 +83,8 @@ class JavaTypeConvert {
                 return ret
                 */
             case UnsupportedType.NAME:
-                return BaseType.UNSUPPORTED_TYPE+type
+                  return "Object /* FIXME unsupported type: ${type.originalType} */"
+//                return BaseType.UNSUPPORTED_TYPE+type
             case VoidType.NAME:
                 return 'void'
         default:
