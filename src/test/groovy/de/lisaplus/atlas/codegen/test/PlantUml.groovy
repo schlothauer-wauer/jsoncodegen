@@ -15,7 +15,7 @@ class PlantUml {
     void createUserModel() {
         def destFile = 'tmp/user.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/user.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/user.json']
         doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('destFileName=user.puml')
@@ -28,7 +28,7 @@ class PlantUml {
     void createIncidentModel() {
         def destFile = 'tmp/incident.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/incident.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/incident.json']
         doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('destFileName=incident.puml')
@@ -41,7 +41,7 @@ class PlantUml {
     void createIncidentModelAddTags() {
         def destFile = 'tmp/incident.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/incident.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/incident.json']
         doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('destFileName=incident.puml')
@@ -78,7 +78,7 @@ class PlantUml {
     void createIncidentModelRemoveTags() {
         def destFile = 'tmp/incident.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/incident.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/incident.json']
         doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('destFileName=incident.puml')
@@ -110,7 +110,7 @@ class PlantUml {
     void createIncidentModelRemoveAllTags() {
         def destFile = 'tmp/incident.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/incident.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/incident.json']
         doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('destFileName=incident.puml')
@@ -142,7 +142,7 @@ class PlantUml {
     void addMainTypeTags() {
         def destFile = 'tmp/incident_mainTypeTags.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/incident.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/incident.json']
         doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('destFileName=incident_mainTypeTags.puml')
@@ -182,7 +182,7 @@ class PlantUml {
     void addMainTypeTags_attrib() {
         def destFile = 'tmp/incident_mainTypeTags.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/incident.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/incident.json']
         doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('destFileName=incident_mainTypeTags.puml')
@@ -220,7 +220,7 @@ class PlantUml {
     void createLicenseModel() {
         def destFile = 'tmp/license.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/license.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/license.json']
         doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/plantuml.txt')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('destFileName=license.puml')
@@ -233,7 +233,7 @@ class PlantUml {
     void createUserModel_BuiltIn() {
         def destFile = 'tmp/userModel.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/user.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/user.json']
         doCodeGen.generators.add('plantuml')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -245,7 +245,7 @@ class PlantUml {
     void createJunctionModel_BuiltIn() {
         def destFile = 'tmp/junctionModel.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/junction2.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/junction2.json']
         doCodeGen.generators.add('plantuml')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -257,7 +257,7 @@ class PlantUml {
     void createFlorian_BuiltIn() {
         def destFile = 'tmp/device.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/Device.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/Device.json']
         doCodeGen.generators.add('plantuml')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -269,7 +269,7 @@ class PlantUml {
     void testHeavyReferenced() {
         def destFile = 'tmp/heavy_referenced.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/referenced_multi_types.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/referenced_multi_types.json']
         doCodeGen.generators.add('plantuml')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -282,7 +282,7 @@ class PlantUml {
     void testHeavyReferencedWithoutBaseTypes() {
         def destFile = 'tmp/heavy_referenced2.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/referenced_multi_types.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/referenced_multi_types.json']
         doCodeGen.generators.add('plantuml')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -296,7 +296,7 @@ class PlantUml {
     void createUserModel_Markdown() {
         def destFile = 'tmp/user_puml.md'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/test_schemas/ds/user.json'
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/user.json']
         doCodeGen.generators.add('plantuml')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -309,7 +309,7 @@ class PlantUml {
     static void test_v4_base(def outputFileBase) {
         def destFile = "tmp/${outputFileBase}.puml"
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = "src/test/resources/schemas/${outputFileBase}.json"
+        doCodeGen.models = ["src/test/resources/schemas/${outputFileBase}.json"]
         doCodeGen.generators.add('plantuml')
         doCodeGen.outputBaseDir = 'tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -339,4 +339,5 @@ class PlantUml {
         test_v4_base("ramwa.schema")
         test_v4_base("notify")
     }
+
 }

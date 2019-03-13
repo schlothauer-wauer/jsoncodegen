@@ -35,7 +35,7 @@ class DoCodeGen {
      * model file
      */
     @Parameter(names = [ '-m', '--model' ], description = "Path to JSON schema to parse", required = true)
-    String model
+    List<String> models=[]
 
     /**
      * Base directory for the output
@@ -155,27 +155,36 @@ class DoCodeGen {
     }
 
     void run() {
-        log.info("model=${model}")
+        log.info("model=${models}")
         log.info("outPutBase=${outputBaseDir}")
 
-        def modelFile = new File (model)
-        if (!modelFile.isFile()) {
-            log.error("path to model file doesn't point to a file: ${model}")
-            System.exit(1)
-        }
-        else {
-            log.info("use model file: ${model}")
-        }
+        models.each { model ->
+            def modelFile = model instanceof File ? model : new File (model)
+            def modelName = modelFile.getName()
+            if (!modelFile.isFile()) {
+                log.error("path to model file doesn't point to a file: ${model}")
+                System.exit(1)
+            }
+            else {
+                log.info("use model file: ${model}")
+            }
 
-        IModelBuilder builder = model.toLowerCase().endsWith('.json') ? new JsonSchemaBuilder() :
-                model.toLowerCase().endsWith('.xsd') ? new XSDBuilder() : null
-        if (builder==null) {
-            log.error("unknown file type, currently only jscon schema and xsd are supported: ${model}")
-            System.exit(1)
+            IModelBuilder builder = modelName.toLowerCase().endsWith('.json') ? new JsonSchemaBuilder() :
+                    modelName.toLowerCase().endsWith('.xsd') ? new XSDBuilder() : null
+            if (builder==null) {
+                log.error("unknown file type, currently only jscon schema and xsd are supported: ${model}")
+                System.exit(1)
+            }
+            Model tmpModel = builder.buildModel(modelFile)
+            printMainTypesIfNeeded(tmpModel,modelFile.getName())
+            adjustTagsForModel(tmpModel,modelFile.getName())
+            if (!dataModel) {
+                dataModel = tmpModel
+            }
+            else {
+                mergeIntoDataModel(dataModel,tmpModel)
+            }
         }
-        dataModel = builder.buildModel(modelFile)
-        printMainTypesIfNeeded(dataModel,modelFile.getName())
-        adjustTagsForModel(dataModel,modelFile.getName())
         prepareOutputBaseDir(outputBaseDir)
 
         // convert extra generator parameter to a map
@@ -201,6 +210,15 @@ class DoCodeGen {
                     // a build in generator
                     useBuiltInGenerator(pureGeneratorName,templateName,dataModel,extraParameters,outputBaseDir)
                 }
+            }
+        }
+    }
+
+    void mergeIntoDataModel(Model mainModel,Model newModel) {
+        newModel.types.each { type ->
+            if (!mainModel.types.find { existingType -> existingType.name==type.name &&
+                    existingType.schemaFileName==type.schemaFileName }) {
+                mainModel.types.add(type)
             }
         }
     }

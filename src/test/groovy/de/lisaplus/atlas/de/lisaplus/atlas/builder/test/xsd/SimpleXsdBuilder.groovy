@@ -41,7 +41,7 @@ class SimpleXsdBuilder {
         def fileName = 'plantuml_from_xsd1.puml'
         def destFile = "tmp/$fileName"
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/xsd/simpleTest.xsd'
+        doCodeGen.models = ['src/test/resources/xsd/simpleTest.xsd']
         doCodeGen.generators.add('plantuml')
         doCodeGen.generator_parameters.add("destFileName=$fileName")
         doCodeGen.outputBaseDir = 'tmp'
@@ -55,7 +55,7 @@ class SimpleXsdBuilder {
         def fileName = 'plantuml_from_xsd2.puml'
         def destFile = "tmp/$fileName"
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/xsd/complex/DSRC.xsd'
+        doCodeGen.models = ['src/test/resources/xsd/complex/DSRC.xsd']
         doCodeGen.generators.add('plantuml')
         doCodeGen.generator_parameters.add("destFileName=$fileName")
         doCodeGen.outputBaseDir = 'tmp'
@@ -69,7 +69,7 @@ class SimpleXsdBuilder {
         def fileName = 'plantuml_from_xsd3.puml'
         def destFile = "tmp/$fileName"
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/xsd/arrayTest.xsd'
+        doCodeGen.models = ['src/test/resources/xsd/arrayTest.xsd']
         doCodeGen.generators.add('plantuml')
         doCodeGen.generator_parameters.add("destFileName=$fileName")
         doCodeGen.outputBaseDir = 'tmp'
@@ -83,7 +83,7 @@ class SimpleXsdBuilder {
         def fileName = 'tlc.puml'
         def destFile = "tmp/$fileName"
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = 'src/test/resources/xsd/ui-tlc.xsd'
+        doCodeGen.models = ['src/test/resources/xsd/ui-tlc.xsd']
         doCodeGen.generators.add('plantuml')
         doCodeGen.generator_parameters.add("destFileName=$fileName")
         doCodeGen.outputBaseDir = 'tmp'
