@@ -51,7 +51,7 @@ class JavaTypeConvert {
             case StringType.NAME:
                 return type.isArray? 'java.util.List<String>' : 'String'
             case UUIDType.NAME:
-                return type.isArray? 'java.util.List<String>' : 'String'
+                return type.isArray? 'java.util.List<UUID>' : 'UUID'
             case BooleanType.NAME:
                 return type.isArray? 'java.util.List<Boolean>' : 'Boolean'
             case ByteType.NAME:
@@ -104,7 +104,7 @@ class JavaTypeConvert {
             case StringType.NAME:
                 return 'String'
             case UUIDType.NAME:
-                return 'String'
+                return 'UUID'
             case BooleanType.NAME:
                 return 'Boolean'
             case ByteType.NAME:
