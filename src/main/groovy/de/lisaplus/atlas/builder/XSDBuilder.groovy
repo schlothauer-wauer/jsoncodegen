@@ -11,6 +11,7 @@ import de.lisaplus.atlas.model.DateType
 import de.lisaplus.atlas.model.DummyType
 import de.lisaplus.atlas.model.InnerType
 import de.lisaplus.atlas.model.IntType
+import de.lisaplus.atlas.model.LongType
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.NumberType
 import de.lisaplus.atlas.model.Property
@@ -164,7 +165,7 @@ class XSDBuilder implements IModelBuilder {
                         newProp.type = new ByteType()
                         break
                     case 'long':
-                        newProp.type = new IntType()
+                        newProp.type = new LongType()
                         break
                     case 'int':
                         newProp.type = new IntType()
@@ -249,7 +250,7 @@ class XSDBuilder implements IModelBuilder {
                 t = new ByteType()
                 break
             case 'long':
-                t = new IntType()
+                t = new LongType()
                 break
             case 'int':
                 t = new IntType()

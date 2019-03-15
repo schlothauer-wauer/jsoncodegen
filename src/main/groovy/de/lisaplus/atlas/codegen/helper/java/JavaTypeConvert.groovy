@@ -46,6 +46,8 @@ class JavaTypeConvert {
         switch(type.name()) {
             case IntType.NAME:
                 return type.isArray? 'java.util.List<Integer>' : 'Integer'
+            case LongType.NAME:
+                return type.isArray? 'java.util.List<Long>' : 'Long'
             case NumberType.NAME:
                 return type.isArray? 'java.util.List<Double>' : 'Double'
             case StringType.NAME:
@@ -99,6 +101,8 @@ class JavaTypeConvert {
         switch(type.name()) {
             case IntType.NAME:
                 return 'Integer'
+            case LongType.NAME:
+                return 'Long'
             case NumberType.NAME:
                 return 'Double'
             case StringType.NAME:

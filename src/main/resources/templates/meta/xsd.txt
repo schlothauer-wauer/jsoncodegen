@@ -17,6 +17,8 @@ def typeConvert = { type ->
     switch(type.name()) {
         case de.lisaplus.atlas.model.IntType.NAME:
             return 'xsd:integer'
+        case de.lisaplus.atlas.model.LongType.NAME:
+            return 'xsd:long'
         case de.lisaplus.atlas.model.NumberType.NAME:
             return 'xsd:double'
         case de.lisaplus.atlas.model.StringType.NAME:

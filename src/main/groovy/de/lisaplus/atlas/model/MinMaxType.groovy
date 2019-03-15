@@ -17,6 +17,13 @@ class IntType extends MinMaxType {
     final static NAME='INT'
 }
 
+class LongType extends MinMaxType {
+    String name () {
+        return NAME
+    }
+    final static NAME='LONG'
+}
+
 class NumberType extends MinMaxType {
     String name () {
         return NAME
