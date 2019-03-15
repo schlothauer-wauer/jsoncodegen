@@ -18,7 +18,8 @@
           "format": "int64"
         },
         "byteAttrib": {
-          "type": "byte"
+          "type": "integer",
+          "format": "byte"
         }
       }
     }

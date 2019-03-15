@@ -146,12 +146,14 @@
                 ]
               },
               "byteTest": {
-                "type": "byte"
+                "type": "integer",
+                "format": "byte"
               },
               "byteArrayTest": {
                 "type": "array",
                 "items": {
-                    "type": "byte"
+                  "type": "integer",
+                  "format": "byte"
                 }
               }
             }

@@ -26,9 +26,9 @@ def typeConvert = { type ->
         case de.lisaplus.atlas.model.UUIDType.NAME:
             return 'Guid'
         case de.lisaplus.atlas.model.BooleanType.NAME:
-            return 'xsd:byte'
-        case de.lisaplus.atlas.model.ByteType.NAME:
             return 'xsd:boolean'
+        case de.lisaplus.atlas.model.ByteType.NAME:
+            return 'xsd:byte'
         case de.lisaplus.atlas.model.DateType.NAME:
             return 'xsd:date'
         case de.lisaplus.atlas.model.DateTimeType.NAME:

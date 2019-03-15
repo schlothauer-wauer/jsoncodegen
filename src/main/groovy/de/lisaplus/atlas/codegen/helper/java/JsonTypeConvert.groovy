@@ -25,7 +25,7 @@ class JsonTypeConvert {
             case BooleanType.NAME:
                 return 'boolean'
             case ByteType.NAME:
-                return 'byte'
+                return 'integer'
             case DateType.NAME:
                 return 'string'
             case DateTimeType.NAME:
@@ -49,7 +49,7 @@ class JsonTypeConvert {
             case IntType.NAME:
                 return 'integer'
             case LongType.NAME:
-                return 'integer'
+                return 'integer/int64'
             case NumberType.NAME:
                 return 'number'
             case StringType.NAME:
@@ -59,7 +59,7 @@ class JsonTypeConvert {
             case BooleanType.NAME:
                 return 'boolean'
             case ByteType.NAME:
-                return 'byte'
+                return 'integer/byte'
             case DateType.NAME:
                 return 'string/date'
             case DateTimeType.NAME:
@@ -81,6 +81,8 @@ class JsonTypeConvert {
                 return 'int32'
             case LongType.NAME:
                 return 'int64'
+            case ByteType.NAME:
+                return 'byte'
             case NumberType.NAME:
                 return 'double'
             case DateType.NAME:

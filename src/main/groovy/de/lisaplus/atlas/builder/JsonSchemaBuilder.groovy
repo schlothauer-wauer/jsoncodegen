@@ -512,14 +512,15 @@ class JsonSchemaBuilder implements IModelBuilder {
                 else if (propObjMap.format && propObjMap.format.toLowerCase()=="int32") {
                     return new IntType()
                 }
+                else if (propObjMap.format && propObjMap.format.toLowerCase()=="byte") {
+                    return new ByteType()
+                }
                 else
                     return new IntType()
             case 'number':
                 return new NumberType()
             case 'boolean':
                 return new BooleanType()
-            case 'byte':
-                return new ByteType()
             case 'object':
                 if (propObjMap.patternProperties) {
                     log.warn("unsupported 'patternProperties' entry found")

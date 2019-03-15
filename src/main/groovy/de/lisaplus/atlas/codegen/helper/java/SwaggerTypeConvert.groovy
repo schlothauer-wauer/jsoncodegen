@@ -25,7 +25,7 @@ class SwaggerTypeConvert {
             case BooleanType.NAME:
                 return 'boolean'
             case ByteType.NAME:
-                return 'number'
+                return 'integer'
             case DateType.NAME:
                 return 'string'
             case DateTimeType.NAME:
