@@ -73,6 +73,15 @@ abstract class BaseType {
                 copyI.exclusiveMin = type.exclusiveMin
                 copyI.exclusiveMax = type.exclusiveMax
                 return copyI
+            case LongType:
+                LongType copyLong = new LongType()
+                copyLong.isArray = type.isArray
+                // Assume immutable!
+                copyLong.min = type.min
+                copyLong.max = type.max
+                copyLong.exclusiveMin = type.exclusiveMin
+                copyLong.exclusiveMax = type.exclusiveMax
+                return copyLong
             case NumberType:
                 NumberType copyN = new NumberType()
                 copyN.isArray = type.isArray

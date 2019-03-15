@@ -14,6 +14,7 @@ import de.lisaplus.atlas.model.DummyType
 import de.lisaplus.atlas.model.ExternalType
 import de.lisaplus.atlas.model.InnerType
 import de.lisaplus.atlas.model.IntType
+import de.lisaplus.atlas.model.LongType
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.NumberType
 import de.lisaplus.atlas.model.Property
@@ -505,7 +506,14 @@ class JsonSchemaBuilder implements IModelBuilder {
                 else
                     return new StringType()
             case 'integer':
-                return new IntType()
+                if (propObjMap.format && propObjMap.format.toLowerCase()=="int64") {
+                    return new LongType()
+                }
+                else if (propObjMap.format && propObjMap.format.toLowerCase()=="int32") {
+                    return new IntType()
+                }
+                else
+                    return new IntType()
             case 'number':
                 return new NumberType()
             case 'boolean':

@@ -14,6 +14,8 @@ class DotnetTypeConvert {
         switch(type.name()) {
             case IntType.NAME:
                 return type.isArray? 'List<int>' : 'int'
+            case LongType.NAME:
+                return type.isArray? 'List<long>' : 'long'
             case NumberType.NAME:
                 return type.isArray? 'List<double>' : 'double'
             case StringType.NAME:
@@ -48,6 +50,8 @@ class DotnetTypeConvert {
         switch(type.name()) {
             case IntType.NAME:
                 return 'integer'
+            case LongType.NAME:
+                return 'long'
             case NumberType.NAME:
                 return 'number'
             case StringType.NAME:
@@ -76,6 +80,8 @@ class DotnetTypeConvert {
     static def format = { type ->
         switch(type.name()) {
             case IntType.NAME:
+                return 'int64'
+            case LongType.NAME:
                 return 'int64'
             case NumberType.NAME:
                 return 'double'

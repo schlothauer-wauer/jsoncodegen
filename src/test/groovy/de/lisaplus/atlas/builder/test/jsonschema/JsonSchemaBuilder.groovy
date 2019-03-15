@@ -3,6 +3,9 @@ package de.lisaplus.atlas.builder.test.jsonschema
 import de.lisaplus.atlas.builder.JsonSchemaBuilder
 import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
 import de.lisaplus.atlas.model.AggregationType
+import de.lisaplus.atlas.model.ByteType
+import de.lisaplus.atlas.model.IntType
+import de.lisaplus.atlas.model.LongType
 import org.junit.Test
 
 import static org.junit.Assert.assertEquals
@@ -306,6 +309,21 @@ class JsonSchemaBuilder {
             else {
                 assertEquals(0,type.version)
             }
+        }
+    }
+
+    @Test
+    void testExtraTypes() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/extra_types.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        assertNotNull(model)
+        model.types.find{ it.name=='ExtraType' }.each { type ->
+            assertTrue (type.properties.find { it.name=='intAttrib' }.type instanceof IntType)
+            assertTrue (type.properties.find { it.name=='intAttrib2' }.type instanceof IntType)
+            assertTrue (type.properties.find { it.name=='noIntAttrib' }.type instanceof LongType)
+            assertTrue (type.properties.find { it.name=='byteAttrib' }.type instanceof ByteType)
         }
     }
 

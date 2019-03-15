@@ -14,6 +14,8 @@ class JsonTypeConvert {
         switch(type.name()) {
             case IntType.NAME:
                 return 'integer'
+            case LongType.NAME:
+                return 'integer'
             case NumberType.NAME:
                 return 'number'
             case StringType.NAME:
@@ -46,6 +48,8 @@ class JsonTypeConvert {
         switch(type.name()) {
             case IntType.NAME:
                 return 'integer'
+            case LongType.NAME:
+                return 'integer'
             case NumberType.NAME:
                 return 'number'
             case StringType.NAME:
@@ -74,6 +78,8 @@ class JsonTypeConvert {
     static def format = { type ->
         switch(type.name()) {
             case IntType.NAME:
+                return 'int32'
+            case LongType.NAME:
                 return 'int64'
             case NumberType.NAME:
                 return 'double'

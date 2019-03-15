@@ -84,6 +84,7 @@ BaseType <|-- ComplexType
 MinMaxType <|-- DateType
 MinMaxType <|-- DateTimeType
 MinMaxType <|-- IntType
+MinMaxType <|-- LongType
 MinMaxType <|-- NumberType
 BaseType <|-- RefType
 BaseType <|-- StringType
