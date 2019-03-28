@@ -1,0 +1,3435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.schlothauer.de/OMTC/LStg_Versorgung" xmlns="http://www.schlothauer.de/OMTC/LStg_Versorgung" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<!--Schlothauer & Wauer-->
+	<!---->
+	<!--=============================================================================-->
+	<!--Lichtsignalsteuerung-Versorgung V1.0 OMTC-->
+	<!--VT-Basisversorgungsdaten für Lichtsignalanlagen              -->
+	<!--XML Schema nach W3C, Mai 2001                                               -->
+	<!--=============================================================================-->
+	<!-- -->
+	<!--- übernommen von  OCIT-I-Lichtsignalsteuerung-Versorgung V2.0 E Build 0030 der OTEC  -->
+	<!--== 2004-05-04, Barthel - Version   V1.0 E0001                                                                             -->
+	<!---->
+	<!--- Phasenrahmenplan: maxOcc-> unbounded   -->
+	<!--- Zusatzrahmen -> Typ 'OCITObjektHeader', Costraints angpasst-->
+	<!--- SgrUebergaenge in PÜ's ergänzt(optional), sind z.B. Bei GN/GE-Signalgruppen und VA-abhängigen Vor/Nachlauf erforderlich-->
+	<!--- in Signalplan VersatzzeitMatrix -> Versatzzeitenmatrix, ZwischenzeitMatrix -> Zwischenzeitenmatrix-->
+	<!--== 2004-05-04, Barthel - Version   V1.0 E0002  -->
+	<!---->
+	<!--- Phasenrahmenplaene -> Rahmenprogramme-->
+	<!--- Phasenfolge mit Phasen, umbenannt in Phasenübergangsmatrix-->
+	<!--- Püs Start/Zielphase: beide optional-->
+	<!--- Nocit in TOCITObjektheader gestrichen, Nocit in Lichtsignalsteuerung_Versorgung getsrichen -> dafür other in Lichtsignalsteuerung_Versorgung-->
+	<!--- Signalplan -> Signalprogramm + Änderungen(Vereifachung), Plan -> Programm-->
+	<!--- Verkehrsabhaengigkeit gestrichen, wird durch "other" bereits abgedeckt-->
+	<!--- Logikparameter hinzugefügt-->
+	<!--- Signalgruppe Ansteuerung+ Lampenüberwachung-->
+	<!--- Signalgeberansteuerung durch KanalNr ergänzt-->
+	<!--- ÖV-Meldestrecke -> ÖV-Meldepunkte-->
+	<!--== 2004-06-09, Barthel - Version   V1.0 E0003  -->
+	<!---->
+	<!--- Teiknotenliste neu-->
+	<!--- Oev neu mit Öv-Strecken-->
+	<!--- Steuergeraet neu-->
+	<!--- Signalprogamm: Typ neu-->
+	<!--- Schaltuhr: Änderung Teilknoten + Befehl-->
+	<!--- TimerListe neu-->
+	<!--- Element nurDoku in: Signalprogramm, Phasen, Phasenübergangsmatrix, Phasenübergang, Versatzzeitenmatrix, Zwischenzeitenmatrix-->
+	<!--- Pattern für Lampenüberwachung -> Kommentar-->
+	<!--- Überarbeitung Uhr-Constaints-->
+	<!--== 2005-06-27, Barthel - Version   V1.0 E0004-->
+	<!---->
+	<!--- Umbenennung: OevMeldepunktListe -> OeVMeldepunktListe-->
+	<!--- Umbenennung: Parmetersatz -> ParmeterSatz-->
+	<!--== 2005-07-06, Mueller - Version   V1.0 E0005-->
+	<!---->
+	<!--- OeV: Sgr von Meldepunkt -> Strecke-->
+	<!--- OeVMeldepunkt: Hardwaredetektor nur Referenz, andere Elemente gestrichen, werden vom Detektor geholt, RouteLinie in Kennung umbenannt, Kurs hinzugefügt -->
+	<!--- OevStrecke - Meldepunkt: Abstand, Signalgruppe, Anmeldeverzoegerung und Zwangsloeschzeit neu-->
+	<!--- OeVStreckenListe: MaxFahrzeuge neu-->
+	<!--== 2005-08-11, Barthel - Version   V1.0 E0006-->
+	<!---->
+	<!--- Kurs-Typ von Meldepunkt af integer-->
+	<!--- SZP-Typ: Oev, Alternativ optional -->
+	<!--- Schaltzeit in Signalprogramm vom Typ Schaltzeittype; Zeitpunkt 0=TU-->
+	<!--== 2005-08-29, Barthel -->
+	<!---->
+	<!--- Filter Kennung und Richtung von Hand zusätzlich im Meldepunkteintrag der Strecke -->
+	<!--- Rahmenbezug um PÜs ergänzt-->
+	<!--== 2005-09-27, Barthel -->
+	<!---->
+	<!--- TxZielphase für Phasenübergänge neu-->
+	<!--- DauerUebFb in Signalgruppe ergänzt-->
+	<!--- Schaltzeittype: Es kann alternativ ein Sgr-Befehl(Übergang) direkt angegeben werden.-->
+	<!--- Signalprogramm Typ OeV gelöscht-->
+	<!--- Uhr-Programmwunsch IV ergänzt-->
+	<!--== 2006-03-01, Barthel -->
+	<!---->
+	<!--- Signalprogramm: Referenz Rahmnenprogramm, LogikParameterSatz -> Bezeichnungstype-->
+	<!--- ProgrammwunschType: IV -> boolean-->
+	<!--- herauslösen von mehreren komplexen Typen (Lichtsignalsteuerung_VersorgungType, ... ) ohne Strukturänderung (war wegen AXIS notwendig)-->
+	<!--- Constaints in VersatzzeitenMatrix/Zeit entfernt-->
+	<!--== 2006-09-29, Barthel-->
+	<!---->
+	<!--- Signalgeber neu, SignalgeberListe in Signalgeber, Mastliste neu-->
+	<!--== 2006-11-07, Barthel-->
+	<!---->
+	<!--- PhasenUebergang/SgrUebergaenge verschoben-->
+	<!--== 2007-03-28, Barthel-->
+	<!---->
+	<!--- ..PUeElement/Schaltzeit/Befehl Typ -> OCITSignaluebergang-->
+	<!--- Tageplan/Befehl/Programmwunsch nur 1x (minOcc=maxOcc=1)-->
+	<!---->
+	<!--== 2007-11-07, Barthel-->
+	<!--- HardwareTkType als globaler Typ (keine Strukturänderung)-->
+	<!---->
+	<!--== 2008-03-31, Barthel-->
+	<!--- Byte in Logikparameter -> unsignedbyte (0..255) -->
+	<!---->
+	<!--== 2008-04-30, Barthel-->
+	<!--- Enumberation-Liste für Logikparameter ergänzt -->
+	<!---->
+	<!--== 2008-05-06, JM-->
+	<!---->
+	<!--- Mast-Referenz in DigEingang hinzugefügt-->
+	<!--- MaxFahrzeuge von OeVStreckenListe auf OeVStrecke verlegt-->
+	<!--== 2009-01-28, JM-->
+	<!---->
+	<!--- UnitId in Kopfdaten/Identifikation hinzugefügt-->
+	<!--== 2009-05-25, JM-->
+	<!---->
+	<!--- Schaltuhr: Befehl AusGbbNR im Befehlstyp hinzugefügt-->
+	<!--== 2009-07-18, JM-->
+	<!---->
+	<!--- LogicParameter: BefehlReferenztype Enumberrations: Rahmenprogramm->Rahmen, OeVStrecke neu -->
+	<!--== 2009-12-03, BB-->
+	<!---->
+	<!--- BemerkungenType: Strings mit der Länge 0 zulassen -->
+	<!--== 2009-12-03, BB-->
+	<!---->
+	<!--- Logikparameter Struktur: Typ (Kennung für Online-Versorgung), Facets(MinIncl, MaxIncl, FracDig) neu -->
+	<!--== 2010-01-18, BB-->
+	<!---->
+	<!--- ModifikationListe und Modifikationen in den Schaltuhrbefehlen hinzugefügt-->
+	<!--== 2012-06-20, JM-->
+	<!---->
+	<!--- Modifikationen in den Schaltuhrbefehlen Nr von 0.. -->
+	<!--== 2014-02-10, BB-->
+	<!---->
+	<!--- OeV-Zeitparameter, mehrere Saetze moeglich  Version   V1.1 -->
+	<!--== 2014-04-22, BB-->
+	<!---->
+	<!--- ParameterBlockType: Enumeration des Referenztyps erweitert: Teilknoten, Timer, Modifikation, TC, Grp, Sub, Prg, Sgr, Det und Tim hinzugefügt-->
+	<!--== 2015-02-25, JM-->
+	<!---->
+	<!--- Korrektur OeV-Zeitparameter-->
+	<!--== 2016-07-25, JM-->
+	<!---->
+	<!--=============================================================================-->
+	<xs:element name="Lichtsignalsteuerung_Versorgung" type="Lichtsignalsteuerung_VersorgungType">
+		<xs:annotation>
+			<xs:documentation>Root Element</xs:documentation>
+		</xs:annotation>
+		<xs:key name="Eindeutige_Signalgruppe_Bezeichnung">
+			<xs:selector xpath="SignalgruppeListe/Signalgruppe"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:unique name="Eindeutige_Signalgruppe_ObjNr">
+			<xs:selector xpath="SignalgruppeListe/Signalgruppe"/>
+			<xs:field xpath="ObjNr"/>
+		</xs:unique>
+		<xs:key name="Eindeutige_Ausgang_Bezeichnung">
+			<xs:selector xpath="UnueberwachterAusgangListe/Ausgang"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:unique name="Eindeutige_Ausgang_ObjNr">
+			<xs:selector xpath="UnueberwachterAusgangListe/Ausgang"/>
+			<xs:field xpath="ObjNr"/>
+		</xs:unique>
+		<xs:key name="Eindeutige_Digitaleingang_Bezeichnung">
+			<xs:selector xpath="DigEingangListe/DigEingang"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:unique name="Eindeutige_Digitaleingang_ObjNr">
+			<xs:selector xpath="DigEingangListe/DigEingang"/>
+			<xs:field xpath="ObjNr"/>
+		</xs:unique>
+		<xs:key name="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/TagesplanListe/StandardTagesplan|Schaltuhr/TagesplanListe/Tagesplan"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:unique name="Eindeutige_Tagesplan_ObjNr">
+			<xs:selector xpath="Schaltuhr/TagesplanListe/StandardTagesplan|Schaltuhr/TagesplanListe/Tagesplan"/>
+			<xs:field xpath="ObjNr"/>
+		</xs:unique>
+		<xs:key name="Eindeutige_Wochenplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/StandardWochenplan|Schaltuhr/WochenplanListe/Wochenplan"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:key name="Eindeutige_Zwischenzeitmatrix_Bezeichnung">
+			<xs:selector xpath="ZwischenzeitenmatrixListe/SicherheitsZwischenzeitenMatrix|ZwischenzeitmatrixListe/GeraeteZwischenzeitenmatrix"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:unique name="Eindeutige_Zwischenzeitmatrix_ObjNr">
+			<xs:selector xpath="ZwischenzeitenmatrixListe/SicherheitsZwischenzeitenMatrix|ZwischenzeitmatrixListe/GeraeteZwischenzeitenmatrix"/>
+			<xs:field xpath="ObjNr"/>
+		</xs:unique>
+		<xs:key name="Eindeutige_Versatzzeitmatrix_Bezeichnung">
+			<xs:selector xpath="VersatzzeitenmatrixListe/Versatzzeitmatrix"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:unique name="Eindeutige_Versatzzeitmatrix_Art_Und_ObjNr">
+			<xs:selector xpath="VersatzzeitenmatrixListe/Versatzzeitmatrix"/>
+			<xs:field xpath="ObjNr"/>
+			<xs:field xpath="Art"/>
+		</xs:unique>
+		<xs:key name="Eindeutige_Einschaltplan_Bezeichnung">
+			<xs:selector xpath="SignalprogrammListe/Einschaltprogramm"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:key name="Eindeutige_Ausschaltplan_Bezeichnung">
+			<xs:selector xpath="SignalplrogrammListe/Ausschaltprogramm"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:key name="Eindeutige_Signalplan_Bezeichnung">
+			<xs:selector xpath="SignalprogrammListe/Signalprogramm"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:unique name="Eindeutige_Einschaltprogramm_ObjNr">
+			<xs:selector xpath="SignalprogrammListe/Einschaltprogramm"/>
+			<xs:field xpath="ObjNr"/>
+		</xs:unique>
+		<xs:unique name="Eindeutige_Ausschaltprogramm_ObjNr">
+			<xs:selector xpath="SignalprogrammListe/Ausschaltprogramm"/>
+			<xs:field xpath="ObjNr"/>
+		</xs:unique>
+		<xs:unique name="Eindeutige_Festzzeitprogramm_ObjNr">
+			<xs:selector xpath="SignalprogrammListe/Signalprogramm"/>
+			<xs:field xpath="ObjNr"/>
+		</xs:unique>
+		<xs:key name="Eindeutige_Phasen_Bezeichnung">
+			<xs:selector xpath="PhasenListe/Phase"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:unique name="Eindeutige_Phasen_ObjNr">
+			<xs:selector xpath="PhasenListe/Phase"/>
+			<xs:field xpath="ObjNr"/>
+		</xs:unique>
+		<xs:key name="Eindeutige_Phasenuebergang_Bezeichnung">
+			<xs:selector xpath="PhasenuebergangListe/Phasenuebergang"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:unique name="Eindeutige_Phasenuebergang_ObjNr">
+			<xs:selector xpath="PhasenuebergangListe/Phasenuebergang"/>
+			<xs:field xpath="ObjNr"/>
+		</xs:unique>
+		<xs:key name="Eindeutige_Phasenuebergangsmatrix_Bezeichnung">
+			<xs:selector xpath="PhasenuebergangsmatrixListe/Phasenfolgeplan"/>
+			<xs:field xpath="Bezeichnung"/>
+		</xs:key>
+		<xs:unique name="Eindeutige_Phasenuebergangsmatrix_ObjNr">
+			<xs:selector xpath="PhasenuebergangsmatrixListe/Phasenfolgeplan"/>
+			<xs:field xpath="ObjNr"/>
+		</xs:unique>
+		<xs:keyref name="RaeumerSignalgruppeSM" refer="Eindeutige_Signalgruppe_Bezeichnung">
+			<xs:selector xpath="ZwischenzeitmatrixListe/SicherheitsZwischenzeitenmatrix/ZwiZt"/>
+			<xs:field xpath="Raeumer"/>
+		</xs:keyref>
+		<xs:keyref name="EinfahrerSignalgruppeSM" refer="Eindeutige_Signalgruppe_Bezeichnung">
+			<xs:selector xpath="ZwischenzeitmatrixListe/SicherheitsZwischenzeitenmatrix/ZwiZt"/>
+			<xs:field xpath="Einfahrer"/>
+		</xs:keyref>
+		<xs:keyref name="FestzeitplanPhasenuebergang_Referenz" refer="Eindeutige_Phasenuebergang_Bezeichnung">
+			<xs:selector xpath="SignalplanListe/Signalplan/PhasenuebergangsZeitpunkt"/>
+			<xs:field xpath="Phasenuebergang"/>
+		</xs:keyref>
+		<xs:keyref name="FestzeitplanSignalgruppe_Referenz" refer="Eindeutige_Signalgruppe_Bezeichnung">
+			<xs:selector xpath="SignalplanListe/Signalplan/SPZeile"/>
+			<xs:field xpath="Signalgruppe"/>
+		</xs:keyref>
+		<xs:keyref name="FestzeitplanZZMatrixReferenz" refer="Eindeutige_Zwischenzeitmatrix_Bezeichnung">
+			<xs:selector xpath="SignalplanListe/Signalplan"/>
+			<xs:field xpath="ZwischenzeitMatrix"/>
+		</xs:keyref>
+		<xs:keyref name="FestzeitplanVersatzmatrixReferenz" refer="Eindeutige_Versatzzeitmatrix_Bezeichnung">
+			<xs:selector xpath="VersatzzeitMatrix"/>
+			<xs:field xpath="Festzeit/SignalplanListe/Signalplan"/>
+		</xs:keyref>
+		<xs:keyref name="FestzeitplanAProgrammReferenz" refer="Eindeutige_Ausschaltplan_Bezeichnung">
+			<xs:selector xpath="SignalplanListe/Signalplan/SPKopfzeile"/>
+			<xs:field xpath="AProgramm"/>
+		</xs:keyref>
+		<xs:keyref name="FestzeitplanEProgrammReferenz" refer="Eindeutige_Einschaltplan_Bezeichnung">
+			<xs:selector xpath="SignalplanListe/Signalplan/SPKopfzeile"/>
+			<xs:field xpath="EProgramm"/>
+		</xs:keyref>
+		<xs:keyref name="Phaseneintrag_Signalgruppe_Referenz" refer="Eindeutige_Signalgruppe_Bezeichnung">
+			<xs:selector xpath="PhasenListe/Phase/PhasenElementeintrag"/>
+			<xs:field xpath="Signalgruppe"/>
+		</xs:keyref>
+		<xs:keyref name="PUe_Startphase_Referenz" refer="Eindeutige_Phasen_Bezeichnung">
+			<xs:selector xpath="PhasenuebergangListe/Phasenuebergang/Phasenzuordnung"/>
+			<xs:field xpath="Startphase"/>
+		</xs:keyref>
+		<xs:keyref name="PUe_Zielphase_Referenz" refer="Eindeutige_Phasen_Bezeichnung">
+			<xs:selector xpath="PhasenuebergangListe/Phasenuebergang/Phasenzuordnung"/>
+			<xs:field xpath="Zielphase"/>
+		</xs:keyref>
+		<xs:keyref name="PUeElement_Signalgruppe_Referenz" refer="Eindeutige_Signalgruppe_Bezeichnung">
+			<xs:selector xpath="PhasenuebergangListe/Phasenuebergang/Schaltinformation/PUeElement"/>
+			<xs:field xpath="Signalgruppe"/>
+		</xs:keyref>
+		<xs:keyref name="Sondertag_Tagesplan_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/SondertagListe/Sondertag"/>
+			<xs:field xpath="Tagesplan"/>
+		</xs:keyref>
+		<xs:keyref name="Sonderbereich_Wochenplan_Referenz" refer="Eindeutige_Wochenplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/SonderbereichListe/Sonderbereich"/>
+			<xs:field xpath="Wochenplan"/>
+		</xs:keyref>
+		<xs:keyref name="Tagesplan_Mo_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/Wochenplan"/>
+			<xs:field xpath="Tagesplan_Mo"/>
+		</xs:keyref>
+		<xs:keyref name="Tagesplan_Di_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/Wochenplan"/>
+			<xs:field xpath="Tagesplan_Di"/>
+		</xs:keyref>
+		<xs:keyref name="Tagesplan_Mi_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/Wochenplan"/>
+			<xs:field xpath="Tagesplan_Mi"/>
+		</xs:keyref>
+		<xs:keyref name="Tagesplan_Do_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/Wochenplan"/>
+			<xs:field xpath="Tagesplan_Do"/>
+		</xs:keyref>
+		<xs:keyref name="Tagesplan_Fr_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/Wochenplan"/>
+			<xs:field xpath="Tagesplan_Fr"/>
+		</xs:keyref>
+		<xs:keyref name="Tagesplan_Sa_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/Wochenplan"/>
+			<xs:field xpath="Tagesplan_Sa"/>
+		</xs:keyref>
+		<xs:keyref name="Tagesplan_So_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/Wochenplan"/>
+			<xs:field xpath="Tagesplan_So"/>
+		</xs:keyref>
+		<xs:keyref name="StdTagesplan_Mo_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/StandardWochenplan"/>
+			<xs:field xpath="Tagesplan_Mo"/>
+		</xs:keyref>
+		<xs:keyref name="StdTagesplan_Di_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/StandardWochenplan"/>
+			<xs:field xpath="Tagesplan_Di"/>
+		</xs:keyref>
+		<xs:keyref name="StdTagesplan_Mi_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/StandardWochenplan"/>
+			<xs:field xpath="Tagesplan_Mi"/>
+		</xs:keyref>
+		<xs:keyref name="StdTagesplan_Do_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/StandardWochenplan"/>
+			<xs:field xpath="Tagesplan_Do"/>
+		</xs:keyref>
+		<xs:keyref name="StdTagesplan_Fr_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/StandardWochenplan"/>
+			<xs:field xpath="Tagesplan_Fr"/>
+		</xs:keyref>
+		<xs:keyref name="StdTagesplan_Sa_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/StandardWochenplan"/>
+			<xs:field xpath="Tagesplan_Sa"/>
+		</xs:keyref>
+		<xs:keyref name="StdTagesplan_So_Referenz" refer="Eindeutige_Tagesplan_Bezeichnung">
+			<xs:selector xpath="Schaltuhr/WochenplanListe/StandardWochenplan"/>
+			<xs:field xpath="Tagesplan_So"/>
+		</xs:keyref>
+	</xs:element>
+	<!--Versorgung enthält alle Daten, die für eine Komplettversorgung benötigt werden. Innerhalb der Versorgung-->
+	<!--sind herstellerspezifische Erweiterungen möglich, deren Strukturbeschreibungen in eigenen Schema-Dateien-->
+	<!--aufgeführt werden. Die Versorgungsdaten sind hingegen in einer gemeinsamen Datei gespeichert.-->
+	<!---->
+	<!--=============================================================================-->
+	<!-- -->
+	<!--Einfache Datentypen-->
+	<!-- -->
+	<xs:simpleType name="langStringType">
+		<xs:annotation>
+			<xs:documentation>250 Zeichen String</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="250"/>
+			<xs:minLength value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="kurzStringType">
+		<xs:annotation>
+			<xs:documentation>10 Zeichen String</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="10"/>
+			<xs:minLength value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="bezeichnungType">
+		<xs:annotation>
+			<xs:documentation>String zur eindeutigen Bezeichnung (32 Zeichen lang)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="32"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Sekunde">
+		<xs:annotation>
+			<xs:documentation>Zeitangaben als Dezimalzahl mit max 2 Stellen nach dem Komma</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:decimal">
+			<xs:fractionDigits value="2"/>
+			<xs:minInclusive value="0"/>
+			<xs:maxInclusive value="655.34"/>
+			<xs:pattern value="[0-9]+(\.[0-9]{1,2})?"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Meter">
+		<xs:annotation>
+			<xs:documentation>Laengenangaben als Dezimalzahl mit max 2 Stellen nach dem Komma</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:decimal">
+			<xs:fractionDigits value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="OCITSignalbild">
+		<xs:annotation>
+			<xs:documentation>logisches OCIT Farbbild (AESignalBild) laut OCIT-O-Lstg_V1.0. Die üblicherweise verwendeten Signalbilder werden durch "lesbare" Strings dargestellt (rot, rotgelb, gelb, gruen, dunkel, rotgruen, gelbgruen, rotblk, gelbblk, gruenblk, wbl_rotgruen, wbl_rotgelb, wbl_gelbgruen, rotblk2hz, gelbblk2hz, gruenblk2hz, wbl2hz_rotgruen, wbl2hz_rotgelb, wbl2hz_gelbgruen oder ein Hexcode, z.B. 0A)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="(rot)|(rotgelb)|(gelb)|(gruen)|(dunkel)|(rotgruen)|(gelbgruen)|(rotblk)|(gelbblk)|(gruenblk)|(wbl_rotgruen)|(wbl_rotgelb)|(wbl_gelbgruen)|(rotblk2hz)|(gelbblk2hz)|(gruenblk2hz)|(wbl2hz_rotgruen)|(wbl2hz_rotgelb)|(wbl2hz_gelbgruen)|([0-9A-F][0-9A-F])"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="OCITSignaluebergang">
+		<xs:annotation>
+			<xs:documentation>Muster, um Signaluebergänge standardisiert (und lesbar) zu bezeichnen. Beispiel: "gruen_3sgelb_rot" oder "gruen_3sgruenblk_3sgelb_rot"". Das Muster wird durch die Regular-Expression rudimentär geprüft, ob das Muster inhaltlich zum Signaluebergang paßt, muß getrennt geprüft werden.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="((rot)|(rotgelb)|(gelb)|(gruen)|(dunkel)|(rotgruen)|(gelbgruen)|(rotblk)|(gelbblk)|(gruenblk)|(wbl_rotgruen)|(wbl_rotgelb)|(wbl_gelbgruen)|(rotblk2hz)|(gelbblk2hz)|(gruenblk2hz)|(wbl2hz_rotgruen)|(wbl2hz_rotgelb)|(wbl2hz_gelbgruen)|([0-9A-F][0-9A-F]))(_[0-9]+s((rot)|(rotgelb)|(gelb)|(gruen)|(dunkel)|(rotgruen)|(gelbgruen)|(rotblk)|(gelbblk)|(gruenblk)|(wbl_rotgruen)|(wbl_rotgelb)|(wbl_gelbgruen)|(rotblk2hz)|(gelbblk2hz)|(gruenblk2hz)|(wbl2hz_rotgruen)|(wbl2hz_rotgelb)|(wbl2hz_gelbgruen)|([0-9A-F][0-9A-F])))*_((rot)|(rotgelb)|(gelb)|(gruen)|(dunkel)|(rotgruen)|(gelbgruen)|(rotblk)|(gelbblk)|(gruenblk)|(wbl_rotgruen)|(wbl_rotgelb)|(wbl_gelbgruen)|(rotblk2hz)|(gelbblk2hz)|(gruenblk2hz)|(wbl2hz_rotgruen)|(wbl2hz_rotgelb)|(wbl2hz_gelbgruen)|([0-9A-F][0-9A-F]))"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="BauartType">
+		<xs:annotation>
+			<xs:documentation>Detektorbauart</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="32"/>
+			<xs:enumeration value="Taster"/>
+			<xs:enumeration value="Schleife"/>
+			<xs:enumeration value="Doppelschleife"/>
+			<xs:enumeration value="Kontakt"/>
+			<xs:enumeration value="Funk"/>
+			<xs:enumeration value="Infrarot"/>
+			<xs:enumeration value="Video"/>
+			<xs:enumeration value="Laser"/>
+			<xs:enumeration value="Radar"/>
+			<xs:enumeration value="Fehlereingang"/>
+			<xs:enumeration value="Sonstiges"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!--=============================================================================-->
+	<!---->
+	<!--=============================================================================-->
+	<!--Basistypen-->
+	<!---->
+	<xs:complexType name="OCITObjektHeader">
+		<xs:annotation>
+			<xs:documentation>Header für die Objekte</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Bezeichnung" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Kundenbezeichnung des Objektes, wie es an der Oberfläche dargestellt wird. Die Bezeichnung innerhalb einer Liste muß eindeutig sein. Bezeichnungen dürfen doppelt vorhanden sein, wenn sie sich auf Objekte unterschiedlichen Typs beziehen. Beispiel: Zwei Signalgruppen der Bezeichnung "A" sind verboten, ein Detektor und eine Signalgruppe mit dem Namen "A" sind hingegen erlaubt.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ObjNr" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>OCIT-Nummer, falls das Objekte eine OCIT-Nr hat,ansonsten logische Nummer. In Planungssituationen, in denen die Nummer noch nicht festgelegt wird, wird das Feld weggelassen. Die Nummer muß größer oder gleich 1 sein.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:unsignedInt">
+						<xs:minInclusive value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="LetzteAenderung" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Zeitpunkt der letzten Änderung. Wenn der Zeitpunkt nicht zur Verfügung steht wird das Feld weggelassen.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Bearbeiter" type="langStringType">
+							<xs:annotation>
+								<xs:documentation>Benutzer, der dieses Objekt als letztes bearbeitet hat.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Datum" type="xs:dateTime">
+							<xs:annotation>
+								<xs:documentation>Zeitstempel der letzten Änderung.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Bemerkungen" type="BemerkungenType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Bemerkungen zu diesem Objekt.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BemerkungenType">
+		<xs:annotation>
+			<xs:documentation>Bemerkungsliste </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Bemerkung" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						Bemerkungszeile. Die Zeile kann maximal 250
+						Zeichen lang sein, leere Zeilen sind erlaubt.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="0"/>
+						<xs:maxLength value="250"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<!--=============================================================================-->
+	<!---->
+	<!--=============================================================================-->
+	<!--Typen der Versorgungsobjekte-->
+	<!---->
+	<xs:complexType name="ZwischenzeitmatrixType">
+		<xs:annotation>
+			<xs:documentation>Zwischenzeitmatrix</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="NurDoku" type="xs:boolean" default="false" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Matrix ist kein Geräteelement, dient nur zur Dokumentation</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ZwiZt" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Eintrag in der Zwischenzeitmatrix</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Raeumer" type="bezeichnungType">
+									<xs:annotation>
+										<xs:documentation>Identifiziert die räumende Signalgruppe (= Zeile)</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Einfahrer" type="bezeichnungType">
+									<xs:annotation>
+										<xs:documentation>Identifiziert die einfahrende Signalgruppe (= Spalte)</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="T" type="Sekunde">
+									<xs:annotation>
+										<xs:documentation>Zeit in Sekunden.</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="VersatzzeitenmatrixType">
+		<xs:annotation>
+			<xs:documentation>Versatzzeitenmatrix</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="NurDoku" type="xs:boolean" default="false" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Matrix ist kein Geräteelement, dient nur zur Dokumentation</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Art">
+						<xs:annotation>
+							<xs:documentation>Versatzbedingungen zwischen
+- Beginn -&gt; Beginn
+- Ende -&gt; Ende
+- Beginn -&gt; Ende</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:token">
+								<xs:enumeration value="BeginnBeginn"/>
+								<xs:enumeration value="EndeEnde"/>
+								<xs:enumeration value="BeginnEnde"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="Zeit" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Eintrag in der Versatzzeitmatrix. Der Eintrag bezieht sich immer auf das Verhältnis der Abhängigen Signalgruppe zur Basissignalgruppe. Beispiel: Bei Art = "BeginnBeginn" SGrBasis = "Bas", SGrAbhaengig = "Abh", Wert = 12 und Operator = "gleich" muß der Beginn der Freigabezeit der Signalgruppe "Abh" 12 Sekunden hinter der Signalgruppe "Bas" liegen. </xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="SGrBasis" type="bezeichnungType">
+									<xs:annotation>
+										<xs:documentation>Basissignalgruppe</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="SGrAbhaengig" type="bezeichnungType">
+									<xs:annotation>
+										<xs:documentation>Abhängige Signalgruppe</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Wert" type="Sekunde">
+									<xs:annotation>
+										<xs:documentation>Versatzzeit in Sek mit max. 2 Nachkommastellen. Kann negativ sein!!!</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Operator">
+									<xs:annotation>
+										<xs:documentation>Operator: Bei gleich muß der Wert exakt eingehalten werden, bei kleinergleich muß der Wert kleiner oder gleich dem angegebenen Wert sein und bei groessergleich größer oder gleich dem angegebenen Wert. 
+(mathematische Sichtweise z.B. -6 kleinergleich -5)</xs:documentation>
+									</xs:annotation>
+									<xs:simpleType>
+										<xs:restriction base="bezeichnungType">
+											<xs:enumeration value="groessergleich"/>
+											<xs:enumeration value="kleinergleich"/>
+											<xs:enumeration value="gleich"/>
+										</xs:restriction>
+									</xs:simpleType>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SignalzustandType">
+		<xs:annotation>
+			<xs:documentation>Typ für Signalzustände</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Standard" type="OCITSignalbild">
+				<xs:annotation>
+					<xs:documentation>Farbbild des Standard-Signalsignalbilds.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Zusaetzlich" type="OCITSignalbild" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Zusätzliche erlaubte Farbbilder. Auch alle Übergangs-Signalbilder (z.B. grünblinken, gelb, rotgelb) sind hier eingetragen!!!</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UebergangListeType">
+		<xs:annotation>
+			<xs:documentation>Übergangsliste für Signalgruppe</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Uebergangselement" type="UebergangselementType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Teil eines Übergangs zwischen verschiedenen Sicherungszuständen. Die meisten Übergänge bestehen nur aus einem Element, manche Übergänge können jedoch aus mehreren Übergängen bestehen. Es ist möglich, das die einzelnen Elemente eines Übergangs einen unterschiedlichen verkehrstechnischen Zustand haben (Beispiel Österreich: Grünblinken frei, Gelb gesperrt) Es ist nicht erlaubt, innerhalb eines Übergangs den Verkehrstechnischen Zustand mehr als einmal zu wechseln (Grün/Gelb/Rot/Rotgelb/Dunkel ist beispielsweise kein gültiger Übergang, sondern muß als zwei Übergänge Grün/Gelb/Rot und Rot/Rotgelb/Dunkel codiert werden.)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="EAplanType">
+		<xs:annotation>
+			<xs:documentation>Ein/Aus-Signalplan</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="NurDoku" type="xs:boolean" default="false" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Programm ist kein Geräteelement, dient nur zur Dokumentation</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Dauer" type="Sekunde">
+						<xs:annotation>
+							<xs:documentation>"Umlaufzeit" des Ein- bzw. Ausschaltplans</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Signalsicherungszeitpunkt" type="Sekunde">
+						<xs:annotation>
+							<xs:documentation>Zeitpunkt, an dem die Signalsicherung ein- bzw. ausgeschaltet wird. Offen: Dokumentation, was vor bzw. nach dem Signalsicherungszeitpunkt anders ist.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="EAZeile" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Pro Signalgruppe wird hier eingetragen, wie der Signalbildverlauf ist.</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Signalgruppe" type="bezeichnungType">
+									<xs:annotation>
+										<xs:documentation>Bezeichnung der Signalgruppe, die geschaltet wird.</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="StartSignalbild" type="OCITSignalbild" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>Das StartSignalbild zeigt an, welches Signalbild vor Beginn des EA-Plans für die Signalgruppe gültig ist. Das Start-Signalbild wird vor allem zur Anzeige in einem Planungstool verwendet, da Einschaltpläne aus unterschiedlichen Auszuständen aktiviert werden. Bei Ausschaltplänen muß das Farbbild mit dem Farbbild übereinstimmen, das die SIgnalgruppe am  AP-Zeitpunkt innerhalb des Signalplans hat. </xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Schaltzeit" minOccurs="0" maxOccurs="unbounded">
+									<xs:annotation>
+										<xs:documentation>Schaltung der Signalgruppe in ein neues Farbbild</xs:documentation>
+									</xs:annotation>
+									<xs:complexType>
+										<xs:sequence>
+											<xs:element name="Schaltzeitpunkt" type="Sekunde">
+												<xs:annotation>
+													<xs:documentation>Zeitpunkt, an dem die Farbe beginnt (0.. Dauer)</xs:documentation>
+												</xs:annotation>
+											</xs:element>
+											<xs:element name="Signalbild" type="OCITSignalbild">
+												<xs:annotation>
+													<xs:documentation>OCIT-Signalbild
+Im E/A-Plan werden keine Übergänge benutzt. Die Schaltzeiten sind die Farbfolge bzw. Übergang+Zielfarbbild..  </xs:documentation>
+												</xs:annotation>
+											</xs:element>
+										</xs:sequence>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+						<xs:unique name="Kein_doppelter_Schaltzeitpunkt">
+							<xs:selector xpath="Schaltzeit"/>
+							<xs:field xpath="Schaltzeitpunkt"/>
+						</xs:unique>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SchaltzeitType">
+		<xs:annotation>
+			<xs:documentation>Schaltzeit für Signalgruppe</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:sequence>
+				<xs:element name="Schaltzeitpunkt" type="Sekunde">
+					<xs:annotation>
+						<xs:documentation>Zeitpunkt, an dem die Farbe beginnt (0..TU bzw. Dauer) </xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:choice>
+					<xs:element name="ZielSignalbild" type="OCITSignalbild">
+						<xs:annotation>
+							<xs:documentation>OCIT-Farbe des Ziel-Zustands. Übergangszustände dürfen hier nicht eingetragen werden. Wenn zwischen zwei Farben ein Zustandswechsel eintritt wird der Anwurf bzw. Abwurf automatisch dazwischengelegt. Welcher Übergang verwendet wird, ergibt sich aus dem Signalplan/Phasenübergang innerhalb dessen dieser Übergang geschaltet wird.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Befehl" type="OCITSignaluebergang">
+						<xs:annotation>
+							<xs:documentation>Alternativ zur OCIT-Farbe kann ein Befehl(Übergang) aus der zugehörigen Signalgruppe direkt angegeben werden.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:choice>
+			</xs:sequence>
+			<xs:element name="Anwurf" type="Sekunde">
+				<xs:annotation>
+					<xs:documentation>Alternativ zur OCIT-Farbe kann der Zeitpunkt des Anwurf-Befehls direkt angegeben werden. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Abwurf" type="Sekunde">
+				<xs:annotation>
+					<xs:documentation>Alternativ zur OCIT-Farbe kann der Zeitpunkt des Abwurf-Befehls direkt angegeben werden. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="ProgrammwunschType">
+		<xs:annotation>
+			<xs:documentation>Programmwunsch der Schaltuhr</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="VA" type="xs:boolean" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Verkehrsabhängigkeit Ein/Aus
+wenn nicht anggeben = unbeeinflusst</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OePNV" type="xs:boolean" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>ÖPNV-Beeinflussung Ein/Aus
+wenn nicht anggeben = unbeeinflusst</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IV" type="xs:boolean" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>IV-Beeinflussung Ein/Aus
+wenn nicht anggeben = unbeeinflusst</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Programm" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Signalplan, in den gewechselt werden soll. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="WochenplanType">
+		<xs:annotation>
+			<xs:documentation>Wochenplan für Schaltuhr</xs:documentation>
+		</xs:annotation>
+		<xs:sequence minOccurs="0">
+			<xs:element name="Bezeichnung" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Bezeichnung des Wochenplans zur Referenzierung</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Tagesplan_Mo" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Referenz auf den Tagesplan, der Montag verwendet wird</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Tagesplan_Di" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Referenz auf den Tagesplan, der Dienstag verwendet wird</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Tagesplan_Mi" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Referenz auf den Tagesplan, der Mittwoch verwendet wird</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Tagesplan_Do" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Referenz auf den Tagesplan, der Donnerstag verwendet wird</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Tagesplan_Fr" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Referenz auf den Tagesplan, der Freitag verwendet wird</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Tagesplan_Sa" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Referenz auf den Tagesplan, der Samstag verwendet wird</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Tagesplan_So" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Referenz auf den Tagesplan, der Sonntag verwendet wird</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BefehlType">
+		<xs:annotation>
+			<xs:documentation>Befehl für Tagesplan</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Uhrzeit" type="xs:time">
+				<xs:annotation>
+					<xs:documentation>(sekundengenaue) Uhrzeit, an dem der Befehl begonnen wird. Zu einem Zeitpunkt können mehrere Befehle begonnen werden, die gleiche Uhrzeit kann also mehrfach auftreten. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:choice>
+				<xs:annotation>
+					<xs:documentation>
+						mögliche Befehle
+					</xs:documentation>
+				</xs:annotation>
+				<xs:element name="Programmwunsch" type="ProgrammwunschType">
+					<xs:annotation>
+						<xs:documentation>
+							Programmwunsch (Wechsel in neuen Signalplan)
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="Ein">
+					<xs:annotation>
+						<xs:documentation>
+							Einschalten von Teilknoten oder komplett
+						</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="HardwareTk" type="bezeichnungType" minOccurs="0" maxOccurs="unbounded">
+								<xs:annotation>
+									<xs:documentation>
+										Teilknoten, die geschaltet
+										werden sollen
+									</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="AusGbb" type="AusType">
+					<xs:annotation>
+						<xs:documentation>
+							AusGbb von Teilknoten oder des gesamten
+							Gerätes
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="AllesAus" type="AusType">
+					<xs:annotation>
+						<xs:documentation>
+							AllesAus von Teilknoten oder des gesamten
+							Gerätes
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="AllesGbb" type="AusType">
+					<xs:annotation>
+						<xs:documentation>
+							AllesGbb von Teilknoten oder des gesamten
+							Gerätes
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="AusGbbNR" type="AusType">
+					<xs:annotation>
+						<xs:documentation>AusGbbNR von Teilknoten oder des gesamten Gerätes</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="Spezifisch">
+					<xs:annotation>
+						<xs:documentation>
+							Gerätespezifische Befehle.
+						</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Name" type="kurzStringType">
+								<xs:annotation>
+									<xs:documentation>
+										Name des Gerätespezifischen
+										Befehls. Welche Befehle möglich
+										sind, ist geräteabhängig
+									</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="Parameter" minOccurs="0" maxOccurs="unbounded">
+								<xs:annotation>
+									<xs:documentation>
+										weitere Parameter des Befehles
+										mit Name und Wert. Die Parameter
+										sind befehlsabhängig.
+									</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="Name" type="kurzStringType">
+											<xs:annotation>
+												<xs:documentation>
+													Name des Parameters
+												</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="Wert" type="xs:string">
+											<xs:annotation>
+												<xs:documentation>
+													Wert des Parameters
+												</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+			<xs:element name="Koordiniert" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Bei koordinierten Betrieb erfolgt entspechend des Rückrechenverfahrens eine Synchronisation des Programmzeitzählers.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Modifikationen" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Modifikation" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Nummer" type="xs:unsignedByte">
+										<xs:annotation>
+											<xs:documentation>Nummer der Modifikation</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Wert">
+										<xs:annotation>
+											<xs:documentation>Wert der Modifikation</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:string">
+												<xs:enumeration value="Kein"/>
+												<xs:enumeration value="Ein"/>
+												<xs:enumeration value="Aus"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ZeitbereichType">
+		<xs:annotation>
+			<xs:documentation>Zeitbereich mit Beginn - Ende</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Beginn" type="Sekunde">
+				<xs:annotation>
+					<xs:documentation>Beginn des Zeitbereiches in Sekunden</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Ende" type="Sekunde">
+				<xs:annotation>
+					<xs:documentation>Ende des Zeitbereiches in Sekunden</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="RahmenBereichType">
+		<xs:annotation>
+			<xs:documentation>Bereiche eines Rahmens(Vorberitung, Anforderung...)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Vorbereitung" type="ZeitbereichType" minOccurs="0"/>
+			<xs:element name="Anforderung" type="ZeitbereichType" minOccurs="0"/>
+			<xs:element name="Halten" type="ZeitbereichType" minOccurs="0"/>
+			<xs:element name="Bemessung" type="ZeitbereichType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!---->
+	<!--=============================================================================-->
+	<!---->
+	<xs:complexType name="Lichtsignalsteuerung_VersorgungType">
+		<xs:sequence>
+			<xs:element name="Datenformat">
+				<xs:annotation>
+					<xs:documentation>Version des Datenformates. Für die aktuelle Version: 3 Bei späteren Versionen muß maxIncl entsprechend heraufgesetzt werden.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minInclusive value="3"/>
+						<xs:maxInclusive value="6"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Kopfdaten" type="KopfdatenType">
+				<xs:annotation>
+					<xs:documentation>Information über den Knoten.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DigEingangListe" type="DigEingangListeType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Detektoren zur Erfassung des Individualverkehrs und sonstige digitale Eingänge</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LogikParameter" type="LogikParameterType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Parameter der verkersabhängigen Logik</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Steuergeraet" type="SteuergeraetType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Allgemeine Angaben zum Steuergerät</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OeV" type="OeVType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Liste von ÖV-Meldepunkten und ÖV-Strecken</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PhasenListe" type="PhasenListeType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Liste aller Phasen. Es sind nur verkehrstechnisch zulässige Phasen erlaubt, bei denen die Feindlichkeitsmatrix nicht verletzt wird.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PhasenuebergangListe" type="PhasenuebergangListeType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Liste aller Phasenübergänge</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PhasenuebergangsmatrixListe" type="PhasenuebergangsmatrixListeType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Liste der Phasenübergangsmatrizen</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="RahmenprogrammListe" type="RahmenprogrammListeType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Rahmenprogramme</xs:documentation>
+				</xs:annotation>
+				<xs:key name="Eindeutiger_Zusatzrahmen">
+					<xs:selector xpath="ZusatzrahmenListe/Zusatzrahmen"/>
+					<xs:field xpath="Bezeichnung"/>
+				</xs:key>
+			</xs:element>
+			<xs:element name="Schaltuhr" type="SchaltuhrType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Versorgungen zum Themenkomplex Schaltuhr bzw. Zeitautomatik der LSA. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Signalgeber" type="SignalgeberType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Liste aller Signalgeber und Maste der Außenanlage</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SignalgruppeListe" type="SignalgruppeListeType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Liste aller von der Signalsicherung überwachten Ausgänge.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SignalprogrammListe" type="SignalprogrammListeType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Liste der Signalprogramme
+(Festzeitpprogramme und VA-Programme)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Teilknoten" type="TeilknotenType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Liste der verkehrtechnischen und Hardwareteilknoten
+existiert nur 1 Teilknoten, kann die Liste entfallen</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="UnueberwachterAusgangListe" type="UnueberwachterAusgangListeType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Liste aller nicht von der Signalsicherung überwachten Ausgänge(z.B. Quittungssignale)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Unvertraeglichkeitsmatrix" type="UnvertraeglichkeitsmatrixType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Unverträglichkeitsmatrix</xs:documentation>
+				</xs:annotation>
+				<xs:unique name="Eindeutige_Unvertraeglichkeits_Element">
+					<xs:selector xpath="Feind"/>
+					<xs:field xpath="SGr1"/>
+					<xs:field xpath="SGr2"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="VersatzzeitenmatrixListe" type="VersatzzeitenmatrixListeType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Liste aller Versatz-Matrizen. Alle Versatzzeitmatrizen werden in der gleichen Liste gespeichert und nur nach der Art unterschieden.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ZwischenzeitenmatrixListe" type="ZwischenzeitenmatrixListeType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Liste aller Zwischenzeitmatrizen, mindestens der Sicherheitsmatrix </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ModifikationListe" type="ModifikationListeType" minOccurs="0"/>
+			<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Zusätzliche Daten
+Die Daten sind beliebig strukturiert, müssen aber mit einem Präfix in der XML-Datei gekennzeichnet sein. D.h., es muss ein XML-Namensraum definiert werden.</xs:documentation>
+				</xs:annotation>
+			</xs:any>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="RahmenType">
+		<xs:sequence>
+			<xs:element name="Erlaubt">
+				<xs:annotation>
+					<xs:documentation>Erlaubt/Nicht erlaubt</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:choice>
+						<xs:sequence>
+							<xs:element name="Beginn" type="Sekunde">
+								<xs:annotation>
+									<xs:documentation>Beginn des Zeitbereiches in Sekunden</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="Ende" type="Sekunde">
+								<xs:annotation>
+									<xs:documentation>Ende des Zeitbereiches in Sekunden</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+						<xs:element name="Dauerstatus">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="Ein"/>
+									<xs:enumeration value="Aus"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+				</xs:complexType>
+			</xs:element>
+			<xs:sequence>
+				<xs:choice>
+					<xs:element name="Phase" type="bezeichnungType">
+						<xs:annotation>
+							<xs:documentation>Zugeordnete Phase für diese Rahmenzeit</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Sgr" type="bezeichnungType">
+						<xs:annotation>
+							<xs:documentation>Zugeordnete Signalgruppe für diese Rahmernzeit</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Pue" type="bezeichnungType">
+						<xs:annotation>
+							<xs:documentation>Zugeordneter Phasenübergang </xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Zusatzrahmen" type="bezeichnungType">
+						<xs:annotation>
+							<xs:documentation>Zusatzrahmen für diese Rahmenzeit</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:choice>
+				<xs:element name="MaxDauer" type="Sekunde" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Maximaldauer, unabhängig von der Rahmenzeit</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="IV" type="RahmenBereichType" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Bereiche für IV</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="OeV" type="RahmenBereichType" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Bereiche für ÖV</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PUeElementType">
+		<xs:sequence>
+			<xs:element name="Signalgruppe" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Signalgruppe,deren Phasenübergang dargestellt wird. Die gleiche Sgr darf nur einmal pro PUeElementListe auftreten.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="StartSignalbild" type="OCITSignalbild" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>OCIT-Farbe des Start-Zustands, mit dem der Phasenübergang angezeigt wird. Der Eintrag darf nur gesetzt sein, wenn keine StartPhase angegeben ist! Wenn der Phasenübergang geschaltet wird, ohne dass die Signalgruppe diese Startfarbe anzeigt, ist das Verhalten undefiniert und herstellerabhängig. Wenn das StartSignalbild fehlt wird als Ersatz die Farbe der Signalgruppe in der StartPhase verwendet. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Schaltzeit" type="SchaltzeitType" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Schaltungen im Phasenübergang</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AusType">
+		<xs:sequence>
+			<xs:element name="HardwareTk" type="bezeichnungType" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Teilknoten, die geschaltet werden sollen</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DigEingangListeType">
+		<xs:sequence>
+			<xs:element name="DigEingang" type="DigEingangType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Siehe OCIT-Element DigEingang.
+Sowohl digital angeschlossene Detektoren als auch seriell angeschlossene Detektoren als auch gleichzeitig seriell UND digital angeschlossene Detektoren werden hier eingetragen. Die seriel erfassten Daten werden auf einem DigEingang oder mehreren DigEingängen abgebildet. Wenn eine Schleife auf mehrere Detektoren abgebildet wird, werden auch mehrere DigEingänge eingetragen.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DigEingangType">
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="IVDetektor" type="xs:boolean">
+						<xs:annotation>
+							<xs:documentation>Hier wird gekennzeichnet, ob der Detektor als IV-Detektor verwendet wird.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Bauart" type="BauartType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Bauart des Detektors. Wenn nicht gesetzt ist die Bauart unbekannt.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ErfassbareWerte" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Werte, die der Detektor erfassen soll. Wenn die Werte nicht gesetzt sind, sind die Werte auch nicht gefordert</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Rohdaten" type="xs:boolean">
+									<xs:annotation>
+										<xs:documentation>des Detektors im 10ms Zyklus</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Zaehlung" type="xs:boolean">
+									<xs:annotation>
+										<xs:documentation>Fz/h</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Belegung" type="xs:boolean">
+									<xs:annotation>
+										<xs:documentation>% pro Intervalldauer aus dem OCIT Auftrag</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Geschwindigkeit" type="xs:boolean"/>
+								<xs:element name="Fahrzeugart" type="xs:boolean"/>
+								<xs:element name="Fahrzeuglaenge" type="xs:boolean"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="ZugeordneteSignalgruppe" type="bezeichnungType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Wenn gesetzt, wird der Detektor einer oder mehreren Signalgruppen zugeordnet. Wenn nicht gesetzt, ist keine spezielle Zuordnung bekannt.</xs:documentation>
+						</xs:annotation>
+						<xs:unique name="Eindeutige_zugeordenete_Signalgruppe">
+							<xs:selector xpath="Signalgruppe"/>
+							<xs:field xpath="."/>
+						</xs:unique>
+					</xs:element>
+					<xs:element name="LoeschSekunde" type="Sekunde" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Löschsekunde Anforderung</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MinBelegungAnfo" type="Sekunde" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Mindestbelegung zur Erkennung einer Anforderung</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Prellzeit" type="Sekunde" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Alle Flanken, die in kleineren Abständen als die Prellzeit kommen, werden ignoriert</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Mast" minOccurs="0">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Bezeichnung" type="bezeichnungType">
+									<xs:annotation>
+										<xs:documentation>Referenz auf Mast</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="TimerListeType">
+		<xs:sequence>
+			<xs:element name="Timer" type="OCITObjektHeader" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="OeVMeldepunktListeType">
+		<xs:sequence>
+			<xs:element name="OeVMeldepunkt" type="OeVMeldepunktType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="OeVStreckeType">
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="Signalgruppe" type="bezeichnungType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								zugeordnete Signalgruppe
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Meldepunkt" maxOccurs="unbounded">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="OeVMeldepunkt" type="bezeichnungType">
+									<xs:annotation>
+										<xs:documentation>
+											Referenz zum ÖV-Meldepunkt
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Funktion">
+									<xs:annotation>
+										<xs:documentation>
+											Funktion des Meldepunktes
+										</xs:documentation>
+									</xs:annotation>
+									<xs:simpleType>
+										<xs:restriction base="xs:NMTOKEN">
+											<xs:enumeration value="Vor"/>
+											<xs:enumeration value="Haupt"/>
+											<xs:enumeration value="Ab"/>
+											<xs:enumeration value="Tuer"/>
+											<xs:enumeration value="Schluessel"/>
+											<xs:enumeration value="sonstige"/>
+										</xs:restriction>
+									</xs:simpleType>
+								</xs:element>
+								<xs:element name="Fahrzeit" type="Sekunde" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>
+											theoretische Fahrzeit bis
+											zur Abmeldung
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Abstand" type="Meter" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>
+											Abstand zur HL in m
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Zwangsloeschzeit" type="Sekunde" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>
+											Zwangslöschzeit in Sekunden
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Anmeldeverzoegerung" type="Sekunde" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>
+											Anmeldeverzögerung in
+											Sekunden
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="Kennung" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								Linie/Route/Kurs, die der Strecke
+								zugeordnet sind.
+							</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Linie" type="xs:integer">
+									<xs:annotation>
+										<xs:documentation>
+											Liniennummer laut
+											Funktelegramm
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Route" type="xs:integer" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>
+											Routennummer laut
+											Funktelegramm
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Kurs" type="xs:integer" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>
+											Kursnummer laut
+											Funktelegramm
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="RichtungHand" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Richtung Hand des ÖV-Telegramms, die der
+								Strecke zugeordnet ist
+							</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="bezeichnungType">
+								<xs:enumeration value="links"/>
+								<xs:enumeration value="gerade"/>
+								<xs:enumeration value="rechts"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="MaxFahrzeuge" default="4" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Max. Anzahl von verwalteten Fahrzeugen
+								Defaultwert ist 4
+							</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:positiveInteger">
+								<xs:minInclusive value="1"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PhasenListeType">
+		<xs:sequence>
+			<xs:element name="Phase" type="PhaseType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Es sind nur verkehrstechnisch zulässige Phasen erlaubt, bei denen die Feindlichkeitsmatrix nicht verletzt wird. </xs:documentation>
+				</xs:annotation>
+				<xs:unique name="Kein_doppelter_Phasenelementeintrag">
+					<xs:selector xpath="PhasenElementeintrag"/>
+					<xs:field xpath="Signalgruppe"/>
+				</xs:unique>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PhasenuebergangListeType">
+		<xs:sequence>
+			<xs:element name="Phasenuebergang" type="PhasenuebergangType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Phasenübergang. Es ist nicht notwendig, dass ein Phasenübergang eine Start- und Zielphase besitzt, falls dies im verkehrstechnischen Verfahren nicht gefordert ist. Es sind zusätzlich Phasenübergänge möglich, die erst im Feldgerät automatisch berechnet werden.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PhasenuebergangsmatrixListeType">
+		<xs:sequence>
+			<xs:element name="Phasenuebergangsmatrix" type="PhasenuebergangsmatrixType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>In der Phasenübergangsmatrix werden die erlaubten Phasenübergänge aufgeführt.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SondertagListeType">
+		<xs:sequence>
+			<xs:element name="Sondertag" type="SondertagType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SonderbereichListeType">
+		<xs:sequence>
+			<xs:element name="Sonderbereich" type="SonderbereichType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="OeVMeldepunktType">
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="MpNummer" type="xs:unsignedInt">
+						<xs:annotation>
+							<xs:documentation>Meldepunktnummer</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="Hardwaredetektor" type="bezeichnungType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>wenn Aktivierung durch DigEingang</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:sequence>
+							<xs:element name="Kennung" minOccurs="0" maxOccurs="unbounded">
+								<xs:annotation>
+									<xs:documentation>Linie/Route/Kurs, die dem Meldepunkt zugeordnet sind. </xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="Linie" type="xs:integer">
+											<xs:annotation>
+												<xs:documentation>Liniennummer laut Funktelegramm </xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="Route" type="xs:integer" minOccurs="0">
+											<xs:annotation>
+												<xs:documentation>Routennummer laut Funktelegramm </xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="Kurs" type="xs:integer" minOccurs="0">
+											<xs:annotation>
+												<xs:documentation>Kursnummer laut Funktelegramm </xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="RichtungHand" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>Richtung Hand des ÖV-Telegramms, die dem Meldepunkt zugeordnet ist</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="bezeichnungType">
+										<xs:enumeration value="links"/>
+										<xs:enumeration value="gerade"/>
+										<xs:enumeration value="rechts"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+						</xs:sequence>
+					</xs:choice>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PhaseType">
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="NurDoku" type="xs:boolean" default="false" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Phase ist kein Geräteelement, dient nur zur Dokumentation</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Einschaltphase" type="xs:boolean" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>wenn nicht angegeben keine Einschaltphase</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Typ" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>wenn nicht vorhanden alle Eigenschaften= true</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="VA" type="xs:boolean" default="true">
+									<xs:annotation>
+										<xs:documentation>Phase für VA-Steuerung</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Hand" type="xs:boolean" default="true">
+									<xs:annotation>
+										<xs:documentation>Phase für Handsteuerung</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="PhasenElementeintrag" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Signalbilder der Signalgruppen. Es ist nicht notwendig, das alle Signalgruppen aufgeführt sind. Signalgruppen, die hier nicht aufgeführt sind, werden von der Phase nicht erfaßt.</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Signalgruppe" type="bezeichnungType">
+									<xs:annotation>
+										<xs:documentation>Signalgruppe, die zur Phase gehört. Signalgruppen, die in der Phase undefiniert sind, werden hier nicht aufgeführt..</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Signalbild" type="OCITSignalbild">
+									<xs:annotation>
+										<xs:documentation>Farbbild, welches die Signbalgruppe annimmt. </xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PhasenuebergangType">
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="NurDoku" type="xs:boolean" default="false" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Übergang ist kein Geräteelement, dient nur zur Dokumentation</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Startphase" type="bezeichnungType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Startphase, aus der der Phasenübergang heraus startet.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Zielphase" type="bezeichnungType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Zielphase, in die der Übergang wechselt. Die Zielphase muß kompatibel zu den Schaltinformationen und der Startphase sein. Es ist nicht zulässig, das Signalgruppe "S1" in Rot wechselt und in der Zielphase "Gruen" eingetragen ist.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="TxZielphase" type="Sekunde" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Wenn die Zielphase vor Ende des PÜs gesetzt werden soll, kann hier eine zeit eingetragen werden</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SgrUebergaenge" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Diese Übergänge werden nur benötigt, wenn die Standardübergänge nicht ausreichen oder überschrieben werden sollen. Achtung: Die Übergänge beziehen sich nur auf den PÜ selbst und haben die höchste Priorität. Sie überschreiben auch Übergänge, die im Signalplan schon überschrieben wurden.</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Signalgruppe" type="bezeichnungType">
+									<xs:annotation>
+										<xs:documentation>Verweis auf die Signalgruppe, deren Übergang umdefiniert wird.</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Uebergang" type="OCITSignaluebergang" minOccurs="0" maxOccurs="unbounded">
+									<xs:annotation>
+										<xs:documentation>nur Angabe, wenn nicht Standard-An/Abwurfübergang. Diese Übergänge werden mit höherer Priorität verwendet als die Standard-Übergänge, falls die Farbfolge überschrieben wird. Das Start- und Zielfarbbild kann dem Übergang entnommen werden. Es ist pro Signalgruppe und Start/Zielfarbild-Kombination nur ein Übergang erlaubt.</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:choice>
+						<xs:element name="Schaltinformation">
+							<xs:annotation>
+								<xs:documentation>Schaltbefehle des Phasenüberganges</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Dauer" type="Sekunde">
+										<xs:annotation>
+											<xs:documentation>Dauer des Phasenübergangs. Die Dauer muß größer oder gleich der Schaltzeit des letzten PUeElementes sein. Es ist nicht notwendig, das zum Zeitpunkt der Dauer bereits alle Übergänge abgeschlossen sind!</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="PUeElement" type="PUeElementType" minOccurs="0" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>Einzelner Schaltbefehe des Phasenübergangs. Welche Übergänge für den Wechsel von einem Zielfarbbild in das nächste Zielfarbbild verwendet werden, wird im Signalprogramm festgelegt, innerhalb dessen der Phasenübergang verwendet wird. Der Übergang kann in Sonderfällen auch im Phasenübergang selbst überschrieben werden.</xs:documentation>
+										</xs:annotation>
+										<xs:unique name="Kein_doppelter_Schaltpritpunkt_in_PUeElement">
+											<xs:selector xpath="Schaltzeit"/>
+											<xs:field xpath="Schaltzeitpunkt"/>
+										</xs:unique>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+							<xs:unique name="Keine_doppelte_Signalgruppe_in_PUe">
+								<xs:selector xpath="PUeElement"/>
+								<xs:field xpath="Signalgruppe"/>
+							</xs:unique>
+						</xs:element>
+						<xs:element name="Bildung" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Bildung wird gesetzt, wenn der Phasenübergang vom Feldgeraet (bzw der VA auf dem Feldgeraet) dynamisch gebildet wird. Bildung gibt die Kritrien an, nach dem der PÜ automatisch gebildet wird.</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="bezeichnungType">
+									<xs:enumeration value="ZZMindestgruen"/>
+									<xs:enumeration value="ZZOhneMindestgruen"/>
+									<xs:enumeration value="VASpezifisch"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PhasenuebergangsmatrixType">
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="NurDoku" type="xs:boolean" default="false" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Matrix ist kein Geräteelement, dient nur zur Dokumentation</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Uebergang" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Erlaubter Übergang von einer Phase zur nächsten</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="VonPhase" type="bezeichnungType">
+									<xs:annotation>
+										<xs:documentation>Referenz zu einer Phase</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="NachPhase" type="bezeichnungType">
+									<xs:annotation>
+										<xs:documentation>Referenz zu einer Phase</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SondertagType">
+		<xs:sequence>
+			<xs:element name="Name" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Name des Feier- bzw. Sondertags.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:choice>
+				<xs:element name="DatumOhneJahr" type="xs:gMonthDay">
+					<xs:annotation>
+						<xs:documentation>festes Datum des Tages (ohne Jahresangabe)</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="OffsetZuOstersonntag" type="xs:int">
+					<xs:annotation>
+						<xs:documentation>Offset zum (gregorianischen) Ostersonntag in Tagen. 0 = Ostersonntag. </xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+			<xs:element name="GueltigkeitsJahr" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Jahr, in dem der Eintrag gültig ist. Wenn der Wert fehlt, ist der Eintrag immer gültig.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minInclusive value="2001"/>
+						<xs:maxInclusive value="2099"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Tagesplan" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Kurzbezeichnung des Tagesplans, der an diesem Tag geschaltet werden soll.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Prioritaet">
+				<xs:annotation>
+					<xs:documentation>Prioritaet der Verwendung. Größere Zahlen haben eine höhere Priorität. 1=Normale Feiertage, 2=Normale Sondertage, 3..9=Hochpriore Sondertage (zur Zeit nicht von jedem Hersteller unterstützt) - Zwei Tage gleicher Priorität mit unterschiedlichem Tagesplan, die auf dasselbe Datum fallen führen zu einer Ablehnung der Versorgung. Wenn ein Tag in einem Sonderbereich gleicher Priorität liegt, wird dies ebenfalls zurückgewiesen.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minInclusive value="1"/>
+						<xs:maxInclusive value="9"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SonderbereichType">
+		<xs:sequence>
+			<xs:element name="Name" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Name des Zeitbereiches</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="BeginnOhneJahr" type="xs:gMonthDay">
+				<xs:annotation>
+					<xs:documentation>Beginn des Zeitbereiches</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="EndeOhneJahr" type="xs:gMonthDay">
+				<xs:annotation>
+					<xs:documentation>Ende der Zeitbereiches</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GueltigkeitsJahr" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Jahr, in dem der Zeitbereich gültig ist. Wenn der Wert fehlt, ist der Bereich jedes Jahr gültig.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minInclusive value="2001"/>
+						<xs:maxInclusive value="2099"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Wochenplan" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Kurzbezeichnung des Wochenplans, der zum Einsatz kommt.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Prioritaet">
+				<xs:annotation>
+					<xs:documentation>Prioritaet der Verwendung. 0=normaler Sonderbereich 1..9=höherpriore Sonderbereiche (zur Zeit nicht von jedem Hersteller unterstützt) Zwei Zeitbereiche, die sich überschneiden und auf einen unterschiedlichen Wochenplan verweisen, sind nicht zulässig. Ein Zeitbereich, der die gleiche Priorität wie ein Sondertag hat und der sich mit dem Sondertag überschneidet ist nicht zugelassen.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="9"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UebergangselementType">
+		<xs:sequence>
+			<xs:element name="Signalbild" type="OCITSignalbild">
+				<xs:annotation>
+					<xs:documentation>Signalbild, den das Element im Übergang hat.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Zeitdauer" type="Sekunde">
+				<xs:annotation>
+					<xs:documentation>Dauer in Sekunden, den das Element im Übergang hat.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="VersatzzeitenmatrixListeType">
+		<xs:sequence>
+			<xs:element name="Versatzzeitenmatrix" type="VersatzzeitenmatrixType" maxOccurs="unbounded">
+				<xs:unique name="Eindeutiges_Versatzzeit_Element">
+					<xs:selector xpath="Zeit"/>
+					<xs:field xpath="SGrBasis"/>
+					<xs:field xpath="SGrAbhaengig"/>
+				</xs:unique>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SignalgeberType">
+		<xs:sequence>
+			<xs:element name="Signalgeberliste" type="SignalgeberlisteType"/>
+			<xs:element name="Mastliste" type="MastlisteType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Liste aller Maste</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Bemerkungen" type="BemerkungenType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Bemerkungen zu dieser Liste, die nicht einem Objekt selbst zugeordnet sind.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SignalgeberlisteType">
+		<xs:sequence>
+			<xs:element name="Signalgeber" type="SignalgeberItemType" maxOccurs="unbounded">
+				<xs:unique name="Eindeutige_Signalgeber_KammerNr">
+					<xs:selector xpath="Kammer"/>
+					<xs:field xpath="Nr"/>
+				</xs:unique>
+				<xs:unique name="Eindeutige_Signalgeber_Kammerbezeichnung">
+					<xs:selector xpath="Kammer"/>
+					<xs:field xpath="Bezeichnung"/>
+				</xs:unique>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="MastlisteType">
+		<xs:sequence>
+			<xs:element name="Mast" type="MastType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SignalgeberItemType">
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:choice>
+						<xs:annotation>
+							<xs:documentation>Im Normalfall ist ein Signalgeber genau einer Signalgruppe zugeordnet. In diesem Fall wird lediglich SgBezeichnung gesetzt. In Sonderfällen können die einzelnen Kammern des Signalgebers von unterschiedlichen Signalgruppen und/oder unüberwachten Ausgängen zugeordnet sein. In diesem Fall werden die Kammer-Einträge verwendet. </xs:documentation>
+						</xs:annotation>
+						<xs:element name="SgrBezeichnung" type="bezeichnungType">
+							<xs:annotation>
+								<xs:documentation>Bezeichnung der zugehörigen Signalgruppe, wenn der Geber vollständig einer Signalgruppe zugeordnet ist.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Kammer" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>Signalgeberkammern von oben nach unten bzw. von links nach rechts geordnet</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="Signalgruppe">
+										<xs:annotation>
+											<xs:documentation>Kammer wird von einer Signalgruppe angesteuert</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="SgrBezeichnung" type="bezeichnungType">
+													<xs:annotation>
+														<xs:documentation>Bezeichnung der zugehörigen Signalgruppe</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="OCITKammer">
+													<xs:annotation>
+														<xs:documentation>Rot, Gelb, Gruen</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:string">
+															<xs:enumeration value="Rot"/>
+															<xs:enumeration value="Gelb"/>
+															<xs:enumeration value="Gruen"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:element>
+												<xs:element name="SigGeberNr" minOccurs="0" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>SigGeberNr, wenn mehrere existieren.</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:unsignedInt">
+															<xs:minInclusive value="1"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="UnueberwachterAusgang" type="bezeichnungType">
+										<xs:annotation>
+											<xs:documentation>Kammer wird von einem unüberwachtem Ausgang angesteuert</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+					</xs:choice>
+					<xs:element name="Mast" minOccurs="0">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Bezeichnung" type="bezeichnungType">
+									<xs:annotation>
+										<xs:documentation>Referenz auf Mast</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Anbringung" type="bezeichnungType" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>z.B.: Stand, Ausleger</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ZusatzrahmenListeType">
+		<xs:sequence>
+			<xs:element name="Zusatzrahmen" type="OCITObjektHeader" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="MastType">
+		<xs:sequence>
+			<xs:element name="Bezeichnung" type="bezeichnungType"/>
+			<xs:element name="Typ" type="bezeichnungType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>z.B.: Stand, Ausleger</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ParameterBlockType">
+		<xs:sequence>
+			<xs:element name="Bezeichnung" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Bezeichnung des Parametertyps</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ElementtypGUID" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>GUID des Parametertyps</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Struktur">
+				<xs:annotation>
+					<xs:documentation>Strukturbeschreibung der Parameter (einer Parametertabelle)</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="MaxRecordZahl" type="xs:unsignedInt" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>
+									Maximale Anzahl der Records
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Typ" type="xs:integer" minOccurs="0"/>
+						<xs:element name="Parameter" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>
+									Einzelner Parameter(Tabellenspalte)
+								</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Bezeichnung" type="bezeichnungType">
+										<xs:annotation>
+											<xs:documentation>
+												Bezeichner/
+												Tab-Spaltenname
+											</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:choice>
+										<xs:sequence>
+											<xs:element name="StandardTyp">
+												<xs:annotation>
+													<xs:documentation>
+														float, word...
+													</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+													<xs:restriction base="xs:string">
+														<xs:enumeration value="byte"/>
+														<xs:enumeration value="word"/>
+														<xs:enumeration value="integer"/>
+														<xs:enumeration value="float"/>
+														<xs:enumeration value="string"/>
+														<xs:enumeration value="boolean"/>
+													</xs:restriction>
+												</xs:simpleType>
+											</xs:element>
+											<xs:choice>
+												<xs:annotation>
+													<xs:documentation>
+														Auswahl
+														entsprechend Typ
+														Defaultwert,
+														wenn kein
+														Eintrag im
+														Parametersatz
+														Werte, die den
+														Defaultwert
+														besitzen sollten
+														nicht noch
+														einmal bei den
+														Parametersatzwerten
+														eingetragen
+														werden
+													</xs:documentation>
+												</xs:annotation>
+												<xs:element name="bDefault" type="xs:unsignedByte">
+													<xs:annotation>
+														<xs:documentation>
+															byte
+														</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="wDefault" type="xs:unsignedShort">
+													<xs:annotation>
+														<xs:documentation>
+															word
+														</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="iDefault" type="xs:integer">
+													<xs:annotation>
+														<xs:documentation>
+															integer
+														</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="fDefault" type="xs:float">
+													<xs:annotation>
+														<xs:documentation>
+															float
+														</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="sDefault" type="xs:string">
+													<xs:annotation>
+														<xs:documentation>
+															string
+														</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="zDefault" type="xs:boolean">
+													<xs:annotation>
+														<xs:documentation>
+															boolean
+														</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:choice>
+										</xs:sequence>
+										<xs:element name="Referenztyp">
+											<xs:annotation>
+												<xs:documentation>
+													Elemente aus
+													Versorgorgung
+												</xs:documentation>
+											</xs:annotation>
+											<xs:simpleType>
+												<xs:restriction base="xs:string">
+													<xs:enumeration value="Signalgruppe"/>
+													<xs:enumeration value="DigEingang"/>
+													<xs:enumeration value="Meldepunkt"/>
+													<xs:enumeration value="Ausgang"/>
+													<xs:enumeration value="Phase"/>
+													<xs:enumeration value="Phasenuebergang"/>
+													<xs:enumeration value="Signalprogramm"/>
+													<xs:enumeration value="Rahmen"/>
+													<xs:enumeration value="OeVStrecke"/>
+													<xs:enumeration value="Teilknoten"/>
+													<xs:enumeration value="Timer"/>
+													<xs:enumeration value="Modifikation"/>
+													<xs:enumeration value="TC"/>
+													<xs:enumeration value="Grp"/>
+													<xs:enumeration value="Sub"/>
+													<xs:enumeration value="Prg"/>
+													<xs:enumeration value="Sgr"/>
+													<xs:enumeration value="Det"/>
+													<xs:enumeration value="Tim"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:element>
+									</xs:choice>
+									<xs:element name="EnumListe" minOccurs="0">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="Enum" type="EnumType" maxOccurs="unbounded"/>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="Facets" type="FacetsType" minOccurs="0"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="ParmeterSatz" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Werte eines Parametersatzes</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Bezeichnung" type="bezeichnungType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Bezeichnung des Parametersatzes</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="SatzNr" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Nr. des Parametersatzes</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:int">
+									<xs:minInclusive value="1"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="Record" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>Alle Werte eines Records(Tabzeile)</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Beschreibung" type="xs:string" minOccurs="0"/>
+									<xs:element name="Wert" minOccurs="0" maxOccurs="unbounded">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="Parameter" type="bezeichnungType">
+													<xs:annotation>
+														<xs:documentation>Referenz auf Tabellenspalte</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:choice>
+													<xs:element name="bWert" type="xs:unsignedByte">
+														<xs:annotation>
+															<xs:documentation>byte</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="wWert" type="xs:unsignedShort">
+														<xs:annotation>
+															<xs:documentation>word</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="iWert" type="xs:integer">
+														<xs:annotation>
+															<xs:documentation>integer</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="fWert" type="xs:float">
+														<xs:annotation>
+															<xs:documentation>float</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="sWert" type="xs:string">
+														<xs:annotation>
+															<xs:documentation>string</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="zWert" type="xs:boolean">
+														<xs:annotation>
+															<xs:documentation>boolean</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="Referenz" type="bezeichnungType">
+														<xs:annotation>
+															<xs:documentation>Referenz auf ein Element</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+												</xs:choice>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LogikParameterType">
+		<xs:sequence>
+			<xs:element name="ParameterBlock" type="ParameterBlockType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Alle Daten eines Parametertyps</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TimerListe" type="TimerListeType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Zeitzaehler</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SteuergeraetType">
+		<xs:sequence>
+			<xs:element name="Zykluszeit">
+				<xs:annotation>
+					<xs:documentation>Zykluszeit in ms</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:minInclusive value="1"/>
+						<xs:maxInclusive value="1000"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Rueckrechenverfahren" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Rückrechenverfahren für Koordinierung</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:minInclusive value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="OeVType">
+		<xs:sequence>
+			<xs:element name="OeVMeldepunktListe" type="OeVMeldepunktListeType">
+				<xs:annotation>
+					<xs:documentation>
+						Meldepunkte zur ÖV-Erfassung
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OeVStreckenListe" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Erfassungsstrecken von der Voranmeldung bis zur
+						Abmeldung
+					</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="OeVStrecke" type="OeVStreckeType" maxOccurs="unbounded"/>
+						<xs:element name="MaxFahrzeuge" default="4" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>
+									Max. Anzahl von verwalteten
+									Fahrzeugen Defaultwert ist 4
+								</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:positiveInteger">
+									<xs:minInclusive value="1"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="OeVParaSatzListe" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="OeVParaSatz" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:complexContent>
+									<xs:extension base="OCITObjektHeader">
+										<xs:sequence>
+											<xs:element name="Zeitparameter" maxOccurs="unbounded">
+												<xs:complexType>
+													<xs:sequence>
+														<xs:element name="OeVStrecke" type="bezeichnungType"/>
+														<xs:element name="Parameter" maxOccurs="unbounded">
+															<xs:complexType>
+																<xs:sequence>
+																	<xs:element name="OeVMeldepunkt" type="bezeichnungType"/>
+																	<xs:element name="Fahrzeit" type="Sekunde"/>
+																	<xs:element name="Zwangsloeschzeit" type="Sekunde"/>
+																	<xs:element name="Anmeldeverzoegerung" type="Sekunde"/>
+																</xs:sequence>
+															</xs:complexType>
+														</xs:element>
+													</xs:sequence>
+												</xs:complexType>
+											</xs:element>
+										</xs:sequence>
+									</xs:extension>
+								</xs:complexContent>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="RahmenprogrammListeType">
+		<xs:sequence>
+			<xs:element name="Rahmenprogramm" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="OCITObjektHeader">
+							<xs:sequence>
+								<xs:element name="NurDoku" type="xs:boolean" default="false" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>Programm ist kein Geräteelement, dient nur zur Dokumentation</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="TU" type="Sekunde" minOccurs="0"/>
+								<xs:element name="Rahmen" type="RahmenType" maxOccurs="unbounded">
+									<xs:annotation>
+										<xs:documentation>1 Rahmen sind mehrere Zeitbereiche im Signalprogramm, die zusammen gehören</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="ZusatzrahmenListe" type="ZusatzrahmenListeType" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SchaltuhrType">
+		<xs:sequence>
+			<xs:element name="TagesplanListe">
+				<xs:annotation>
+					<xs:documentation>Programmschaltzeiten, die zu Tagesplänen zusammengefaßt sind.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="StandardTagesplan">
+							<xs:annotation>
+								<xs:documentation>1 Standardtagesplan muss immer vorhanden sein (Name: "Standard"). Es ist möglich, das dieser Tagesplan keine Befehle enthält.</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:complexContent>
+									<xs:extension base="OCITObjektHeader">
+										<xs:sequence>
+											<xs:element name="Befehl" type="BefehlType" minOccurs="0" maxOccurs="unbounded"/>
+										</xs:sequence>
+									</xs:extension>
+								</xs:complexContent>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="Tagesplan" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>weitere Tagespläne</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:complexContent>
+									<xs:extension base="OCITObjektHeader">
+										<xs:sequence>
+											<xs:element name="Befehl" type="BefehlType" minOccurs="0" maxOccurs="unbounded"/>
+										</xs:sequence>
+									</xs:extension>
+								</xs:complexContent>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SondertagListe" type="SondertagListeType" minOccurs="0"/>
+			<xs:element name="SonderbereichListe" type="SonderbereichListeType" minOccurs="0"/>
+			<xs:element name="WochenplanListe">
+				<xs:annotation>
+					<xs:documentation>Zuletzt wird hier gesucht. Es ist mindestens ein StandardWochenplan vorhanden, der immer dann ausgeführt wird, wenn keine andere Regelung greift. </xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="StandardWochenplan" type="WochenplanType">
+							<xs:annotation>
+								<xs:documentation>Jeder Tag referenziert einen Tagesplan aus der Tagesplanliste. Dieser Wochenplan muss immer vorhanden sein. Der Standard-Wochenplan hat immer die Bezeichnung "Standard"</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Wochenplan" type="WochenplanType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>Zusätzliche Wochenpläne z.B. für Ferien. Diese Wochenpläne werden nie per Default ausgewählt.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SignalgruppeType">
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="Teilknoten" type="bezeichnungType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Wenn nur 1 Teilknoten existiert, kann die Angabe entfallen. Existieren mehrere Teilknoten muss dieser hier angegeben erden.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LiegtInVorfahrt" type="xs:boolean">
+						<xs:annotation>
+							<xs:documentation>true, wenn die Signalgruppe in der Hauptrichtung liegt. 
+z.B. bei Verkehrszeichen "Vorfahrtstraße"</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="VerhaltenBeiNebenrichtungGelbblinken" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Wird auf "StandardGelbblinken" gesetzt, wenn  beim LSA-Gerätezustand "Nebenrichtung GelbBlinken" das Farbbild Gelbblinken eingetragen wird. Wird auf "StandardDunkel" gesetzt, wenn beim LSA Zustand "Nebenrichtung Gelbblinken" das Farbbild "Dunkel" verwendet wird.</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="langStringType">
+								<xs:enumeration value="StandardDunkel"/>
+								<xs:enumeration value="StandardGelbblinken"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="ErlaubteSignalbilder">
+						<xs:annotation>
+							<xs:documentation>Alle erlaubten Farbbilder werden hier definiert. Alle Farbbilder, die hier nicht definiert sind, sind nicht zulässig. Jeder Zustand wird eindeutig durch das OCIT-Farbbild gekennzeichnet. D.h. ein OCIT-Farbbild darf nicht mehrfach auftreten.
+Bei Zuständen mit gleichem Sicherungszustand erfolgt ein direkter (kein bildbehafteter) Übergang.
+Alle Übergänge  müssen in den Elementen 
+- AnwurfUebergang
+- AbwurfUebergang
+- ZusatzUebergang
+definiert werden.</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Frei" type="SignalzustandType">
+									<xs:annotation>
+										<xs:documentation>alle Signalzustände im Normalbetrieb, bei dem der Sicherungszustand "frei" ist.</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Gesperrt" type="SignalzustandType">
+									<xs:annotation>
+										<xs:documentation>alle Signalzustände im Normalbetrieb, bei dem der Sicherungszustand "gesperrt" ist.</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="StandardAusDunkel" type="OCITSignalbild">
+									<xs:annotation>
+										<xs:documentation>Signalbild, das beim Gerätezustand "Aus" benutzt wird. Achtung: Wenn das hier eingetragene Signalbild auch als außerhalb der Ein-/Ausschaltpläne benutzt wird, muß es zusätzlich unter "Frei" bzw. "Gesperrt" eingetragen sein. </xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="StandardGelbblinken" type="OCITSignalbild" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>Signalbild, das beim Gerätezustand "GelbBlinken Nebenrichtung" benutzt wird. Achtung: Wenn das hier eingetragene Signalbild auch als außerhalb der Ein-/Ausschaltpläne benutzt wird, muß es zusätzlich unter "Frei" bzw. "Gesperrt" eingetragen sein. . Wenn nicht gesetzt, wird das unter StandardAusDunkel eingetragene Signalbild angenommen. </xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="DauerUebFb" type="OCITSignalbild" minOccurs="0" maxOccurs="unbounded">
+									<xs:annotation>
+										<xs:documentation>Hier werden alle Farbbilder aufgelistet, die zur Ermittlung der Mindest-Frei/Gespert-Zeit herangezogen werden.</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+						<xs:unique name="Eindeutige_Signalbilder">
+							<xs:selector xpath="Frei/Standard|Frei/Zusaetzlich|Gesperrt/Standard|Gesperrt/Zusaetzlich"/>
+							<xs:field xpath="Signalbild"/>
+						</xs:unique>
+					</xs:element>
+					<xs:element name="MinFrei" type="Sekunde">
+						<xs:annotation>
+							<xs:documentation>Mindestfreigabe. Welche Farbbilder dazugehören wird in DauerUebFb definiert.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MaxFrei" type="Sekunde" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Maximalfreigabe. Welche Farbbilder dazugehören wird in DauerUebFb definiert.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MinGesperrt" type="Sekunde">
+						<xs:annotation>
+							<xs:documentation>Minimale Sperrzeit. . Welche Farbbilder dazugehören wird in DauerUebFb definiert.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="MaxGesperrt" type="Sekunde" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Maximale Sperrzeit. . Welche Farbbilder dazugehören wird in DauerUebFb definiert.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="AnwurfUebergang" type="UebergangListeType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Ein Anwurf ist der Übergang vom Signalzustand Gesperrt nach Frei. Wenn kein Anwurfuebergang definiert ist, wechselt das Signal ohne Übergangsbilder von Gesperrt nach Frei.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="AbwurfUebergang" type="UebergangListeType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Ein Abwurf ist der Übergang vom Signalzustand Frei nach Gesperrt Wenn kein Anwurfuebergang definiert ist, wechselt das Signal ohne Übergangsbilder von Frei nach Gesperrt.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ZusatzUebergang" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Alle erlaubten Übergänge zwischen Endzuständen einer Signalgruppe werden hier eingetragen. Andere Folgen von Übergängen zwischen Endzuständen sind weder im Festzeitprogramm noch in Phasenüergängen zulässig. Wenn zwischen zwei bestimmten Farbbildern nicht der Standardanwurf verwendet werden soll, muss im Signalprogramm (bzw. im Phasenübergang) auf einen speziellen Anwurf verwiesen werden, der hier als Zusatzübergang definiert ist. Dies gilt sowohl für andere "Gelb"-Zeiten als auch für andere Signalbilder, die für den Übergang eingesetzt werden. 
+Einschränkung: Wenn das Startlfarbbild den gleichen Sicherungszustand wie das Zielfarbbild hat, dürfen keine Übergangselemente eingetragen werden.
+Übergänge mit gleichem Startfarbbild und Zielfarbbild müssen die gleiche Farbfolge besitzen. </xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Bezeichnung" type="OCITSignaluebergang">
+									<xs:annotation>
+										<xs:documentation>Name, über die dieser im Signalprogramm ausgewählt wird. Der Name wird künstlich gebildet, um die Referenz besser zu verstehen. Sie beginnt mit dem Start-Farbbild, enthält alle Übergangsbilder mit ihrer Dauer und endet mit dem End-Farbbild. Beispiel: Übergang on Dunkel nach Rot mit 2 Sekunden gelb wird bezeichnet als dunkel_2sgelb_rot.
+Die Bezeichnungen 'Anwurf' und 'Abwurf' dürfen nicht verwendet werden</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="StartFarbbild" type="OCITSignalbild">
+									<xs:annotation>
+										<xs:documentation>Hier wird das Startfarbbild angegeben.
+Wenn das Startfarbbild darf den gleichen Sicherungszustand wie das Zielfarbbild hat, darf kein Uebergang-Element vorhanden sein. </xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="ZielFarbbild" type="OCITSignalbild">
+									<xs:annotation>
+										<xs:documentation>Hier wird das Zielfarbbild angegeben.
+Wenn das Startfarbbild darf den gleichen Sicherungszustand wie das Zielfarbbild hat, darf kein Uebergang-Element vorhanden sein.</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Uebergang" type="UebergangListeType" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>Zwischenfolge, die zwischen einem der Start- und einem der Zielfarbbild Verwendung findet. Ein Uebergang darf nur zwischen Farbbildern gesetzt werden, die einen unterschiedlichen Sicherungszustand haben.</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="Ansteuerung">
+						<xs:annotation>
+							<xs:documentation>OCIT-Kammern und Kanäle für die Ansteuerung der Signalgeber</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Rot" minOccurs="0" maxOccurs="unbounded">
+									<xs:annotation>
+										<xs:documentation>Ansteuerung der OCIT-Rot-Kammer</xs:documentation>
+									</xs:annotation>
+									<xs:complexType>
+										<xs:sequence>
+											<xs:element name="Bezeichnung" type="bezeichnungType" minOccurs="0">
+												<xs:annotation>
+													<xs:documentation>Kundenbezeichnung der Kammer, wenn anders als Rot</xs:documentation>
+												</xs:annotation>
+											</xs:element>
+											<xs:element name="KammerNr" minOccurs="0">
+												<xs:annotation>
+													<xs:documentation>Wird von der OCIT-Fehlermeldung und den Signalgebern benutzt</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+													<xs:restriction base="xs:unsignedInt">
+														<xs:minInclusive value="1"/>
+													</xs:restriction>
+												</xs:simpleType>
+											</xs:element>
+											<xs:element name="SigGeberNr" minOccurs="0" maxOccurs="unbounded">
+												<xs:annotation>
+													<xs:documentation>Wird von der OCIT-Fehlermeldung, den Signalgebern und der Lampenüberwachung benutzt</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+													<xs:restriction base="xs:unsignedInt">
+														<xs:minInclusive value="1"/>
+													</xs:restriction>
+												</xs:simpleType>
+											</xs:element>
+										</xs:sequence>
+									</xs:complexType>
+								</xs:element>
+								<xs:element name="Gelb" minOccurs="0" maxOccurs="unbounded">
+									<xs:annotation>
+										<xs:documentation>Ansteuerkanäle der OCIT-Gelb-Kammer</xs:documentation>
+									</xs:annotation>
+									<xs:complexType>
+										<xs:sequence>
+											<xs:element name="Bezeichnung" type="bezeichnungType" minOccurs="0">
+												<xs:annotation>
+													<xs:documentation>Kundenbezeichnung der Kammer, wenn anders als Gelb</xs:documentation>
+												</xs:annotation>
+											</xs:element>
+											<xs:element name="KammerNr" minOccurs="0">
+												<xs:annotation>
+													<xs:documentation>Wird von der OCIT-Fehlermeldung und den Signalgebern benutzt</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+													<xs:restriction base="xs:unsignedInt">
+														<xs:minInclusive value="1"/>
+													</xs:restriction>
+												</xs:simpleType>
+											</xs:element>
+											<xs:element name="SigGeberNr" minOccurs="0" maxOccurs="unbounded">
+												<xs:annotation>
+													<xs:documentation>Wird von der OCIT-Fehlermeldung, den Signalgebern und der Lampenüberwachung benutzt</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+													<xs:restriction base="xs:unsignedInt">
+														<xs:minInclusive value="1"/>
+													</xs:restriction>
+												</xs:simpleType>
+											</xs:element>
+										</xs:sequence>
+									</xs:complexType>
+								</xs:element>
+								<xs:element name="Gruen" minOccurs="0" maxOccurs="unbounded">
+									<xs:annotation>
+										<xs:documentation>Ansteuerkanäle der OCIT-Gruen-Kammer</xs:documentation>
+									</xs:annotation>
+									<xs:complexType>
+										<xs:sequence>
+											<xs:element name="Bezeichnung" type="bezeichnungType" minOccurs="0">
+												<xs:annotation>
+													<xs:documentation>Kundenbezeichnung der Kammer, wenn anders als Grün</xs:documentation>
+												</xs:annotation>
+											</xs:element>
+											<xs:element name="KammerNr" minOccurs="0">
+												<xs:annotation>
+													<xs:documentation>Wird von der OCIT-Fehlermeldung und den Signalgebern benutzt</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+													<xs:restriction base="xs:unsignedInt">
+														<xs:minInclusive value="1"/>
+													</xs:restriction>
+												</xs:simpleType>
+											</xs:element>
+											<xs:element name="SigGeberNr" minOccurs="0" maxOccurs="unbounded">
+												<xs:annotation>
+													<xs:documentation>Wird von der OCIT-Fehlermeldung, den Signalgebern und der Lampenüberwachung benutzt</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+													<xs:restriction base="xs:unsignedInt">
+														<xs:minInclusive value="1"/>
+													</xs:restriction>
+												</xs:simpleType>
+											</xs:element>
+										</xs:sequence>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="Lampenueberwachung" type="xs:string" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Logischer Ausdruck mit and/or und SiGeberNr
+z.B.: rt1 or (rt2 and rt3) 
+(rt|ge|gn)\d+(\s+(and|or)\s+(rt|ge|gn)\d+)*</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SignalprogrammType">
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="Zwischenzeitenmatrix" type="bezeichnungType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Verweis auf die Zwischenzeitmatrix,
+								falls nicht die
+								Sicherheits-Zwischenzeitmatrix verwendet
+								wird. Wenn die Sicherheits-ZZ-Matrix
+								verwendet wird, fehlt dieser Eintrag.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Versatzzeitenmatrix" type="bezeichnungType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								Verweis auf die Versatzzeitenmatrizen.
+								Es ist nur eine Versatzzeitmatrix pro
+								Typ zulässig.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Phasenuebergangsmatrix" type="bezeichnungType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Verweis auf zugehörige
+								Phasenübergangsmatrix
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Rahmenprogramm" type="bezeichnungType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Verweis auf zugehöriges Rahmenprogramm
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="LogikParameterSatz" type="bezeichnungType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Verweis auf Zugehörigen
+								Logikparametersatz
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="OeVParameter" type="bezeichnungType" minOccurs="0"/>
+					<xs:element name="NurDoku" type="xs:boolean" default="false" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Programm ist kein Geräteelement, dient
+								nur zur Dokumentation
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="Typ" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								wird der Typ nicht angegeben gelten die
+								Defaultwerte
+							</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="FZ" type="xs:boolean" default="true">
+									<xs:annotation>
+										<xs:documentation>
+											Festzeitprogramm
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="VA" type="xs:boolean" default="true">
+									<xs:annotation>
+										<xs:documentation>
+											Voll verkehrsabhängig
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Alternativ" type="xs:boolean" default="false" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>
+											Alternativprogramm
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="Sonder" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Sondereingriff, wenn vorhanden
+							</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Nr" type="xs:integer" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>
+											Nr. des Sondereingriffes
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="TU">
+						<xs:annotation>
+							<xs:documentation>
+								Umlaufzeit. Die Umlaufzeit muß in
+								ganzzahligen Sekunden angegeben sein und
+								sie muß &gt; 0 sein, da sich alle Zeiten
+								auf TU beziehen.
+							</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:nonNegativeInteger">
+								<xs:minInclusive value="1"/>
+								<xs:maxInclusive value="655"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="EP" type="Sekunde" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Einschaltpunkt, sofern definiert. Der EP
+								wird weggelassen, falls kein EP
+								definiert wurde. Der Zeitpunkt TU wird
+								als TU und nicht als 0 codiert. Nach
+								Beenden des Einschaltplanes wird in die
+								EP-Sekunde des Signalplanes gesprungen.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="AP" type="Sekunde" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Ausschaltpunkt, sofern definiert. Der AP
+								wird weggelassen, falls kein AP
+								definiert wurde. Der Zeitpunkt TU wird
+								als TU und nicht als 0 codiert. Bei der
+								Ausschaltung wird von der AP-Sekunde in
+								den Ausschaltplan gesprungen.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="UP" type="Sekunde" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Umschaltpunkt. In Siemens-Terminologie
+								GSP
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SY" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Synchronisationspunkte, falls notwendig.
+							</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="Vor" type="Sekunde" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>
+											SY-Vor
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Haupt" type="Sekunde">
+									<xs:annotation>
+										<xs:documentation>
+											SY-Haupt
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+								<xs:element name="Max_Dauer" type="Sekunde" minOccurs="0">
+									<xs:annotation>
+										<xs:documentation>
+											Maximale Dauer, für die
+											synchronisiert wird
+										</xs:documentation>
+									</xs:annotation>
+								</xs:element>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+					<xs:element name="SignalzeitenVersatz" type="Sekunde" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Versatzzeit bezogen auf die
+								Versatzzeit-Berechnungsvorschrift des
+								Gerätes. Der Wert kann auf Geräten mit
+								unterschiedlichen Versatz-Berechnungen
+								zu verschiedenen Zeiten führen. Siehe
+								hierzu auch OCIT-Outstation.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="EProgramm" type="bezeichnungType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								zugehöriges Einschaltprogramm, falls
+								definiert
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="AProgramm" type="bezeichnungType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Zugehöriges Ausschaltprogramm, falls
+								definiert.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="SgrUebergaenge" type="SgrUebergangType" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								Diese Übergänge werden nur benötigt,
+								wenn die Standardübergänge nicht
+								ausreichen oder überschrieben werden
+								sollen. Achtung: Die Übergänge beziehen
+								sich nicht nur auf den Plan selbst
+								sondern auch auf alle Phasenübergänge
+								die direkt oder von der VA im Rahmen
+								dieses Signalplans verwendet werden!
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:choice minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Wenn sich ein Signalplan aus
+								Phasenübergängen zusammensetzt, werden
+								nur die Phasenübergangszeitpunkte
+								gesetzt; bei direkter Auswahl der
+								Signalbilder werden diese bei der
+								SPZeile eingetragen.
+							</xs:documentation>
+						</xs:annotation>
+						<xs:element name="PhasenuebergangsZeitpunkt" type="PhasenuebergangsZeitpunktType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>
+									Phasenübergänge, aus denen sich der
+									Signalplan zusammensetzt. Die
+									Phasenübergänge können beliebig
+									zusammengestellt werden und vor
+									allem beliebig eng aufeinander
+									sitzen. Es ist ebenfalls möglich,
+									das mehrere Phasenübergänge zum
+									gleichen Zeitpunkt gestartet werden!
+									Dauerfarbbilder werden wie folgt
+									bestimmt: Wenn in allen
+									Phasenübergängen das gleiche
+									Startfarbbild für den Übergang
+									gesetzt ist (auch ohne Schaltung in
+									der StartPhase bzw. im
+									StartSignalbild des Phasenübergangs
+									möglich), wird dieses als
+									Dauerfarbbild verwendet.
+									(Phasenübergänge ohne Startfarbbild
+									für die entsprechende Signalgruppe
+									werden ignoriert) Wenn in keinem
+									Übergang ein Startfarbbild gesetzt
+									ist oder unterschiedliche
+									Startfarbbilder zu Anwendung kommen,
+									liegt ein Fehler vor.
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="SPZeile" type="SPZeileType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>
+									Es ist ausdrücklich zulässig, das
+									mehrere gleiche Signalbilder
+									hintereinander stehen können und das
+									Mindestzeiten und Zwischenzeiten
+									nicht eingehalten werden müssen.
+									Diese Fälle müssen von generellen
+									Import/Export-Filtern 1:1 übernommen
+									werden. Das Verhalten ist
+									hersteller- und geräteabhängig und
+									steht in der Verantwortung des
+									Planers.
+								</xs:documentation>
+							</xs:annotation>
+							<xs:unique name="Keine_doppelte_Schaltzeit">
+								<xs:selector xpath="Schaltzeit"/>
+								<xs:field xpath="Schaltzeitpunkt"/>
+							</xs:unique>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="HandprogrammType">
+		<xs:sequence>
+			<xs:element name="Signalprogramm" type="bezeichnungType">
+				<xs:annotation>
+					<xs:documentation>Referenz auf zugehöriges Signalprogramm</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Standardsteuerung" type="xs:boolean" default="true">
+				<xs:annotation>
+					<xs:documentation>Stopppunkt-Standardsteuerung ist aktiv</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Stopppunkt" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Stopppunkte zur Handweitertastung über das Bedienteil</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Vor" type="Sekunde" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>von hier wird zuerst zum Haupt-Stopppunkt gesprungen</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Haupt" type="Sekunde">
+							<xs:annotation>
+								<xs:documentation>Der Tx-Zähler des Signalprogramms bleibt hier solange stehen, bis eine Weiter-Taste gedrückt wird</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SignalgruppeListeType">
+		<xs:sequence>
+			<xs:element name="Signalgruppe" type="SignalgruppeType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Siehe OCIT-Element SignalGruppe.
+Pro Signalgruppe wird hier ein Eintrag vorgenommen.</xs:documentation>
+				</xs:annotation>
+				<xs:unique name="Zusatzuebergang_Bezeichnung">
+					<xs:selector xpath="Zusatzuebergang"/>
+					<xs:field xpath="Bezeichnung"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="Bemerkungen" type="BemerkungenType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>allgemeine Bemerkungen zu dieser Liste, die nicht direkt einer speziellen Signalgruppe zuzurechnen sind.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SignalprogrammListeType">
+		<xs:sequence>
+			<xs:element name="Signalprogramm" type="SignalprogrammType" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Signalprogramm ist die Aufhängung für unterschiedliche Signalprogramme: Echte Festzeitsignalprogramme können auf zwei Arten gespeichert werden: 
+Als eine Liste von Signalbildern, in die gewechselt wird oder als eine Liste von Phasenübergängen, die zu bestimmten Zeitpunkten beginnen. </xs:documentation>
+				</xs:annotation>
+				<xs:unique name="Keine_doppelte_Signalgruppe_in_Festzeitplan">
+					<xs:selector xpath="SPZeile"/>
+					<xs:field xpath="Signalgruppe"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="Handprogramm" type="HandprogrammType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Im Handbetrieb wird dieses Programm aktiviert. Es muss vorher als Signalprogramm definiert werden.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Einschaltprogramm" type="EAplanType" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Bei Ein- und Ausschaltprogrammen wird anders als bei Signalprogrammen und Phasenübergängen jedes Farbbild direkt gespeichert. Anwürfe und Abwürfe werden in den Ein- und Ausschaltprogrammen nicht ausgeführt. Bei einem Wechsel von Rot nach Grün über RotGelb z.B. wird in einem Signalplan nur "Grün" angegeben, während in einem Ein- und Ausschaltprogramm auch das "Rotgelb" selbst eingetragen wird.</xs:documentation>
+				</xs:annotation>
+				<xs:unique name="Keine_doppelte_Signalgruppe_in_EP">
+					<xs:selector xpath="EAZeile"/>
+					<xs:field xpath="Signalgruppe"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="Ausschaltprogramm" type="EAplanType" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Bei Ein- und Ausschaltprogrammen wird anders als bei Signalprogrammen und Phasenübergängen jedes Farbbild direkt gespeichert. Anwürfe und Abwürfe werden in den Ein- und Ausschaltprogrammen nicht ausgeführt. Bei einem Wechsel von Rot nach Grün über RotGelb z.B. wird in einem Signalplan nur "Grün" angegeben, während in einem Ein- und Ausschaltprogramm auch das "Rotgelb" selbst eingetragen wird.</xs:documentation>
+				</xs:annotation>
+				<xs:unique name="Keine_doppelte_Signalgruppe_in_AP">
+					<xs:selector xpath="EAZeile"/>
+					<xs:field xpath="Signalgruppe"/>
+				</xs:unique>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="TeilknotenType">
+		<xs:sequence>
+			<xs:element name="Tk" type="OCITObjektHeader" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>verkehrstechnischer Teilknoten</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="HardwareTk" type="HardwareTkType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UnueberwachterAusgangListeType">
+		<xs:sequence>
+			<xs:element name="Ausgang" type="AusgangType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Binäre Ausgänge, die nicht von der Signalsicherung überwacht werden (Strassenbeleuchtungen, Quittungslampen, Schilder, ...)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Bemerkungen" type="BemerkungenType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Bemerkungen zu dieser Liste, die nicht einem Objekt selbst zugeordnet sind.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AusgangType">
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="HardwareTk" type="bezeichnungType" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>zugeordneter Hardwareteilknoten</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="UnvertraeglichkeitsmatrixType">
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="Feind" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Feindlichkeit zwischen 2 Signalgruppen</xs:documentation>
+						</xs:annotation>
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="SGr1" type="bezeichnungType"/>
+								<xs:element name="SGr2" type="bezeichnungType"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ZwischenzeitenmatrixListeType">
+		<xs:sequence>
+			<xs:element name="SicherheitsZwischenzeitenmatrix" type="ZwischenzeitmatrixType">
+				<xs:annotation>
+					<xs:documentation>Die in der SicherheitsZwischenzeitmatrix eingetragenen Zeiten werden vom Feldgerät überwacht und führen bei einer Verletzung zur Abschaltung.</xs:documentation>
+				</xs:annotation>
+				<xs:unique name="Eindeutiges_Sicherheits_Zwischenzeiten_Element">
+					<xs:selector xpath="ZwiZt"/>
+					<xs:field xpath="Raeumer"/>
+					<xs:field xpath="Einfahrer"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="GeraeteZwischenzeitenmatrix" type="ZwischenzeitmatrixType" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Zusätzliche Zwischenzeiten für besondere Signalprogramme (z.B. Schlechtwetter). Alle Werte der GeraeteZwischenzeitenMatrix müssen grösser oder gleich den Werten der Sicherheits-ZwischenzeitenMatrix sein.</xs:documentation>
+				</xs:annotation>
+				<xs:unique name="Eindeutiges_Geraete_Zwischenzeiten_Element">
+					<xs:selector xpath="ZwiZt"/>
+					<xs:field xpath="Raeumer"/>
+					<xs:field xpath="Einfahrer"/>
+				</xs:unique>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="KopfdatenType">
+		<xs:sequence>
+			<xs:element name="Kurzbezeichnung" type="kurzStringType">
+				<xs:annotation>
+					<xs:documentation>Kurzbezeichnung, maximal 10 Zeichen, z.B. K242</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Name" type="langStringType">
+				<xs:annotation>
+					<xs:documentation>Langname des Knotens, max. 250 Zeichen. Beispiel: "Meierstrasse / Muellerstrasse" </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Identifikation" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Identifikation des Knotens. Bleibt während der reinen Planungsphase frei, wenn noch keine Identifikation vorliegt.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="KnotenId">
+							<xs:annotation>
+								<xs:documentation>Logische Adressierung des Knotens</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Stadt" type="langStringType" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>Stadt, in der der Knoten läuft. Muß nur gesetzt werden, wenn mehrere Städte in einem Projekt gemeinsam vorhanden sind.</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Bezirk" type="langStringType" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>Bezirk, in dem der Knoten läuft. Muß nur in Städten gesetzt werden, die in Bezirke aufgeteilt sind (Beispiel: Wien) </xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="KnotenNummer">
+										<xs:annotation>
+											<xs:documentation>Stadtweit eindeutige Nummer des Knotens. Die Nummer ist die technische Nummer und hat nichts mit Auftragskennungen etc. zu tun. Muß vor der echten Geräteversorgung gesetzt werden. Darf während der reinen Planungsphase zusammen mit der KnotenId frei bleiben.</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:int">
+												<xs:minInclusive value="1"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="OCITKennung" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Technische OCIT-Kennung des Knotens. Darf nur dann ausgefüllt werden, wenn die Kennung festgelegt ist</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="ZNr">
+										<xs:annotation>
+											<xs:documentation>znr Nummer (entspricht der technischen VSR-Nummer). Siehe OCIT-Dokumentation.</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:unsignedShort">
+												<xs:minInclusive value="1"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+									<xs:element name="FNr" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>Wird nur gesetzt, wenn der Wert ungleich der Knotennummer gesetzt. Ansonsten ist der Wert defaultmäßig auf knotenNummer gesetzt.</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:unsignedShort">
+												<xs:minInclusive value="1"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+									<xs:element name="Relknoten" default="1" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>Nur notwenidg, wenn mehr als ein Knoten auf dem Feldgerät vorhanden ist. Ansonsten ist der Wert auf den Default-Wert 1 gesetzt.</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:unsignedByte">
+												<xs:minInclusive value="1"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="UnitId" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Logische Adressierung des Knotenpunktes</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="SystemNr" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>Stadt</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:int">
+												<xs:minInclusive value="0"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+									<xs:element name="SubsystemNr" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>Amts- bzw. Bezirkskennung wie z.B. Wien.</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:int">
+												<xs:minInclusive value="0"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+									<xs:element name="UnitNr">
+										<xs:annotation>
+											<xs:documentation>Eindeutige Nummer des Knotenpunktes im Steuerungsgebiet. </xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:int">
+												<xs:minInclusive value="1"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Versorgungsprogramm">
+				<xs:annotation>
+					<xs:documentation>Versorgungsprogramm, welches die Datei als letztes bearbeitet hat.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Name" type="bezeichnungType">
+							<xs:annotation>
+								<xs:documentation>Name des Versorgungsprogramm (max 32 Zeichen)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Version" type="kurzStringType">
+							<xs:annotation>
+								<xs:documentation>Programmversion, frei definierbarer Text mit max. 10 Zeichen</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Bearbeiter" type="langStringType">
+				<xs:annotation>
+					<xs:documentation>Name des Users, der die letzte Änderung gespeichert hat</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="KnotenVersionsstand" type="xs:dateTime">
+				<xs:annotation>
+					<xs:documentation>Speicherdatum und Uhrzeit der letzten Änderung</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Planungsversion" type="langStringType">
+				<xs:annotation>
+					<xs:documentation>Planungsversion als String. Format beliebig und abhängig von der Quelle</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Richtlinie" default="Rilsa92" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Richtlinie nach der der Knoten erzeugt wurde. Bei unbekannter Richtlinie wird das Feld weggelassen. Zur Zeit ist nur "Rilsa92" erlaubt.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="kurzStringType">
+						<xs:enumeration value="Rilsa92"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Maschine" type="langStringType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Rechner auf dem die Daten der letzten Änderung erstellt wurden. Wenn der Wert nicht zur Verfügung steht, wird der Eintrag weggelassen.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Bemerkungen" type="BemerkungenType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>kundenspezifische Bemerkungen. Wenn keine Bemerkung vorhanden ist, wird das Feld weggelassen. Systeme, die keine Bemerkungen erlauben müssen das Feld unverändert beibehalten.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="HardwareTkType">
+		<xs:complexContent>
+			<xs:extension base="OCITObjektHeader">
+				<xs:sequence>
+					<xs:element name="Teilknoten" type="bezeichnungType" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>Referenz auf verkehrstechnischen Teilknoten</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SPZeileType">
+		<xs:sequence>
+			<xs:element name="Signalgruppe" type="bezeichnungType"/>
+			<xs:choice>
+				<xs:element name="Schaltzeit" type="SchaltzeitType" maxOccurs="unbounded"/>
+				<xs:element name="DauerSignalbild" type="OCITSignalbild"/>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PhasenuebergangsZeitpunktType">
+		<xs:sequence>
+			<xs:element name="Phasenuebergang" type="bezeichnungType"/>
+			<xs:element name="StartZeitpunkt" type="Sekunde"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SgrUebergangType">
+		<xs:sequence>
+			<xs:element name="Signalgruppe" type="bezeichnungType"/>
+			<xs:element name="Uebergang" type="bezeichnungType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="EnumType">
+		<xs:sequence>
+			<xs:element name="Bezeichnung" type="bezeichnungType"/>
+			<xs:element name="Wert" type="xs:integer"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FacetsType">
+		<xs:sequence>
+			<xs:element name="MinIncl" type="xs:decimal" minOccurs="0"/>
+			<xs:element name="MaxIncl" type="xs:decimal" minOccurs="0"/>
+			<xs:element name="FracDig" type="xs:integer" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ModifikationListeType">
+		<xs:sequence>
+			<xs:element name="Modifikation" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Bezeichnung" type="bezeichnungType">
+							<xs:annotation>
+								<xs:documentation>Kundenbezeichnung des Objektes, wie es an der Oberfläche dargestellt wird. Die Bezeichnung innerhalb einer Liste muß eindeutig sein. Bezeichnungen dürfen doppelt vorhanden sein, wenn sie sich auf Objekte unterschiedlichen Typs beziehen. Beispiel: Zwei Signalgruppen der Bezeichnung "A" sind verboten, ein Detektor und eine Signalgruppe mit dem Namen "A" sind hingegen erlaubt.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ObjNr" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>OCIT-Nummer, falls das Objekte eine OCIT-Nr hat,ansonsten logische Nummer. In Planungssituationen, in denen die Nummer noch nicht festgelegt wird, wird das Feld weggelassen. Die Nummer muß größer oder gleich 1 sein.</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:unsignedInt"/>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

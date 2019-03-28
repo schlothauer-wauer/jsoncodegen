@@ -1,5 +1,5 @@
 imageBase=schlothauer/jsoncodegen
-imageTag=0.4.1
+imageTag=0.11.3
 
 imageName="$imageBase:$imageTag"
 

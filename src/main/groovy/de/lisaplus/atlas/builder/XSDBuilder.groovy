@@ -3,6 +3,7 @@ package de.lisaplus.atlas.builder
 import de.lisaplus.atlas.codegen.helper.java.TypeToColor
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.AggregationType
+import de.lisaplus.atlas.model.BaseType
 import de.lisaplus.atlas.model.BooleanType
 import de.lisaplus.atlas.model.ByteType
 import de.lisaplus.atlas.model.ComplexType
@@ -18,16 +19,15 @@ import de.lisaplus.atlas.model.Property
 import de.lisaplus.atlas.model.RefType
 import de.lisaplus.atlas.model.StringType
 import de.lisaplus.atlas.model.Type
-import de.lisaplus.atlas.model.UUIDType
 import de.lisaplus.atlas.model.UnsupportedType
+import org.apache.xmlbeans.SchemaAnnotation
+import org.apache.xmlbeans.SchemaLocalElement
+import org.apache.xmlbeans.SchemaParticle
 import org.apache.xmlbeans.SchemaProperty
 import org.apache.xmlbeans.SchemaType
 import org.apache.xmlbeans.SchemaTypeSystem
 import org.apache.xmlbeans.XmlBeans
 import org.apache.xmlbeans.XmlObject
-
-import static de.lisaplus.atlas.builder.helper.BuildHelper.strFromMap
-import static de.lisaplus.atlas.builder.helper.BuildHelper.strFromMap
 
 
 // TODO - implement detection of lists!!!!!
@@ -53,7 +53,72 @@ class XSDBuilder implements IModelBuilder {
         collectPureRestrictionTypes(model,globalTypes)
         collectNormalTypes(model,globalTypes)
         model.postProcess()
+
         return model
+    }
+
+    String navigateParticleToGetDocumentation(SchemaParticle p, Property prop) {
+        if (p==null) return
+        if (p.getParticleType()==SchemaParticle.ELEMENT) {
+            if (((SchemaLocalElement)p).name.localPart==prop.name) {
+                SchemaAnnotation annotation = ((SchemaLocalElement) p).getAnnotation();
+                if (annotation != null) {
+                    def userInfos = annotation.userInformation
+                    def docuTxt = null
+                    for (XmlObject userInfo : userInfos) {
+                        if (userInfo.getDomNode().localName == 'documentation') {
+                            if (docuTxt != null) {
+                                docuTxt += ' '
+                            } else {
+                                docuTxt = ''
+                            }
+                            docuTxt += userInfo.getDomNode().getFirstChild().getNodeValue().replaceAll('\\W+', ' ').trim()
+                        }
+                    }
+                    prop.description = docuTxt
+                }
+            }
+        }
+        else {
+            SchemaParticle[] children = p.getParticleChildren();
+            if (children!=null) {
+                for (int i = 0; i < children.length; i++)
+                    navigateParticleToGetDocumentation(children[i],prop);
+            }
+        }
+        /*
+        switch (p.getParticleType())
+        {
+            case SchemaParticle.ALL:
+            case SchemaParticle.CHOICE:
+            case SchemaParticle.SEQUENCE:
+                // These are "container" particles, so iterate over their children
+                SchemaParticle[] children = p.getParticleChildren();
+                for (int i = 0; i < children.length; i++)
+                    navigateParticleToGetDocumentation(children[i],prop);
+                break;
+            case SchemaParticle.ELEMENT:
+                if (((SchemaLocalElement)p).name.localPart==prop.name) {
+                    SchemaAnnotation annotation = ((SchemaLocalElement) p).getAnnotation();
+                    if (annotation != null) {
+                        def userInfos = annotation.userInformation
+                        def docuTxt = null
+                        for (XmlObject userInfo : userInfos) {
+                            if (userInfo.getDomNode().localName == 'documentation') {
+                                if (docuTxt != null) {
+                                    docuTxt += ' '
+                                } else {
+                                    docuTxt = ''
+                                }
+                                docuTxt += userInfo.getDomNode().getFirstChild().getNodeValue().replaceAll('\\W+', ' ').trim()
+                            }
+                        }
+                        prop.description = docuTxt
+                    }
+                }
+
+        }
+        */
     }
 
     private void collectPureRestrictionTypes(Model model, def globalTypes) {
@@ -89,14 +154,10 @@ class XSDBuilder implements IModelBuilder {
             extendsStr = " extends $baseTypeName"
         }
         println "new type: ${newType.name}$extendsStr"
-        if (newType.name=='IntervalDetection') {
-            newType.name = newType.name
-        }
         addProperties(type,model,newType)
         addNewType(newType,model)
         //println "added type: ${newType.name}, contentType: ${type.contentType}"
     }
-
 
 
     private void addProperties(SchemaType type, Model model, Type newType) {
@@ -118,6 +179,9 @@ class XSDBuilder implements IModelBuilder {
             def propTypeName = propTypeNameObj != null ? xsdToName(propTypeNameObj.localPart) : desiredName!=null ? desiredName : '???'
             Property newProp = new Property()
             newProp.name = propName
+            // TODO this implementation isn't perfect because it parse every time the same contentModel :-/
+            // ... and it doesn't cover xsd attributes
+            navigateParticleToGetDocumentation (type.getContentModel(),newProp)
             if (propName=='posList') {
                 propName = propName
             }
@@ -150,83 +214,111 @@ class XSDBuilder implements IModelBuilder {
                 }
             }
             else {
-                switch(propTypeName) {
-                    case 'token':
-                        // it is basically a string
-                        newProp.type = new StringType()
-                        break;
-                    case 'string':
-                        newProp.type = new StringType()
-                        break
-                    case 'boolean':
-                        newProp.type = new BooleanType()
-                        break
-                    case 'byte':
-                        newProp.type = new ByteType()
-                        break
-                    case 'long':
-                        newProp.type = new LongType()
-                        break
-                    case 'int':
-                        newProp.type = new IntType()
-                        break
-                    case 'integer':
-                        newProp.type = new IntType()
-                        break
-                    case 'decimal':
-                        newProp.type = new NumberType()
-                        break
-                    case 'float':
-                        newProp.type = new NumberType()
-                        break
-                    case 'double':
-                        newProp.type = new NumberType()
-                        break
-                    case 'dateTime':
-                        newProp.type = new DateTimeType()
-                        break
-                    case 'date':
-                        newProp.type = new DateType()
-                        break
-                    case 'time':
-                        newProp.type = new UnsupportedType()
-                        println "FOUND UNSUPPORTED TIME-TYPE"
-                        break
-                    case 'NCName':
-                        newProp.type = new StringType()
-                        break
-                    default:
-                        if (restrictionTypes[propTypeName] != null) {
-                            newProp.type = restrictionTypes[propTypeName]
-                        }
-                        else if (createdTypes[propTypeName] != null) {
-                            // type is currently in the model
-                            newProp.type = new RefType()
-                            def alreadyCreated = createdTypes[propTypeName]
-                            if (alreadyCreated instanceof DummyType) {
-                                ((DummyType)alreadyCreated).referencesToChange.add(newProp.type)
-                            }
-                            newProp.type.type = alreadyCreated
-                        }
-                        else if (globalTypes.find{ it.getName().localPart==propTypeName }) {
-                            newProp.type = new RefType()
-                            Type t = new DummyType()
-                            ((DummyType)t).referencesToChange.add(newProp.type)
-                            createdTypes[propTypeName] = t
-                            newProp.type.type = t
-                        }
-                        else {
-                            newProp.type = new UnsupportedType()
-                            println "FOUND UNSUPPORTED TYPE: $propTypeName"
-                        }
-                }
+                typeStrToType(propTypeName,newProp,prop)
                 newProp.type.originalType = propTypeName
             }
             if (prop.maxOccurs==null || prop.maxOccurs>1) {
                 newProp.type.isArray = true
             }
+            if (prop.isAttribute()) {
+                def attributeModel = type.getAttributeModel()
+                def attributes = attributeModel.getAttributes()
+                for (def attrib: attributes) {
+                    if (attrib.name.localPart==newProp.name) {
+                        newProp.description = getDescription(attrib)
+                        break
+                    }
+                }
+            }
             println "    ${newProp.name}: ${newProp.type.name()} (${prop.getType().contentType}) isArray: ${newProp.type.isArray}"
             newType.properties.add(newProp)
+        }
+    }
+
+    private BaseType typeForString(String s) {
+        switch(s) {
+            case 'token':
+                // it is basically a string
+                return new StringType()
+            case 'string':
+                return new StringType()
+            case 'boolean':
+                return  new BooleanType()
+            case 'byte':
+                return new ByteType()
+            case 'long':
+                return new LongType()
+            case 'int':
+                return new IntType()
+            case 'unsignedLong':
+                return new LongType()
+            case 'unsignedInt':
+                return new IntType()
+            case 'positiveInteger':
+                return new IntType()
+            case 'unsignedShort':
+                return new IntType()
+            case 'integer':
+                return new IntType()
+            case 'decimal':
+                return new NumberType()
+            case 'float':
+                return new NumberType()
+            case 'double':
+                return new NumberType()
+            case 'dateTime':
+                return new DateTimeType()
+            case 'date':
+                return new DateType()
+            case 'time':
+                return new StringType()
+            case 'NCName':
+                return new StringType()
+            case 'NMTOKEN':
+                return new StringType()
+            case 'gMonthDay':
+                return new StringType()
+            default:
+                return null
+        }
+    }
+
+    private void typeStrToType(String typeName, def newProp, def prop) {
+        newProp.type = typeForString(typeName)
+        if (!newProp.type) {
+            if (restrictionTypes[typeName] != null) {
+                newProp.type = restrictionTypes[typeName]
+            }
+            else if (createdTypes[typeName] != null) {
+                // type is currently in the model
+                newProp.type = new RefType()
+                def alreadyCreated = createdTypes[typeName]
+                if (alreadyCreated instanceof DummyType) {
+                    ((DummyType)alreadyCreated).referencesToChange.add(newProp.type)
+                }
+                newProp.type.type = alreadyCreated
+            }
+            else if (globalTypes.find{ it.getName().localPart==typeName }) {
+                newProp.type = new RefType()
+                Type t = new DummyType()
+                ((DummyType)t).referencesToChange.add(newProp.type)
+                createdTypes[typeName] = t
+                newProp.type.type = t
+            }
+            else {
+                // try to look into the XMLBeans implementations to find some XSD specifics
+                if (prop!=null) {
+                    def type = prop.getType()
+                    if (type.isSimpleType() && type.getBaseType()) {
+                        def simpleTypeName = type.getBaseType().name.localPart
+                        newProp.type = typeForString(simpleTypeName)
+                    }
+                }
+                if (!newProp.type) {
+                    newProp.type = new UnsupportedType()
+                    println "FOUND UNSUPPORTED TYPE: $typeName"
+                }
+            }
         }
     }
 
@@ -234,55 +326,7 @@ class XSDBuilder implements IModelBuilder {
         // per convention -> restriction type with name guid == UUIDType
         def baseName = xsdToName(type.getBaseType().name.localPart)
         def typeName = xsdToName(type.getName().localPart)
-        def t = null
-        switch(baseName) {
-            case 'token':
-                // TODO is basically a string
-                t = new StringType()
-                break;
-            case 'string':
-                t = typeName.toLowerCase()=='guid' ? new UUIDType() : new StringType()
-                break
-            case 'boolean':
-                t = new BooleanType()
-                break
-            case 'byte':
-                t = new ByteType()
-                break
-            case 'long':
-                t = new LongType()
-                break
-            case 'int':
-                t = new IntType()
-                break
-            case 'integer':
-                t = new IntType()
-                break
-            case 'decimal':
-                t = new NumberType()
-                break
-            case 'float':
-                t = new NumberType()
-                break
-            case 'double':
-                t = new NumberType()
-                break
-            case 'dateTime':
-                t = new DateTimeType()
-                break
-            case 'date':
-                t = new DateType()
-                break
-            case 'time':
-                t = new DateTimeType()
-                break
-            case 'NCName':
-                t = new StringType()
-                break
-            default:
-                t = new UnsupportedType()
-                println "unknown restriction type: $baseName"
-        }
+        def t = typeForString(baseName)
         if (t!=null) {
             t.originalType = baseName
             restrictionTypes[typeName] = t
@@ -302,7 +346,10 @@ class XSDBuilder implements IModelBuilder {
                     else {
                         docuTxt=''
                     }
-                    docuTxt += userInfo.getDomNode().getFirstChild().getNodeValue().replaceAll('\\W+',' ').trim()
+                    def firstChild = userInfo.getDomNode().getFirstChild()
+                    if (firstChild!=null) {
+                        docuTxt += firstChild.getNodeValue().replaceAll('\\W+',' ').trim()
+                    }
                 }
             }
         }

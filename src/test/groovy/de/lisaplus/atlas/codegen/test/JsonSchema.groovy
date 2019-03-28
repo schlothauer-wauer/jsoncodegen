@@ -3,6 +3,7 @@ package de.lisaplus.atlas.codegen.test
 import org.junit.Test
 
 import static junit.framework.Assert.assertTrue
+import static org.junit.Assert.assertTrue
 
 /**
  * Tests the plantuml generator and template
@@ -65,6 +66,11 @@ class JsonSchema {
         def plantUml='options_response.puml'
         generateHistModel(model,histModel)
         generatePlantUML("tmp/${histModel}",plantUml)
+    }
+
+    @Test
+    void testXsdInput() {
+        generateHistModel('src/test/resources/xsd/ui-tlc.xsd','ui-tlc.json')
     }
 
 }

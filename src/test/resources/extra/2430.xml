@@ -1,0 +1,918 @@
+<LISA>
+    <props>
+        <version>7.1.0.600</version>
+        <user>m.dombrowski</user>
+        <date>43549.3961653009</date>
+        <dversion>13</dversion>
+        <kommentar visible="False"></kommentar>
+    </props>
+    <KnotenData>
+        <knotndat>
+            <kndatattr sfzgn1="Sonder1" sfzgn2="Sonder2" nlsaver="1"></kndatattr>
+            <pp>
+                <ppattr p2="Knotendaten" p8="True"></ppattr>
+            </pp>
+            <armlist>
+                <arm>
+                    <armattr id="-1" dt="43549" nr="1" winkel="14" name="Friedhofstra&#xDF;e"></armattr>
+                    <spurli>
+                        <spur>
+                            <spurattr id="100" dt="43549" name="" nr="1" lneig="5" abradra="20" aufstin="0" aufstib="-1"
+                                      aufstlla="15" aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="101" dt="43549" name="" art="1" nr="2" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <slattr lid="101"></slattr>
+                    </spurli>
+                    <strlist>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="1" narm="3" richt="1"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="1" narm="1" richt="5"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" fulae="20.8806064585641" name="QS1" fidx="1"></tsattr>
+                                    <sfzge fuss="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                        <li>2</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                        <li>1</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                    </strlist>
+                    <fzgval val0="1" val1="1" val2="0.5" val3="1" val4="1.5" val5="2" val6="2" val7="1.5"></fzgval>
+                    <mitins id="0" dt="0"></mitins>
+                    <kpvli>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="1" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="2" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                    </kpvli>
+                    <kplili>
+                    </kplili>
+                </arm>
+                <arm>
+                    <armattr id="-1" dt="43549" nr="2" winkel="56" mitins="True"></armattr>
+                    <spurli>
+                        <spur>
+                            <spurattr id="100" dt="43549" name="" nr="1" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="101" dt="43549" name="" nr="2" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="102" dt="43549" name="" art="1" nr="3" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <slattr lid="102"></slattr>
+                    </spurli>
+                    <strlist>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="2" narm="3" richt="3"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                        <li>2</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41394" varm="2" narm="1" richt="1"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="2" narm="2" richt="5"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" fulae="6.89628900534835" name="QS1" fidx="0"></tsattr>
+                                    <sfzge fuss="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                        <li>2</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                    </strlist>
+                    <fzgval val0="1" val1="1" val2="0.5" val3="1" val4="1.5" val5="2" val6="2" val7="1.5"></fzgval>
+                    <mitins id="0" dt="0"></mitins>
+                    <kpvli>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="1" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="2" ort="" kp=""></zkp>
+                        </kpverb>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="2" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="2" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                    </kpvli>
+                    <kplili>
+                    </kplili>
+                </arm>
+                <arm>
+                    <armattr id="-1" dt="43549" nr="3" winkel="237" name="Bremer Stra&#xDF;e"></armattr>
+                    <spurli>
+                        <spur>
+                            <spurattr id="100" dt="43549" name="" nr="1" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="101" dt="43549" name="" nr="2" abradla="15" aufstin="0" aufstib="-1"
+                                      aufstlla="15" aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="102" dt="43549" name="" art="1" nr="3" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="103" dt="43549" name="" art="1" nr="4" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <slattr lid="103"></slattr>
+                    </spurli>
+                    <strlist>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="3" narm="1" richt="2"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>2</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="3" narm="2" richt="3"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                    </strlist>
+                    <fzgval val0="1" val1="1" val2="0.5" val3="1" val4="1.5" val5="2" val6="2" val7="1.5"></fzgval>
+                    <mitins id="0" dt="0"></mitins>
+                    <kpvli>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="1" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="3" ort="" kp=""></zkp>
+                        </kpverb>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="2" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="3" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                    </kpvli>
+                    <kplili>
+                    </kplili>
+                </arm>
+                <arm>
+                    <armattr id="-1" dt="43549" nr="4" winkel="57"></armattr>
+                    <spurli>
+                        <spur>
+                            <spurattr id="100" dt="43549" name="" nr="1" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="101" dt="43549" name="" nr="2" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="102" dt="43549" name="" nr="3" abradla="15" aufstin="0" aufstib="-1"
+                                      aufstlla="15" aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="103" dt="43549" name="" art="1" nr="4" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <slattr lid="103"></slattr>
+                    </spurli>
+                    <strlist>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="4" narm="5" richt="2"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>3</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="4" narm="6" richt="3"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                        <li>2</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                    </strlist>
+                    <fzgval val0="1" val1="1" val2="0.5" val3="1" val4="1.5" val5="2" val6="2" val7="1.5"></fzgval>
+                    <mitins id="0" dt="0"></mitins>
+                    <kpvli>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="1" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="4" ort="" kp=""></zkp>
+                        </kpverb>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="2" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="4" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                    </kpvli>
+                    <kplili>
+                    </kplili>
+                </arm>
+                <arm>
+                    <armattr id="-1" dt="43549" nr="5" winkel="146" name="Am gro&#xDF;en Dahlen"></armattr>
+                    <spurli>
+                        <spur>
+                            <spurattr id="100" dt="43549" name="" nr="1" abradra="15" abradla="15" aufstin="0"
+                                      aufstib="-1" aufstlla="15" aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="101" dt="43549" name="" art="1" nr="2" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <slattr lid="101"></slattr>
+                    </spurli>
+                    <strlist>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="5" narm="4" richt="1"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="5" narm="6" richt="2"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="5" narm="5" richt="5"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" fulae="11.3844960322665" name="QS1" fidx="1"></tsattr>
+                                    <sfzge fuss="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                        <li>2</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                        <li>1</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                    </strlist>
+                    <fzgval val0="1" val1="1" val2="0.5" val3="1" val4="1.5" val5="2" val6="2" val7="1.5"></fzgval>
+                    <mitins id="0" dt="0"></mitins>
+                    <kpvli>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="1" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="5" ort="" kp=""></zkp>
+                        </kpverb>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="2" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="5" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                    </kpvli>
+                    <kplili>
+                    </kplili>
+                </arm>
+                <arm>
+                    <armattr id="-1" dt="43549" nr="6" winkel="236" mitins="True"></armattr>
+                    <spurli>
+                        <spur>
+                            <spurattr id="100" dt="43549" name="" nr="1" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="101" dt="43549" name="" art="1" nr="2" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="102" dt="43549" name="" art="1" nr="3" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <slattr lid="102"></slattr>
+                    </spurli>
+                    <strlist>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="6" narm="4" richt="3"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="6" narm="5" richt="1"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="6" narm="6" richt="5"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" fulae="4.17284436724177" name="QS1" fidx="0"></tsattr>
+                                    <sfzge fuss="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                    </strlist>
+                    <fzgval val0="1" val1="1" val2="0.5" val3="1" val4="1.5" val5="2" val6="2" val7="1.5"></fzgval>
+                    <mitins id="0" dt="0"></mitins>
+                    <kpvli>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="1" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="6" ort="" kp=""></zkp>
+                        </kpverb>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="2" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="6" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                    </kpvli>
+                    <kplili>
+                    </kplili>
+                </arm>
+                <arm>
+                    <armattr id="-1" dt="43549" nr="7" winkel="326"></armattr>
+                    <spurli>
+                        <spur>
+                            <spurattr id="100" dt="43549" name="" nr="1" lneig="6" abradra="15" abradla="15" aufstin="0"
+                                      aufstib="-1" aufstlla="15" aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <slattr lid="100"></slattr>
+                    </spurli>
+                    <strlist>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="7" narm="9" richt="1"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="7" narm="8" richt="2"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="7" narm="7" richt="5"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" fulae="7.3198849615951" name="QS1" fidx="1"></tsattr>
+                                    <sfzge fuss="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                    </strlist>
+                    <fzgval val0="1" val1="1" val2="0.5" val3="1" val4="1.5" val5="2" val6="2" val7="1.5"></fzgval>
+                    <mitins id="0" dt="0"></mitins>
+                    <kpvli>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="1" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="7" ort="" kp=""></zkp>
+                        </kpverb>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="2" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="7" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                    </kpvli>
+                    <kplili>
+                    </kplili>
+                </arm>
+                <arm>
+                    <armattr id="-1" dt="43549" nr="8" winkel="55" name="Bremer Stra&#xDF;e"></armattr>
+                    <spurli>
+                        <spur>
+                            <spurattr id="100" dt="43549" name="" nr="1" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="101" dt="43549" name="" nr="2" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="102" dt="43549" name="" art="1" nr="3" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="103" dt="43549" name="" art="1" nr="4" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <slattr lid="103"></slattr>
+                    </spurli>
+                    <strlist>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="8" narm="9" richt="3"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                        <li>2</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                    </strlist>
+                    <fzgval val0="1" val1="1" val2="0.5" val3="1" val4="1.5" val5="2" val6="2" val7="1.5"></fzgval>
+                    <mitins id="0" dt="0"></mitins>
+                    <kpvli>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="1" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="8" ort="" kp=""></zkp>
+                        </kpverb>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="2" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="8" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                    </kpvli>
+                    <kplili>
+                    </kplili>
+                </arm>
+                <arm>
+                    <armattr id="-1" dt="43549" nr="9" winkel="235"></armattr>
+                    <spurli>
+                        <spur>
+                            <spurattr id="100" dt="43549" name="" nr="1" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="101" dt="43549" name="" art="1" nr="2" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="102" dt="43549" name="" art="1" nr="3" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <slattr lid="102"></slattr>
+                    </spurli>
+                    <strlist>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="9" narm="8" richt="3"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                    </strlist>
+                    <fzgval val0="1" val1="1" val2="0.5" val3="1" val4="1.5" val5="2" val6="2" val7="1.5"></fzgval>
+                    <mitins id="0" dt="0"></mitins>
+                    <kpvli>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="1" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="9" ort="" kp=""></zkp>
+                        </kpverb>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="2" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="9" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                    </kpvli>
+                    <kplili>
+                    </kplili>
+                </arm>
+                <arm>
+                    <armattr id="-1" dt="43549" nr="10" winkel="20" tknr="2" name="Friedhofstra&#xDF;e"></armattr>
+                    <spurli>
+                        <spur>
+                            <spurattr id="100" dt="43549" name="" nr="1" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="101" dt="43549" name="" nr="2" abradla="15" aufstin="0" aufstib="-1"
+                                      aufstlla="15" aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="102" dt="43549" name="" art="1" nr="3" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <slattr lid="102"></slattr>
+                    </spurli>
+                    <strlist>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="10" narm="11" richt="2"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>2</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="10" narm="12" richt="3"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                    </strlist>
+                    <fzgval val0="1" val1="1" val2="0.5" val3="1" val4="1.5" val5="2" val6="2" val7="1.5"></fzgval>
+                    <mitins id="0" dt="0"></mitins>
+                    <kpvli>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="1" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="10" ort="" kp=""></zkp>
+                        </kpverb>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="2" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="10" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                    </kpvli>
+                    <kplili>
+                    </kplili>
+                </arm>
+                <arm>
+                    <armattr id="-1" dt="43549" nr="11" winkel="145" tknr="2"></armattr>
+                    <spurli>
+                        <spur>
+                            <spurattr id="100" dt="43549" name="" art="1" nr="1" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <slattr lid="100"></slattr>
+                    </spurli>
+                    <strlist>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="11" narm="11" richt="5"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" fulae="7.70590226577847" name="QS1" fidx="1"></tsattr>
+                                    <sfzge fuss="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>1</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                    </strlist>
+                    <fzgval val0="1" val1="1" val2="0.5" val3="1" val4="1.5" val5="2" val6="2" val7="1.5"></fzgval>
+                    <mitins id="0" dt="0"></mitins>
+                    <kpvli>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="1" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="11" ort="" kp=""></zkp>
+                        </kpverb>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="2" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="11" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                    </kpvli>
+                    <kplili>
+                    </kplili>
+                </arm>
+                <arm>
+                    <armattr id="-1" dt="43549" nr="12" winkel="210" tknr="2" name="Friedhofstra&#xDF;e"></armattr>
+                    <spurli>
+                        <spur>
+                            <spurattr id="100" dt="43549" name="" nr="1" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <spur>
+                            <spurattr id="101" dt="43549" name="" art="1" nr="2" aufstin="0" aufstib="-1" aufstlla="15"
+                                      aufstlra="8"></spurattr>
+                            <mitins id="0" dt="0"></mitins>
+                        </spur>
+                        <slattr lid="101"></slattr>
+                    </spurli>
+                    <strlist>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="12" narm="10" richt="3"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41396" varm="12" narm="11" richt="1"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" name=""></tsattr>
+                                    <sfzge kfz="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                        <strom>
+                            <strattr id="-1" dt="41388" varm="12" narm="12" richt="5"></strattr>
+                            <tslist>
+                                <tstrom>
+                                    <tsattr id="-1" dt="43549" fulae="9.27017232632839" name="QS1" fidx="1"></tsattr>
+                                    <sfzge fuss="1"></sfzge>
+                                    <spnrs>
+                                        <li>1</li>
+                                        <li>2</li>
+                                    </spnrs>
+                                    <spartn>
+                                        <li>0</li>
+                                        <li>1</li>
+                                    </spartn>
+                                </tstrom>
+                            </tslist>
+                        </strom>
+                    </strlist>
+                    <fzgval val0="1" val1="1" val2="0.5" val3="1" val4="1.5" val5="2" val6="2" val7="1.5"></fzgval>
+                    <mitins id="0" dt="0"></mitins>
+                    <kpvli>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="1" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="1" ort="" kp=""></qkp>
+                            <zkp arm="12" ort="" kp=""></zkp>
+                        </kpverb>
+                        <kpverb>
+                            <kpvattr wid="0" spanz="0" ri="2" name=""></kpvattr>
+                            <sfzge kfz="1"></sfzge>
+                            <qkp arm="12" ort="" kp=""></qkp>
+                            <zkp arm="1" ort="" kp=""></zkp>
+                        </kpverb>
+                    </kpvli>
+                    <kplili>
+                    </kplili>
+                </arm>
+            </armlist>
+            <tkli>
+                <tk>
+                    <tkattr id="1" dt="41388" nr="1" name="TK 1" pktx="721" pkty="2313" pch="True" gernr="1"></tkattr>
+                </tk>
+                <tk>
+                    <tkattr id="2" dt="41388" nr="2" name="TK 2" pktx="1401" pkty="1835" pch="True" gernr="1"></tkattr>
+                </tk>
+            </tkli>
+            <tkverbli>
+            </tkverbli>
+            <nopfl vis="False"></nopfl>
+            <knotgraf>
+                <knograttr fname="Tahoma"></knograttr>
+                <pp>
+                    <ppattr p2="Knotendaten"></ppattr>
+                    <ptpDim>0</ptpDim>
+                </pp>
+                <nopf ppx="40" ppy="75"></nopf>
+                <gtkli>
+                    <tk mpx="379.471740722656" mpy="779.380004882813" usmov="True"></tk>
+                    <tk mpx="943.190063476563" mpy="301.380004882813" usmov="True"></tk>
+                </gtkli>
+            </knotgraf>
+        </knotndat>
+    </KnotenData>
+</LISA>

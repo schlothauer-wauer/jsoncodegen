@@ -93,6 +93,20 @@ class SimpleXsdBuilder {
     }
 
     @Test
+    void plantuml_6() {
+        def fileName = 'plantuml6.puml'
+        def destFile = "tmp/$fileName"
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.models = ['src/test/resources/xsd/LSA_Versorgung_OMTC.xsd']
+        doCodeGen.generators.add('plantuml')
+        doCodeGen.generator_parameters.add("destFileName=$fileName")
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
+
+    @Test
     void simple2() {
         def modelFile = new File('src/test/resources/xsd/ui-tlc.xsd')
         assertTrue(modelFile.isFile())

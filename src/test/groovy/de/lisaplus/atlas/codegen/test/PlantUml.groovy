@@ -252,6 +252,21 @@ class PlantUml {
         doCodeGen.run()
         assertTrue(new File(destFile).exists())
     }
+    // TODO remove - start
+    @Test
+    void test_Micha1() {
+        def destFile = 'tmp/KnotenDaten.puml'
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/KnotenDaten.json']
+        doCodeGen.generators.add('plantuml')
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.generator_parameters.add('destFileName=KnotenDaten.puml')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
+    // TODO remove - end
+
 
     @Test
     void createFlorian_BuiltIn() {
