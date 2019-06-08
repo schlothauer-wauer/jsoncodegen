@@ -109,7 +109,8 @@
                   "read",
                   "write",
                   "commit"
-                ]
+                ],
+                "__enumName": "GrantsEnum"
               }
             },
             "__tags": [
@@ -140,6 +141,7 @@
                   "write",
                   "commit"
                 ],
+                "__enumName": "GrantsEnum",
                 "__tags": [
                   "one",
                   "two"

@@ -175,7 +175,7 @@ class PlantUml {
                 assertTrue(type.tags.contains('mainType'))
             }
         }
-        assertEquals(6,mainTypeCount)
+        assertEquals(7,mainTypeCount)
     }
 
     @Test

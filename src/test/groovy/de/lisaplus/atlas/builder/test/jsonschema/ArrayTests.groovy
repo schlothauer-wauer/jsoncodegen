@@ -21,7 +21,7 @@ class ArrayTests {
         def model = builder.buildModel(modelFile)
         assertEquals(model.description,'Test user model')
         assertEquals('User model',model.title)
-        assertEquals(4,model.types.size())
+        assertEquals(6,model.types.size())
     }
 
     @Test

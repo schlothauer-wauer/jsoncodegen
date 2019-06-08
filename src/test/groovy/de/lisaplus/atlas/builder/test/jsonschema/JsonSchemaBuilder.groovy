@@ -32,7 +32,7 @@ class JsonSchemaBuilder {
         assertTrue(modelFile.isFile())
         def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
         def model = builder.buildModel(modelFile)
-        assertEquals(8,model.types.size())
+        assertEquals(10,model.types.size())
     }
 
 
@@ -199,7 +199,7 @@ class JsonSchemaBuilder {
         assertTrue(modelFile.isFile())
         def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
         def model = builder.buildModel(modelFile)
-        assertEquals(8,model.types.size())
+        assertEquals(10,model.types.size())
         def typesWithTags = 0
         model.types.find{
             if (it.tags) {

@@ -160,3 +160,4 @@ class ByteType extends BaseType {
     }
     final static NAME='BYTE'
 }
+

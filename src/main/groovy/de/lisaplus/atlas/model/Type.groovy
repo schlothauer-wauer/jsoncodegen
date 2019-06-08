@@ -236,3 +236,11 @@ class ExternalType extends Type {
         this.refStr = source.refStr
     }
 }
+
+/**
+ * type that implements enums
+ */
+class EnumType extends Type {
+    // defined values for that enum
+    String[] allowedValues=[]
+}
