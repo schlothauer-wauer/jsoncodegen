@@ -32,9 +32,18 @@ class JsonSchemaBuilder {
         assertTrue(modelFile.isFile())
         def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
         def model = builder.buildModel(modelFile)
-        assertEquals(10,model.types.size())
+        assertEquals(8,model.types.size())
     }
 
+    @Test
+    void testExtWithEnums() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/user.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        builder.createEnumTypes = true
+        def model = builder.buildModel(modelFile)
+        assertEquals(10,model.types.size())
+    }
 
     @Test
     void testGetSchemaBasePath() {
@@ -199,7 +208,7 @@ class JsonSchemaBuilder {
         assertTrue(modelFile.isFile())
         def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
         def model = builder.buildModel(modelFile)
-        assertEquals(10,model.types.size())
+        assertEquals(8,model.types.size())
         def typesWithTags = 0
         model.types.find{
             if (it.tags) {

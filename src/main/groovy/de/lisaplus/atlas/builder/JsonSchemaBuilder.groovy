@@ -38,6 +38,8 @@ import static de.lisaplus.atlas.builder.helper.BuildHelper.makeCamelCase
  * Created by eiko on 01.06.17.
  */
 class JsonSchemaBuilder implements IModelBuilder {
+    def createEnumTypes = false
+
     /**
      * Container for all created types helps - makes reference handling easier
      */
@@ -543,7 +545,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                     return new DateType()
                 }
                 else {
-                    if (propObjMap.enum) {
+                    if (createEnumTypes && propObjMap.enum) {
                         initEnumType(model,propObjMap,innerTypeBaseName,schemaFileName,currentSchemaPath)
                     }
                     else {
