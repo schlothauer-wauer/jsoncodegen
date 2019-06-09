@@ -1,0 +1,175 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "User model",
+  "description": "Test user model",
+  "definitions": {
+    "user_log": {
+      "type": "object",
+      "properties": {
+        "domain_id": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/domain.json"
+        },
+        "user_id": {
+          "description": "What user owns this entry",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/user"
+        },
+        "type": {
+          "description": "type of the entry",
+          "type": "string",
+          "enum": [
+            "login",
+            "logout"
+          ]
+        },
+        "comment": {
+          "description": "the common field contain all unmodeled stuff",
+          "type": "string"
+        }
+      }
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "domain_id": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/domain.json"
+        },
+        "name": {
+          "description": "login name of the user",
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+        },
+        "real_name": {
+          "description": "used to display the user in applications",
+          "type": "string",
+          "__visKey": true
+        },
+        "gid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/role"
+          }
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean"
+        },
+        "comment": {
+          "description": "the common field contain all unmodeled stuff",
+          "type": "string"
+        }
+      },
+      "__tags": [
+        "five",
+        "six",
+        "seven"
+      ]
+    },
+    "role": {
+      "type": "object",
+      "properties": {
+        "domain_id": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+            "__ref": "./shared/domain.json"
+        },
+        "name": {
+          "description": "Name of the role",
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+        },
+        "comment": {
+          "description": "the common field contain all unmodeled stuff",
+          "type": "string"
+        },
+        "module_grants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "what is granted to do with specific modules",
+            "properties": {
+              "module": {
+                "$ref": "./shared/app_module.json"
+              },
+              "grant": {
+                "type": "string",
+                "enum": [
+                  "read",
+                  "write",
+                  "commit",
+                  "foo"
+                ],
+                "__enumName": "GrantsEnum"
+              }
+            },
+            "__tags": [
+              "five",
+              "six",
+              "seven"
+            ]
+          },
+          "__tags": [
+            "one",
+            "two"
+          ]
+        },
+        "data_grants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "what is granted to do with specific modules",
+            "properties": {
+              "data_path": {
+                "description" : "dummy string to define some data",
+                "type": "string"
+              },
+              "grant": {
+                "type": "string",
+                "enum": [
+                  "read",
+                  "write",
+                  "commit"
+                ],
+                "__enumName": "GrantsEnum",
+                "__tags": [
+                  "one",
+                  "two"
+                ]
+              },
+              "byteTest": {
+                "type": "integer",
+                "format": "byte"
+              },
+              "byteArrayTest": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "byte"
+                }
+              }
+            }
+          }
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean"
+        }
+      },
+      "__version": 2
+    }
+  },
+  "type": "object",
+  "__version": 3
+}

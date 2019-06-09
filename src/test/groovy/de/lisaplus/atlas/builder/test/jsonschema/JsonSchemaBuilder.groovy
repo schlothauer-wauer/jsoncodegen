@@ -4,6 +4,7 @@ import de.lisaplus.atlas.builder.JsonSchemaBuilder
 import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
 import de.lisaplus.atlas.model.AggregationType
 import de.lisaplus.atlas.model.ByteType
+import de.lisaplus.atlas.model.EnumType
 import de.lisaplus.atlas.model.IntType
 import de.lisaplus.atlas.model.LongType
 import org.junit.Test
@@ -12,6 +13,7 @@ import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertFalse
 import static org.junit.Assert.assertNotNull
 import static org.junit.Assert.assertTrue
+import static org.junit.Assert.fail
 
 /**
  * Created by eiko on 18.06.17.
@@ -43,6 +45,37 @@ class JsonSchemaBuilder {
         builder.createEnumTypes = true
         def model = builder.buildModel(modelFile)
         assertEquals(10,model.types.size())
+
+        def grantsEnumType = model.types.find { it.name == 'GrantsEnum'}
+        assertNotNull(grantsEnumType)
+        List<String> expected1 = ['read','write','commit']
+        assertEquals(expected1.size(),((EnumType)grantsEnumType).allowedValues.size())
+        for (int i=0; i<expected1.size();i++) {
+            assertEquals(expected1[i],((EnumType)grantsEnumType).allowedValues[i])
+        }
+
+        def userLogType = model.types.find { it.name == 'UserLogType'}
+        assertNotNull(userLogType)
+        List<String> expected2 = ['login','logout']
+        assertEquals(expected2.size(),((EnumType)userLogType).allowedValues.size())
+        for (int i=0; i<expected2.size();i++) {
+            assertEquals(expected2[i],((EnumType)userLogType).allowedValues[i])
+        }
+    }
+
+    @Test
+    void testExtWithEnumsWithDiffrentAllowedValues() {
+        try {
+            def modelFile = new File('src/test/resources/test_schemas/ds/user_different_enum_values.json')
+            assertTrue(modelFile.isFile())
+            def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+            builder.createEnumTypes = true
+            def model = builder.buildModel(modelFile)
+            fail()
+        }
+        catch (Exception e) {
+            assertEquals('expect an enum type but there already exists an non-enum type with the same name: GrantsEnum',e.message)
+        }
     }
 
     @Test
