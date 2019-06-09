@@ -35,6 +35,22 @@ class JavaBeans {
     }
 
     @Test
+    void createFromUserModelWithEnums() {
+        def destDir = 'tmp/java_beans_enums'
+        FileHelper.removeDirectoryIfExists(destDir)
+        def modelFile = new File('src/test/resources/test_schemas/ds/user.json')
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.models=[modelFile]
+        doCodeGen.generators.add('java_beans')
+        doCodeGen.outputBaseDir = destDir
+        doCodeGen.createEnumTypes = true
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.generator_parameters.add('packageName=de.test.jsoncodegen.impl')
+        doCodeGen.run()
+    }
+
+
+    @Test
     void createFromXsd() {
         def destDir = 'tmp/xsd_java_beans'
         FileHelper.removeDirectoryIfExists(destDir)

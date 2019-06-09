@@ -13,8 +13,12 @@ ${importStr}
 /**
  * ${currentType.description}
  */
-<% } %>
-public class ${ upperCamelCase.call(currentType.name) } {
+<% }
+if (currentType instanceof de.lisaplus.atlas.model.EnumType) {
+%>
+    // TODO here will be the enum code
+<% } else {
+%>public class ${ upperCamelCase.call(currentType.name) } {
     <% if (versionConst) {
     %>
     /**
@@ -88,3 +92,4 @@ public class ${ upperCamelCase.call(currentType.name) } {
     }
 
 }
+<% } %>
