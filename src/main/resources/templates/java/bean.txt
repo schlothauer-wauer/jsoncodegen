@@ -15,8 +15,14 @@ ${importStr}
  */
 <% }
 if (currentType instanceof de.lisaplus.atlas.model.EnumType) {
-%>
-    // TODO here will be the enum code
+%>public enum ${ upperCamelCase.call(currentType.name) } {
+    <% boolean first=true; currentType.allowedValues.each { value ->
+    if (first) {%>
+    ${value}
+    <% first=false} else { %>
+    ,${value}
+    <% } } %>
+}
 <% } else {
 %>public class ${ upperCamelCase.call(currentType.name) } {
     <% if (versionConst) {

@@ -546,7 +546,11 @@ class JsonSchemaBuilder implements IModelBuilder {
                 }
                 else {
                     if (createEnumTypes && propObjMap.enum) {
-                        initEnumType(model,propObjMap,innerTypeBaseName,schemaFileName,currentSchemaPath)
+                        EnumType enumType = initEnumType(model,propObjMap,innerTypeBaseName,schemaFileName,currentSchemaPath)
+                        RefType ret = new RefType()
+                        ret.type=enumType
+                        ret.typeName=enumType.name
+                        return ret
                     }
                     else {
                         return new StringType()

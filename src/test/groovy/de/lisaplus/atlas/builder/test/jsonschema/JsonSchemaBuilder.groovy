@@ -7,6 +7,7 @@ import de.lisaplus.atlas.model.ByteType
 import de.lisaplus.atlas.model.EnumType
 import de.lisaplus.atlas.model.IntType
 import de.lisaplus.atlas.model.LongType
+import de.lisaplus.atlas.model.RefType
 import org.junit.Test
 
 import static org.junit.Assert.assertEquals
@@ -56,6 +57,12 @@ class JsonSchemaBuilder {
 
         def userLogType = model.types.find { it.name == 'UserLogType'}
         assertNotNull(userLogType)
+        def userLog = model.types.find { it.name == 'UserLog'}
+        assertNotNull(userLog)
+        def userLogTypeProp = userLog.properties.find { it.name == 'type' }
+        assertNotNull(userLogTypeProp)
+        assertTrue ( userLogTypeProp.type instanceof RefType )
+        assertEquals('UserLogType', userLogTypeProp.type.type.name )
         List<String> expected2 = ['login','logout']
         assertEquals(expected2.size(),((EnumType)userLogType).allowedValues.size())
         for (int i=0; i<expected2.size();i++) {
