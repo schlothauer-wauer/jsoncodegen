@@ -25,6 +25,18 @@ class ArrayTests {
     }
 
     @Test
+    void test_initModelWithEnums() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/array_test_simple.json')
+        assertTrue(modelFile.isFile())
+        def builder = new JsonSchemaBuilder()
+        builder.createEnumTypes = true
+        def model = builder.buildModel(modelFile)
+        assertEquals(model.description,'Test user model')
+        assertEquals('User model',model.title)
+        assertEquals(6,model.types.size())
+    }
+
+    @Test
     void testContainsAttrib() {
         def destDir = 'tmp/array_tests'
         FileHelper.removeDirectoryIfExists(destDir)

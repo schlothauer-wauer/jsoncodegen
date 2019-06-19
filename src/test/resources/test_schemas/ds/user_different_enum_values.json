@@ -108,7 +108,8 @@
                 "enum": [
                   "read",
                   "write",
-                  "commit"
+                  "commit",
+                  "foo"
                 ],
                 "__enumName": "GrantsEnum"
               }

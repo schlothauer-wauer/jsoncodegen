@@ -11,6 +11,7 @@ import de.lisaplus.atlas.model.ComplexType
 import de.lisaplus.atlas.model.DateTimeType
 import de.lisaplus.atlas.model.DateType
 import de.lisaplus.atlas.model.DummyType
+import de.lisaplus.atlas.model.EnumType
 import de.lisaplus.atlas.model.ExternalType
 import de.lisaplus.atlas.model.InnerType
 import de.lisaplus.atlas.model.IntType
@@ -37,6 +38,8 @@ import static de.lisaplus.atlas.builder.helper.BuildHelper.makeCamelCase
  * Created by eiko on 01.06.17.
  */
 class JsonSchemaBuilder implements IModelBuilder {
+    def createEnumTypes = false
+
     /**
      * Container for all created types helps - makes reference handling easier
      */
@@ -470,6 +473,44 @@ class JsonSchemaBuilder implements IModelBuilder {
 
     }
 
+    private EnumType initEnumType(Model model,def propertiesParent,def baseTypeName, String schemaFileName, String currentSchemaPath) {
+        if (!propertiesParent) {
+            def errorMsg = "undefined properties map, so cancel init complex type"
+            log.error(errorMsg)
+            throw new Exception(errorMsg)
+        }
+        String enumTypeName = propertiesParent."__enumName" ? propertiesParent."__enumName" : baseTypeName
+
+        def allowedValues = propertiesParent."enum"
+
+        def alreadyCreated = createdTypes[enumTypeName]
+        if (alreadyCreated) {
+            // check if the values are the same as already defined
+            if (!(alreadyCreated instanceof EnumType)) {
+                def errorMsg = "expect an enum type but there already exists an non-enum type with the same name: $enumTypeName"
+                log.error(errorMsg)
+                throw new Exception(errorMsg)
+            }
+            EnumType alreadyCreatedEnumType = (EnumType) alreadyCreated
+            if (alreadyCreatedEnumType.allowedValues != allowedValues) {
+                def errorMsg = "expect an enum type but there already exists an non-enum type with the same name: $enumTypeName"
+                log.error(errorMsg)
+                throw new Exception(errorMsg)
+            }
+            return alreadyCreated
+        }
+
+        EnumType newType = new EnumType()
+        newType.name = enumTypeName
+        newType.schemaPath = currentSchemaPath
+        newType.schemaFileName = schemaFileName
+        newType.allowedValues = allowedValues
+        TypeToColor.setColor(newType)
+        createdTypes[newType.name] = newType
+        model.types.add(newType)
+        return newType
+    }
+
     private ComplexType initComplexType(Model model,def propertiesParent,def baseTypeName, String schemaFileName, String currentSchemaPath) {
         if (!propertiesParent) {
             def errorMsg = "undefined properties map, so cancel init complex type"
@@ -503,8 +544,18 @@ class JsonSchemaBuilder implements IModelBuilder {
                 else if (propObjMap.format && propObjMap.format.toLowerCase()=="date") {
                     return new DateType()
                 }
-                else
-                    return new StringType()
+                else {
+                    if (createEnumTypes && propObjMap.enum) {
+                        EnumType enumType = initEnumType(model,propObjMap,innerTypeBaseName,schemaFileName,currentSchemaPath)
+                        RefType ret = new RefType()
+                        ret.type=enumType
+                        ret.typeName=enumType.name
+                        return ret
+                    }
+                    else {
+                        return new StringType()
+                    }
+                }
             case 'integer':
                 if (propObjMap.format && propObjMap.format.toLowerCase()=="int64") {
                     return new LongType()

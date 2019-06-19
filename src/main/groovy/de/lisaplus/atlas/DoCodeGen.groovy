@@ -128,6 +128,12 @@ class DoCodeGen {
     @Parameter(names = ['-rta2a','--remove-tag-all-if-not-main-attrib'], description = "don't do any code generation, simply loads the model and print the main-types of it")
     String mainTypeAttrib2
 
+    /**
+     * if set enum types insteed of strings will be used
+     */
+    @Parameter(names = ['-cet','--create-enum-types'], description = "if set the model is built with enum types")
+    boolean createEnumTypes = false
+
 
     /**
      * The datamodel parsed by the builder. It is public accessible for tests
@@ -174,6 +180,9 @@ class DoCodeGen {
             if (builder==null) {
                 log.error("unknown file type, currently only jscon schema and xsd are supported: ${model}")
                 System.exit(1)
+            }
+            if (builder instanceof JsonSchemaBuilder) {
+                ((JsonSchemaBuilder)builder).createEnumTypes = createEnumTypes
             }
             Model tmpModel = builder.buildModel(modelFile)
             printMainTypesIfNeeded(tmpModel,modelFile.getName())
