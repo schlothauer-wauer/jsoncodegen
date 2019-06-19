@@ -9,7 +9,7 @@ sourceCompatibility = 11
 def mainClass='de.lisaplus.atlas.DoCodeGen'
 
 project.group = 'de.lisaplus.tools'
-project.version = '0.11.3-java11'
+project.version = '0.12.0-java11'
 
 
 task sourcesJar(type: Jar) {
