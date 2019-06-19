@@ -223,7 +223,7 @@ class DoCodeGen {
         }
     }
 
-    void mergeIntoDataModel(Model mainModel,Model newModel) {
+    static void mergeIntoDataModel(Model mainModel,Model newModel) {
         newModel.types.each { type ->
             if (!mainModel.types.find { existingType -> existingType.name==type.name &&
                     existingType.schemaFileName==type.schemaFileName }) {
