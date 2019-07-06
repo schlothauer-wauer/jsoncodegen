@@ -32,6 +32,8 @@ abstract class SingleFileGenarator extends GeneratorBase implements ICodeGen {
         else {
             data.extraParam = [:]
         }
+        initGeneratorScriptForTemplate(data)
+
         removeUnneededTypes(data,extraParams)
         def ergebnis = template.make(data)
 
