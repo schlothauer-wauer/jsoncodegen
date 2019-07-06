@@ -32,6 +32,8 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
             data.extraParam = [:]
         }
 
+        initGeneratorScriptForTemplate(data)
+
         def blackListed=data.extraParam['blackListed']
         def whiteListed=data.extraParam['whiteListed']
 

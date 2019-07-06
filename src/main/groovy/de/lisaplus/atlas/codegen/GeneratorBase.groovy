@@ -17,6 +17,30 @@ abstract class GeneratorBase extends TypeStringManipulation {
     Template template
     Map<String,String> extraParams
 
+    String generatorScript
+
+    /**
+     * initialize additional scripts that should be passed to the used templates
+     * @param generatorScripts
+     */
+    void setGeneratorScript (String generatorScript) {
+        this.generatorScript = generatorScript
+    }
+
+    protected void initGeneratorScriptForTemplate (Map data) {
+        if (this.generatorScript) {
+            File scriptFile = new File(this.generatorScript)
+            if (scriptFile.isFile()) {
+                GroovyShell shell = new GroovyShell()
+                def script = shell.parse(scriptFile)
+                data.script = script
+            }
+            else {
+                throw new Exception("can't find passed script file: ${this.generatorScript}")
+            }
+        }
+    }
+
     static void createDir(String dirName) {
         DoCodeGen.prepareOutputBaseDir(dirName)
     }
@@ -157,6 +181,7 @@ abstract class GeneratorBase extends TypeStringManipulation {
         def data = getClosures()
         data.actObj = actObj
         data.indent = indent
+        initGeneratorScriptForTemplate(data)
         data.renderInnerTemplate = renderInnerTemplate
         if (this.extraParams) {
             data.extraParam = this.extraParams

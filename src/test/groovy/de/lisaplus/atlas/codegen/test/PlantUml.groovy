@@ -38,6 +38,20 @@ class PlantUml {
     }
 
     @Test
+    void createLisaInesNetworkModel() {
+        def destFileBase = 'lisa_ines_network_json.puml'
+        def destFile = "tmp/$destFileBase"
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.models = ['src/test/resources/test_schemas/ds/lisa-ines-network.json']
+        doCodeGen.generators.add('plantuml')
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add("destFileName=$destFileBase")
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
+
+    @Test
     void createIncidentModelAddTags() {
         def destFile = 'tmp/incident.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()

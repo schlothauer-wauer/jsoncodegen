@@ -21,6 +21,7 @@ import de.lisaplus.atlas.model.StringType
 import de.lisaplus.atlas.model.Type
 import de.lisaplus.atlas.model.UnsupportedType
 import org.apache.xmlbeans.SchemaAnnotation
+import org.apache.xmlbeans.SchemaGlobalElement
 import org.apache.xmlbeans.SchemaLocalElement
 import org.apache.xmlbeans.SchemaParticle
 import org.apache.xmlbeans.SchemaProperty
@@ -52,9 +53,19 @@ class XSDBuilder implements IModelBuilder {
         // two interations needed because to replace pure restriction types they must be known
         collectPureRestrictionTypes(model,globalTypes)
         collectNormalTypes(model,globalTypes)
+        if (!model.types) {
+            collectTypesFromGlobalElements(model,sts.globalElements())
+        }
         model.postProcess()
 
         return model
+    }
+
+    void collectTypesFromGlobalElements(Model model, def globalElements) {
+        globalElements.each { SchemaGlobalElement globalElement ->
+            def type = globalElement.getType()
+            handleNormalType(type,model,globalElement.name.localPart)
+        }
     }
 
     String navigateParticleToGetDocumentation(SchemaParticle p, Property prop) {
@@ -136,7 +147,6 @@ class XSDBuilder implements IModelBuilder {
             }
         }
     }
-
 
     private void handleNormalType(SchemaType type, Model model, String desiredName = null) {
         Type newType = desiredName==null ? new Type() : new InnerType()

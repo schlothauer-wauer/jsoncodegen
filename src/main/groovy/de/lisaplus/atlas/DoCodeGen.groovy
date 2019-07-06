@@ -49,6 +49,13 @@ class DoCodeGen {
     @Parameter(names = ['-g', '--generator'], description = "generator that are used with the model. This parameter can be used multiple times")
     List<String> generators = []
 
+
+    /**
+     * Generator to use
+     */
+    @Parameter(names = ['-gs', '--generator-scripts'], description = "additional script that should be passed to the used templates")
+    String generatorScript
+
     /**
      * Generator parameter
      */
@@ -194,6 +201,7 @@ class DoCodeGen {
                 mergeIntoDataModel(dataModel,tmpModel)
             }
         }
+        sortTypesAndProperties(dataModel)
         prepareOutputBaseDir(outputBaseDir)
 
         // convert extra generator parameter to a map
@@ -204,7 +212,6 @@ class DoCodeGen {
             log.warn('no generators configured - skip')
         }
         else {
-            // TODO start CodeGen
             generators.each { generatorName ->
                 def trennerIndex = generatorName.indexOf('=')
                 def templateName = trennerIndex!=-1 && trennerIndex < generatorName.length() - 1? generatorName.substring(trennerIndex+1) : null
@@ -212,12 +219,12 @@ class DoCodeGen {
                 def pureGeneratorName = trennerIndex!=-1? generatorName.substring(0,trennerIndex) : generatorName
                 // later linked generators needs to contain package seperator
                 if (pureGeneratorName.indexOf('.')!=-1) {
-                    // a later linked generator
-                    useCustomGenerator(pureGeneratorName,templateName,dataModel,extraParameters,outputBaseDir)
+                    // a later linked generator - not implemented yet
+                    useCustomGenerator(pureGeneratorName,templateName,dataModel,extraParameters,outputBaseDir,generatorScript)
                 }
                 else {
                     // a build in generator
-                    useBuiltInGenerator(pureGeneratorName,templateName,dataModel,extraParameters,outputBaseDir)
+                    useBuiltInGenerator(pureGeneratorName,templateName,dataModel,extraParameters,outputBaseDir,generatorScript)
                 }
             }
         }
@@ -229,6 +236,13 @@ class DoCodeGen {
                     existingType.schemaFileName==type.schemaFileName }) {
                 mainModel.types.add(type)
             }
+        }
+    }
+
+    static void sortTypesAndProperties(Model model) {
+        model.types.sort{ a,b -> a.name<=>b.name}
+        model.types.each { type ->
+            type.properties.sort{ a,b -> a.name<=>b.name }
         }
     }
 
@@ -299,11 +313,11 @@ class DoCodeGen {
         }
     }
 
-    static void useCustomGenerator(String generatorName, String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
+    static void useCustomGenerator(String generatorName, String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir,String generatorScript) {
         // TODO
     }
 
-    static void useBuiltInGenerator(String generatorName, String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
+    static void useBuiltInGenerator(String generatorName, String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir,String generatorScript) {
         switch (generatorName) {
             case 'java_interfaces':
                 JavaInterfaceGenerator generator = new JavaInterfaceGenerator()
@@ -372,10 +386,10 @@ class DoCodeGen {
                 generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break
             case 'multifiles':
-                generateMultiFiles(generatorName,templateName,dataModel,extraParameters,outputBaseDir)
+                generateMultiFiles(generatorName,templateName,dataModel,extraParameters,outputBaseDir,generatorScript)
                 break
             case 'singlefile':
-                generateSingleFile(generatorName,templateName,dataModel,extraParameters,outputBaseDir)
+                generateSingleFile(generatorName,templateName,dataModel,extraParameters,outputBaseDir,generatorScript)
                 break
             default:
                 def errorMsg = "unknown built in generator: ${generatorName}"
@@ -384,9 +398,10 @@ class DoCodeGen {
         }
     }
 
-    static void generateMultiFiles(String generatorName,String templateName,Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
+    static void generateMultiFiles(String generatorName,String templateName,Model dataModel, Map<String,String> extraParameters,String outputBaseDir,String generatorScript) {
         checkForTemplate(generatorName,templateName)
         IExternalCodeGen generator = new ExtMultiFileGenarator()
+        generator.setGeneratorScript(generatorScript)
         if (isTemplateFile(templateName)) {
             generator.initTemplateFromFile(templateName, TemplateType.GString)
         }
@@ -396,9 +411,10 @@ class DoCodeGen {
         generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
     }
 
-    static void generateSingleFile(String generatorName,String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
+    static void generateSingleFile(String generatorName,String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir,String generatorScript) {
         checkForTemplate(generatorName,templateName)
         IExternalCodeGen generator = new ExtSingleFileGenarator()
+        generator.setGeneratorScript(generatorScript)
         if (isTemplateFile(templateName)) {
             generator.initTemplateFromFile(templateName, TemplateType.GString)
         }
