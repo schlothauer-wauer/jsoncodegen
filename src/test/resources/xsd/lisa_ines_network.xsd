@@ -1,0 +1,278 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.schlothauer.de/OMTC/CentralController" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="CentralControllerParameter">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element type="xs:byte" name="DataFormat"/>
+                <xs:element name="HeaderData">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element type="xs:string" name="ShortName"/>
+                            <xs:element type="xs:string" name="Name"/>
+                            <xs:element name="Identification">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="IntersectionId">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:string" name="City"/>
+                                                    <xs:element type="xs:byte" name="IntersectionNumber"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="OCITIdentity">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:short" name="CenNo"/>
+                                                    <xs:element type="xs:byte" name="TCNo"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element type="xs:string" name="UID"/>
+                            <xs:element name="Uploader">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:string" name="Name"/>
+                                        <xs:element type="xs:string" name="Version"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element type="xs:string" name="Operator"/>
+                            <xs:element type="xs:dateTime" name="DataTimeStamp"/>
+                            <xs:element type="xs:byte" name="DataVersion"/>
+                            <xs:element type="xs:string" name="Machine"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="CentralController">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element type="xs:string" name="URL"/>
+                            <xs:element name="PdService">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:string" name="URL"/>
+                                        <xs:element type="xs:string" name="Service"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="PdCallbackService">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:string" name="URL"/>
+                                        <xs:element type="xs:string" name="Service"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="FgService">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:string" name="URL"/>
+                                        <xs:element type="xs:string" name="Service"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="VdService">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:string" name="URL"/>
+                                        <xs:element type="xs:string" name="Service"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="TrafficControllerList">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="TrafficController" maxOccurs="unbounded" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:string" name="Identifier"/>
+                                        <xs:element name="LastChange">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:dateTime" name="Datum"/>
+                                                    <xs:element type="xs:string" name="Operator"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="Comments">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:string" name="Comment"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element type="xs:byte" name="CenNo"/>
+                                        <xs:element type="xs:short" name="TCNo"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="SignalProgramList">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="SignalProgram" maxOccurs="unbounded" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:string" name="Identifier"/>
+                                        <xs:element name="LastChange">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:dateTime" name="Datum"/>
+                                                    <xs:element type="xs:string" name="Operator"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element type="xs:byte" name="ObjNo"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="DetectorList">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Detector" maxOccurs="unbounded" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:string" name="Identifier"/>
+                                        <xs:element name="LastChange">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:dateTime" name="Datum"/>
+                                                    <xs:element type="xs:string" name="Operator"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element type="xs:byte" name="ObjNo"/>
+                                        <xs:element type="xs:string" name="Controller"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="SignalGroupList">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="SignalGroup" maxOccurs="unbounded" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:string" name="Identifier"/>
+                                        <xs:element name="LastChange">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:dateTime" name="Datum"/>
+                                                    <xs:element type="xs:string" name="Operator"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element type="xs:byte" name="ObjNo"/>
+                                        <xs:element type="xs:string" name="Controller"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="TimerList">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Timer" maxOccurs="unbounded" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:string" name="Identifier"/>
+                                        <xs:element type="xs:byte" name="ObjNo"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="LogicParameterList">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="ParameterBlock" maxOccurs="unbounded" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element type="xs:string" name="Identifier"/>
+                                        <xs:element type="xs:string" name="UUID"/>
+                                        <xs:element name="Structur">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element type="xs:short" name="MaxRecordCount"/>
+                                                    <xs:element name="Parameter" maxOccurs="unbounded" minOccurs="0">
+                                                        <xs:complexType>
+                                                            <xs:choice maxOccurs="unbounded" minOccurs="0">
+                                                                <xs:element type="xs:string" name="Identifier"/>
+                                                                <xs:element type="xs:string" name="StandardType"/>
+                                                                <xs:element type="xs:byte" name="iDefault"/>
+                                                                <xs:element type="xs:string" name="sDefault"/>
+                                                                <xs:element type="xs:string" name="Referencetype"/>
+                                                                <xs:element type="xs:float" name="fDefault"/>
+                                                                <xs:element name="EnumList">
+                                                                    <xs:complexType>
+                                                                        <xs:sequence>
+                                                                            <xs:element name="Enum" maxOccurs="unbounded" minOccurs="0">
+                                                                                <xs:complexType>
+                                                                                    <xs:sequence>
+                                                                                        <xs:element type="xs:string" name="Identifier"/>
+                                                                                        <xs:element type="xs:byte" name="Value"/>
+                                                                                    </xs:sequence>
+                                                                                </xs:complexType>
+                                                                            </xs:element>
+                                                                        </xs:sequence>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element type="xs:byte" name="wDefault"/>
+                                                                <xs:element type="xs:string" name="zDefault"/>
+                                                            </xs:choice>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="ParameterSet">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="Record" maxOccurs="unbounded" minOccurs="0">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element type="xs:byte" name="No"/>
+                                                                <xs:element name="Item" maxOccurs="unbounded" minOccurs="0">
+                                                                    <xs:complexType>
+                                                                        <xs:choice maxOccurs="unbounded" minOccurs="0">
+                                                                            <xs:element type="xs:string" name="Parameter"/>
+                                                                            <xs:element type="xs:float" name="fItem"/>
+                                                                            <xs:element type="xs:byte" name="iItem"/>
+                                                                            <xs:element type="xs:string" name="sItem"/>
+                                                                            <xs:element type="xs:string" name="Reference"/>
+                                                                            <xs:element type="xs:byte" name="wItem"/>
+                                                                            <xs:element type="xs:string" name="zItem"/>
+                                                                        </xs:choice>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

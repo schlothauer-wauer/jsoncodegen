@@ -62,11 +62,20 @@ class Property {
     }
 
     String toString() {
-        return ToStringBuilder.reflectionToString(this);
+        return ToStringBuilder.reflectionToString(this)
     }
 
     boolean isRefTypeOrComplexType() {
-        return type && ( type instanceof RefType || type instanceof ComplexType )
+        boolean b = type && ( type instanceof RefType || type instanceof ComplexType)
+        if (!b) return false
+        if (type.type instanceof MinMaxType) return false
+        if (type.type instanceof BooleanType) return false
+        if (type.type instanceof ByteType) return false
+        if (type.type instanceof StringType) return false
+        if (type.type instanceof UnsupportedType) return false
+        if (type.type instanceof UUIDType) return false
+        if (type.type instanceof VoidType) return false
+        return true
     }
 
     boolean isRefType() {

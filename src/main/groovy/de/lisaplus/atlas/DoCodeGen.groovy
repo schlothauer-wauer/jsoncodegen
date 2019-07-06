@@ -201,6 +201,7 @@ class DoCodeGen {
                 mergeIntoDataModel(dataModel,tmpModel)
             }
         }
+        sortTypesAndProperties(dataModel)
         prepareOutputBaseDir(outputBaseDir)
 
         // convert extra generator parameter to a map
@@ -235,6 +236,13 @@ class DoCodeGen {
                     existingType.schemaFileName==type.schemaFileName }) {
                 mainModel.types.add(type)
             }
+        }
+    }
+
+    static void sortTypesAndProperties(Model model) {
+        model.types.sort{ a,b -> a.name<=>b.name}
+        model.types.each { type ->
+            type.properties.sort{ a,b -> a.name<=>b.name }
         }
     }
 

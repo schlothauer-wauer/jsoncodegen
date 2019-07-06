@@ -1,0 +1,845 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mit XMLSpy v2006 sp2 U bearbeitet (http://www.altova.com) von - (-) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.schlothauer.de/OMTC/CentralController" targetNamespace="http://www.schlothauer.de/OMTC/CentralController" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<!--Schlothauer & Wauer-->
+	<!---->
+	<!--=============================================================================-->
+	<!--Zentralensteuerung-Versorgung V1.0 OMTC-->
+	<!--VT-Basisversorgungsdaten für Zentralen              -->
+	<!--XML Schema nach W3C, Mai 2001                                               -->
+	<!--=============================================================================-->
+	<xs:element name="CentralControllerParameter" type="CentralControllerParameterType"/>
+	<!--Versorgung enthält alle Daten, die für eine Komplettversorgung benötigt werden. Innerhalb der Versorgung-->
+	<!--sind herstellerspezifische Erweiterungen möglich, deren Strukturbeschreibungen in eigenen Schema-Dateien-->
+	<!--aufgeführt werden. Die Versorgungsdaten sind hingegen in einer gemeinsamen Datei gespeichert.-->
+	<!--=============================================================================-->
+	<!--Einfache Datentypen-->
+	<!-- -->
+	<xs:simpleType name="LongStringType">
+		<xs:annotation>
+			<xs:documentation>250 Zeichen String</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="250"/>
+			<xs:minLength value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ShortNameType">
+		<xs:annotation>
+			<xs:documentation>10 Zeichen String</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="10"/>
+			<xs:minLength value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UniqueStringType">
+		<xs:annotation>
+			<xs:documentation>
+				String zur eindeutigen Bezeichnung (32 Zeichen lang)
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+			<xs:maxLength value="32"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!--=============================================================================-->
+	<!--Basistypen-->
+	<!---->
+	<xs:complexType name="IdentObjectType">
+		<xs:annotation>
+			<xs:documentation>
+				Basistyp für Bezeichner-Objekte
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Identifier" type="UniqueStringType"/>
+			<xs:element name="LastChange" type="LastChangeType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Zeitpunkt der letzten Änderung. Wenn der
+						Zeitpunkt nicht zur Verfügung steht wird das
+						Feld weggelassen.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Comments" type="CommentsType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Bemerkungen zu diesem Objekt.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ObjectHeader">
+		<xs:annotation>
+			<xs:documentation>Header für die Objekte</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="IdentObjectType">
+				<xs:sequence>
+                    <xs:element name="ObjNo" minOccurs="0" type="xs:unsignedInt">
+						<xs:annotation>
+							<xs:documentation>
+								OCIT-Nummer, falls das Objekte eine
+								OCIT-Nr hat,ansonsten logische Nummer.
+								In Planungssituationen, in denen die
+								Nummer noch nicht festgelegt wird, wird
+								das Feld weggelassen. Die Nummer muss
+								größer oder gleich 1 sein.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+                </xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="TCObjectHeader">
+		<xs:annotation>
+			<xs:documentation>Header für die Objekte</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="ObjectHeader">
+				<xs:sequence>
+					<xs:element name="Controller" type="UniqueStringType"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="CommentsType">
+		<xs:annotation>
+			<xs:documentation>Bemerkungsliste</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Comment" type="LongStringType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						Bemerkungszeile. Die Zeile kann maximal 250
+						Zeichen lang sein, leere Zeilen sind erlaubt.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LastChangeType">
+		<xs:annotation>
+			<xs:documentation>Letzte Änderung</xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element name="Operator" type="LongStringType">
+				<xs:annotation>
+					<xs:documentation>
+						Benutzer, der dieses Objekt als letztes
+						bearbeitet hat.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Datum" type="xs:dateTime">
+				<xs:annotation>
+					<xs:documentation>
+						Zeitstempel der letzten Änderung.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+	<!--=============================================================================-->
+	<!---->
+	<xs:complexType name="CentralControllerParameterType">
+		<xs:sequence>
+			<xs:element name="DataFormat">
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minInclusive value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="HeaderData" type="HeaderDataType">
+				<xs:annotation>
+					<xs:documentation>
+						Information über den Knoten.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CentralController" type="CentralControllerType"/>
+			<xs:element name="TrafficControllerList" type="TrafficControllerListType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Allgemeine Angaben zum Steuergerät
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SubIntersectionList" type="SubIntersectionListType" minOccurs="0"/>
+			<xs:element name="ControllerGroupList" type="ControllerGroupListType" minOccurs="0"/>
+			<xs:element name="SignalProgramList" type="SignalProgramListType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Liste der Signalprogramme (Festzeit- und
+						VA-Programme)
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DetectorList" type="DetectorListType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Detektoren zur Erfassung des Individualverkehrs
+						und sonstige digitale Eingänge
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SignalGroupList" type="SignalGroupListType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Liste aller von der Signalsicherung überwachten
+						Ausgänge.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TimerList" type="TimerListType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Liste der Signalprogramme (Festzeit- und
+						VA-Programme)
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LogicParameterList" type="LogicParameterType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Parameter der verkehrsabhängigen Logik
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LogicVariableList" type="LogicVariableListType" minOccurs="0"/>
+			<xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						Zusätzliche Daten Die Daten sind beliebig
+						strukturiert, müssen aber mit einem Präfix in
+						der XML-Datei gekennzeichnet sein, d.h. es muss
+						ein XML-Namensraum definiert werden.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:any>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CentralControllerType">
+		<xs:sequence>
+			<xs:element name="URL" type="xs:string"/>
+			<xs:element name="PdService" type="ServiceType"/>
+			<xs:element name="PdCallbackService" type="ServiceType"/>
+			<xs:element name="FgService" type="ServiceType"/>
+			<xs:element name="VdService" type="ServiceType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ControllerGroupListType">
+		<xs:sequence>
+			<xs:element name="ControllerGroup" type="ControllerGroupType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ControllerGroupType">
+		<xs:complexContent>
+			<xs:extension base="IdentObjectType">
+				<xs:sequence>
+					<xs:element name="No" type="xs:unsignedShort" minOccurs="0"/>
+					<xs:element name="TCList">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="TC" type="UniqueStringType" maxOccurs="unbounded"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DetectorListType">
+		<xs:sequence>
+			<xs:element name="Detector" type="DetectorType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						Siehe OCIT-Element DigEingang. Sowohl digital
+						als auch seriell angeschlossene Detektoren als
+						auch gleichzeitig seriell UND digital
+						angeschlossene Detektoren werden hier
+						eingetragen. Die seriell erfassten Daten werden
+						auf einem DigEingang oder mehreren DigEingängen
+						abgebildet. Wenn eine Schleife auf mehrere
+						Detektoren abgebildet wird, werden auch mehrere
+						DigEingänge eingetragen.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DetectorType">
+		<xs:complexContent>
+			<xs:extension base="TCObjectHeader"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="HeaderDataType">
+		<xs:sequence>
+			<xs:element name="ShortName" type="ShortNameType">
+				<xs:annotation>
+					<xs:documentation>
+						Kurzbezeichnung, maximal 10 Zeichen, z.B. K242
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Name" type="LongStringType">
+				<xs:annotation>
+					<xs:documentation>
+						Langname des Knotens, max. 250 Zeichen.
+						Beispiel: "Meierstrasse / Muellerstrasse"
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Identification" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Identifikation des Knotens. Bleibt während der
+						reinen Planungsphase frei, wenn noch keine
+						Identifikation vorliegt.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="IntersectionId">
+							<xs:annotation>
+								<xs:documentation>
+									Logische Adressierung des Knotens
+								</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="City"
+										type="LongStringType" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>
+												Stadt, in der der Knoten
+												läuft. Muß nur gesetzt
+												werden, wenn mehrere
+												Städte in einem Projekt
+												gemeinsam vorhanden
+												sind.
+											</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="District"
+										type="LongStringType" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>
+												Bezirk, in dem der
+												Knoten läuft. Muß nur in
+												Städten gesetzt werden,
+												die in Bezirke
+												aufgeteilt sind
+												(Beispiel: Wien)
+											</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element
+										name="IntersectionNumber" type="xs:unsignedInt">
+										<xs:annotation>
+											<xs:documentation>
+												Stadtweit eindeutige
+												Nummer des Knotens. Die
+												Nummer ist die
+												technische Nummer und
+												hat nichts mit
+												Auftragskennungen etc.
+												zu tun. Muß vor der
+												echten Geräteversorgung
+												gesetzt werden. Darf
+												während der reinen
+												Planungsphase zusammen
+												mit der KnotenId frei
+												bleiben.
+											</xs:documentation>
+										</xs:annotation>
+
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="OCITIdentity" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>
+									Technische OCIT-Kennung des Knotens.
+									Darf nur dann ausgefüllt werden,
+									wenn die Kennung festgelegt ist
+								</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="CenNo"
+										type="xs:unsignedInt">
+										<xs:annotation>
+											<xs:documentation>
+												znr Nummer (entspricht
+												der technischen
+												VSR-Nummer). Siehe
+												OCIT-Dokumentation.
+											</xs:documentation>
+										</xs:annotation>
+
+									</xs:element>
+									<xs:element name="TCNo"
+										minOccurs="0" type="xs:unsignedInt">
+										<xs:annotation>
+											<xs:documentation>
+												Wird nur gesetzt, wenn
+												der Wert ungleich der
+												Knotennummer gesetzt.
+												Ansonsten ist der Wert
+												defaultmäßig auf
+												knotenNummer gesetzt.
+											</xs:documentation>
+										</xs:annotation>
+
+									</xs:element>
+									<xs:element name="SubNo" default="1"
+										minOccurs="0" type="xs:unsignedInt">
+										<xs:annotation>
+											<xs:documentation>
+												Nur notwenidg, wenn mehr
+												als ein Knoten auf dem
+												Feldgerät vorhanden ist.
+												Ansonsten ist der Wert
+												auf den Default-Wert 1
+												gesetzt.
+											</xs:documentation>
+										</xs:annotation>
+
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+            <xs:element name="UID" type="xs:string" minOccurs="0" maxOccurs="1" default="C0AE3797-730E-4AFF-B7DF-056F9B30CFD1"></xs:element>
+            <xs:element name="Uploader">
+				<xs:annotation>
+					<xs:documentation>
+						Versorgungsprogramm, welches die Datei als
+						letztes bearbeitet hat.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Name"
+							type="UniqueStringType">
+							<xs:annotation>
+								<xs:documentation>
+									Name des Versorgungsprogramm (max.
+									32 Zeichen)
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Version"
+							type="ShortNameType">
+							<xs:annotation>
+								<xs:documentation>
+									Programmversion, frei definierbarer
+									Text mit max. 10 Zeichen
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Operator" type="LongStringType">
+				<xs:annotation>
+					<xs:documentation>
+						Name des Users, der die letzte Änderung
+						gespeichert hat.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DataTimeStamp" type="xs:dateTime">
+				<xs:annotation>
+					<xs:documentation>
+						Speicherdatum und Uhrzeit der letzten Änderung.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DataVersion" type="LongStringType">
+				<xs:annotation>
+					<xs:documentation>
+						Planungsversion als String. Format beliebig und
+						abhängig von der Quelle
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Machine" type="LongStringType"
+				minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Rechner auf dem die Daten der letzten Änderung
+						erstellt wurden. Wenn der Wert nicht zur
+						Verfügung steht, wird der Eintrag weggelassen.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Comments" type="CommentsType"
+				minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						kundenspezifische Bemerkungen. Wenn keine
+						Bemerkung vorhanden ist, wird das Feld
+						weggelassen. Systeme, die keine Bemerkungen
+						erlauben müssen das Feld unverändert
+						beibehalten.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LogicParameterType">
+		<xs:sequence>
+			<xs:element name="ParameterBlock" type="ParameterBlockType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						Alle Daten eines Parametertyps
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LogicVariableListType">
+		<xs:sequence>
+			<xs:element name="LogicVariable" type="LogicVariableType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LogicVariableType">
+		<xs:complexContent>
+			<xs:extension base="TCObjectHeader">
+				<xs:sequence>
+					<xs:element name="Type">
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="integer"></xs:enumeration>
+								<xs:enumeration value="float"></xs:enumeration>
+								<xs:enumeration value="boolean"></xs:enumeration>
+								<xs:enumeration value="byte"></xs:enumeration>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="Writeable" type="xs:boolean"/>
+					<xs:element name="ArrayLength" type="xs:unsignedShort" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ParameterBlockType">
+		<xs:complexContent>
+			<xs:extension base="ObjectHeader">
+				<xs:sequence>
+                    <xs:element name="UUID" type="xs:string"></xs:element>
+                    <xs:element name="Structur"
+						type="ParameterStruturType">
+						<xs:annotation>
+							<xs:documentation>
+								Strukturbeschreibung der Parameter
+								(einer Parametertabelle)
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="ParameterSet"
+						type="ParameterSetType" maxOccurs="unbounded" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ServiceType">
+		<xs:sequence>
+			<xs:element name="URL" type="xs:string"/>
+			<xs:element name="Service" type="ServiceTypeType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="ServiceTypeType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="SOAP"/>
+			<xs:enumeration value="REST"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="SignalProgramListType">
+		<xs:sequence>
+			<xs:element name="SignalProgram" type="SignalProgramType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						Signalprogramm ist die Aufhängung für
+						unterschiedliche Signalprogramme: Echte
+						Festzeitsignalprogramme können auf zwei Arten
+						gespeichert werden: Als eine Liste von
+						Signalbildern, in die gewechselt wird oder als
+						eine Liste von Phasenübergängen, die zu
+						bestimmten Zeitpunkten beginnen.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SignalProgramType">
+		<xs:complexContent>
+			<xs:extension base="ObjectHeader"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SignalGroupListType">
+		<xs:sequence>
+			<xs:element name="SignalGroup" type="SignalGroupType" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						Siehe OCIT-Element SignalGruppe. Pro
+						Signalgruppe wird hier ein Eintrag vorgenommen.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SignalGroupType">
+		<xs:complexContent>
+			<xs:extension base="TCObjectHeader"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SubIntersectionListType">
+		<xs:sequence>
+			<xs:element name="SubIntersection" type="SubIntersectionType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SubIntersectionType">
+		<xs:complexContent>
+			<xs:extension base="TCObjectHeader"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="TrafficControllerListType">
+		<xs:sequence>
+			<xs:element name="TrafficController" type="TrafficControllerType" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="TrafficControllerType">
+		<xs:complexContent>
+			<xs:extension base="IdentObjectType">
+				<xs:sequence>
+					<xs:element name="CenNo" type="xs:unsignedShort" minOccurs="0"/>
+					<xs:element name="TCNo" type="xs:unsignedShort" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="TimerType">
+		<xs:complexContent>
+			<xs:extension base="ObjectHeader"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="TimerListType">
+		<xs:sequence>
+			<xs:element name="Timer" type="TimerType" maxOccurs="unbounded">
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ParameterSetType">
+				<xs:sequence>
+
+					<xs:element name="No" type="xs:unsignedShort"
+						maxOccurs="1" minOccurs="0" />
+
+					<xs:element name="Record" type="RecordType" maxOccurs="unbounded" minOccurs="0"></xs:element>
+				</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ParameterValueType">
+		<xs:sequence>
+			<xs:element name="Parameter" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>
+						Referenz auf Tabellenspalte
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:choice>
+				<xs:element name="bItem" type="xs:unsignedByte">
+					<xs:annotation>
+						<xs:documentation>byte</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="wItem" type="xs:unsignedShort">
+					<xs:annotation>
+						<xs:documentation>word</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="iItem" type="xs:integer">
+					<xs:annotation>
+						<xs:documentation>integer</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="fItem" type="xs:float">
+					<xs:annotation>
+						<xs:documentation>float</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="sItem" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>string</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="zItem" type="xs:boolean">
+					<xs:annotation>
+						<xs:documentation>boolean</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="Reference" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>
+							Referenz auf ein Element
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ParameterDefType">
+		<xs:annotation>
+			<xs:documentation>
+				Einzelner Parameter(Tabellenspalte)
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Identifier" type="UniqueStringType">
+				<xs:annotation>
+					<xs:documentation>
+						Bezeichner/ Tab-Spaltenname
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:choice>
+				<xs:sequence>
+					<xs:element name="StandardType">
+						<xs:annotation>
+							<xs:documentation>
+								float, word...
+							</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="byte" />
+								<xs:enumeration value="word" />
+								<xs:enumeration value="integer" />
+								<xs:enumeration value="float" />
+								<xs:enumeration value="string" />
+								<xs:enumeration value="boolean" />
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:choice>
+						<xs:annotation>
+							<xs:documentation>
+								Auswahl entsprechend Typ Defaultwert,
+								wenn kein Eintrag im Parametersatz
+								Werte, die den Defaultwert besitzen
+								sollten nicht noch einmal bei den
+								Parametersatzwerten eingetragen werden
+							</xs:documentation>
+						</xs:annotation>
+						<xs:element name="bDefault"
+							type="xs:unsignedByte">
+							<xs:annotation>
+								<xs:documentation>
+									byte
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="wDefault"
+							type="xs:unsignedShort">
+							<xs:annotation>
+								<xs:documentation>
+									word
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="iDefault" type="xs:integer">
+							<xs:annotation>
+								<xs:documentation>
+									integer
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="fDefault" type="xs:float">
+							<xs:annotation>
+								<xs:documentation>
+									float
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="sDefault" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>
+									string
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="zDefault" type="xs:boolean">
+							<xs:annotation>
+								<xs:documentation>
+									boolean
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:choice>
+				</xs:sequence>
+				<xs:element name="Referencetype">
+					<xs:annotation>
+						<xs:documentation>
+							Elemente aus Versorgorgung
+						</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:enumeration value="Sgr" />
+							<xs:enumeration value="Det" />
+							<xs:enumeration value="Prg" />
+							<xs:enumeration value="TC" />
+							<xs:enumeration value="Sub" />
+							<xs:enumeration value="Grp" />
+							<xs:enumeration value="Tim" />
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:choice>
+			<xs:element name="EnumList" type="EnumListType" maxOccurs="1" minOccurs="0"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ParameterStruturType">
+		<xs:sequence>
+            
+            <xs:element name="MaxRecordCount" type="xs:unsignedInt"
+				minOccurs="0" />
+			<xs:element name="Parameter" type="ParameterDefType"
+				maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="EnumListType">
+		<xs:sequence>
+			<xs:element name="Enum" type="EnumType" maxOccurs="unbounded" minOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="EnumType">
+		<xs:sequence>
+			<xs:element name="Identifier" type="xs:string"></xs:element>
+			<xs:element name="Value" type="xs:integer"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="RecordType">
+		<xs:sequence>
+
+            <xs:element name="No" type="xs:unsignedInt" maxOccurs="1" minOccurs="0"></xs:element>
+            <xs:element name="Item" type="ParameterValueType"
+				maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

@@ -2,6 +2,7 @@ package de.lisaplus.atlas.builder.test.jsonschema
 
 import de.lisaplus.atlas.builder.JsonSchemaBuilder
 import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
+import de.lisaplus.atlas.codegen.test.DoCodeGen
 import de.lisaplus.atlas.model.AggregationType
 import de.lisaplus.atlas.model.ByteType
 import de.lisaplus.atlas.model.EnumType
@@ -10,6 +11,7 @@ import de.lisaplus.atlas.model.LongType
 import de.lisaplus.atlas.model.RefType
 import org.junit.Test
 
+import static de.lisaplus.atlas.codegen.test.DoCodeGen.*
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertFalse
 import static org.junit.Assert.assertNotNull
@@ -36,6 +38,13 @@ class JsonSchemaBuilder {
         def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
         def model = builder.buildModel(modelFile)
         assertEquals(8,model.types.size())
+        de.lisaplus.atlas.DoCodeGen.sortTypesAndProperties(model)
+        println (model)
+        def userLogType = model.types.find { it.name=='UserLog' }
+        assertNotNull(userLogType)
+        def domainsProp = userLogType.properties.find { it.name=='domains' }
+        assertNotNull(domainsProp)
+        assertFalse(domainsProp.isRefTypeOrComplexType())
     }
 
     @Test
@@ -374,6 +383,15 @@ class JsonSchemaBuilder {
             assertTrue (type.properties.find { it.name=='noIntAttrib' }.type instanceof LongType)
             assertTrue (type.properties.find { it.name=='byteAttrib' }.type instanceof ByteType)
         }
+    }
+
+    @Test
+    void lisaInesTypes() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/lisa-ines-network.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        assertNotNull(model)
     }
 
 }

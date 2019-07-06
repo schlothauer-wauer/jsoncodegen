@@ -18,6 +18,15 @@
           "format": "uuid",
           "__ref": "#/definitions/user"
         },
+        "domains": {
+          "description": "dummy to test UUID arrays",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "__ref": "./shared/domain.json"
+          }
+        },
         "type": {
           "description": "type of the entry",
           "type": "string",

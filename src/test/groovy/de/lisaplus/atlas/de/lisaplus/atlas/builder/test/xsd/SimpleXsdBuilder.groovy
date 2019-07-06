@@ -79,6 +79,34 @@ class SimpleXsdBuilder {
     }
 
     @Test
+    void json_schema() {
+        def fileName = 'lisa_ines_network.json'
+        def destFile = "tmp/$fileName"
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.models = ['src/test/resources/xsd/ZEN_Versorgung_OMTC.xsd']
+        doCodeGen.generators.add('json_schema')
+        doCodeGen.generator_parameters.add("destFileName=$fileName")
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
+
+    @Test
+    void lisaInesNetworkPuml() {
+        def fileName = 'lisa_ines_network.puml'
+        def destFile = "tmp/$fileName"
+        de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
+        doCodeGen.models = ['src/test/resources/xsd/ZEN_Versorgung_OMTC.xsd']
+        doCodeGen.generators.add('plantuml')
+        doCodeGen.generator_parameters.add("destFileName=$fileName")
+        doCodeGen.outputBaseDir = 'tmp'
+        doCodeGen.generator_parameters.add('removeEmptyLines=true')
+        doCodeGen.run()
+        assertTrue(new File(destFile).exists())
+    }
+
+    @Test
     void plantuml_4() {
         def fileName = 'tlc.puml'
         def destFile = "tmp/$fileName"
