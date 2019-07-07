@@ -156,3 +156,42 @@ basic design.
 ## Releases
 [see here](Releases.md)
 
+# Template Debugging
+## General Remarks
+From version 0.13.0 it is also possible to debug code from templates. This is
+a common use case if the templates become more complicated. Unfortunately is it
+not possible to debug code that is included direct into the template, but 
+with the '-gs' command line switch a external Groovy script can be injected into
+the code generation templates.
+
+If the switch is used, then inside the template is a 'script' variable available.
+This variable points to the injected script and allows to call functions that
+are declared as clojure inside the generator-script.
+
+```Groovy
+// example usage of a generator script defined function
+${script.generatorScriptDefinedFunction(possibleParameter)}
+``` 
+
+```Groovy
+// example function definition in a generator script
+def generatorScriptDefinedFunction(def someString) {
+    return "Hello: $someString"
+}
+``` 
+## Code Examples
+* [example additional generator script](./src/test/resources/templates/handling_helper.groovy)
+* [example template that utilize the script](./src/test/resources/templates/handling.txt)
+* [test that combines both](./src/test/groovy/de/lisaplus/atlas/codegen/test/MultiFileTemplates.groovy)
+* [test in a shell script](./bin/debug_example.sh)
+
+## Steps to Debug template in IntelliJ
+1. Open the jsonCodeGen project in IntelliJ
+2. Open the generator library in the editor (example: `./src/test/resources/templates/handling_helper.groovy`)
+3. Set a break point
+4. Configure remote debugging in IntelliJ listen on port 8100
+5. Run `bin/debug_example.sh` from command line
+6. Start remote debugging in IntelliJ
+7. Break-Point should be triggered in IDE
+
+This approach can also be used for other projects.
