@@ -386,6 +386,9 @@ class JsonSchemaBuilder implements IModelBuilder {
                     throw new Exception("loaded model doesn't contain types")
                 }
                 def desiredName = refStr.substring(indexOfTrenner+EXT_REF_TRENNER.length()).toLowerCase()
+                if (desiredName.startsWith('definitions/')) {
+                    desiredName = desiredName.substring('definitions/'.length())
+                }
                 Type extT2 = null
                 tmpModel.types.each { type ->
                     if ((type.name!=null) && (type.name.toLowerCase()==desiredName)) {

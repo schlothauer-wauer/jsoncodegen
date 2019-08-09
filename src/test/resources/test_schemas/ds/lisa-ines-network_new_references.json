@@ -1,0 +1,870 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "null",
+  "definitions": {
+    "CentralControllerParameterType": {
+      "type": "object",
+      "properties": {
+        "CentralController": {
+          "$ref": "#/definitions/CentralControllerType"
+        },
+        "ControllerGroupList": {
+          "$ref": "#/definitions/ControllerGroupListType"
+        },
+        "DataFormat": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "DetectorList": {
+          "description": "Detektoren zur Erfassung des Individualverkehrs und sonstige digitale Eing nge",
+          "$ref": "#/definitions/DetectorListType"
+        },
+        "HeaderData": {
+          "description": "Information ber den Knoten",
+          "$ref": "#/definitions/HeaderDataType"
+        },
+        "LogicParameterList": {
+          "description": "Parameter der verkehrsabh ngigen Logik",
+          "$ref": "#/definitions/LogicParameterType"
+        },
+        "LogicVariableList": {
+          "$ref": "#/definitions/LogicVariableListType"
+        },
+        "SignalGroupList": {
+          "description": "Liste aller von der Signalsicherung berwachten Ausg nge",
+          "$ref": "#/definitions/SignalGroupListType"
+        },
+        "SignalProgramList": {
+          "description": "Liste der Signalprogramme Festzeit und VA Programme",
+          "$ref": "#/definitions/SignalProgramListType"
+        },
+        "SubIntersectionList": {
+          "$ref": "#/definitions/SubIntersectionListType"
+        },
+        "TimerList": {
+          "description": "Liste der Signalprogramme Festzeit und VA Programme",
+          "$ref": "#/definitions/TimerListType"
+        },
+        "TrafficControllerList": {
+          "description": "Allgemeine Angaben zum Steuerger t",
+          "$ref": "#/definitions/TrafficControllerListType"
+        },
+        "externalRef": {
+          "$ref": "./KnotenDaten.json/#/definitions/LISA"
+        }
+      }
+    },
+    "CentralControllerType": {
+      "type": "object",
+      "properties": {
+        "FgService": {
+          "$ref": "#/definitions/ServiceType"
+        },
+        "PdCallbackService": {
+          "$ref": "#/definitions/ServiceType"
+        },
+        "PdService": {
+          "$ref": "#/definitions/ServiceType"
+        },
+        "URL": {
+          "type": "string"
+        },
+        "VdService": {
+          "$ref": "#/definitions/ServiceType"
+        }
+      }
+    },
+    "CommentsType": {
+      "description": "Bemerkungsliste",
+      "type": "object",
+      "properties": {
+        "Comment": {
+          "description": "Bemerkungszeile Die Zeile kann maximal 250 Zeichen lang sein leere Zeilen sind erlaubt",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ControllerGroupListType": {
+      "type": "object",
+      "properties": {
+        "ControllerGroup": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ControllerGroupType"
+          }
+        }
+      }
+    },
+    "ControllerGroupType": {
+      "type": "object",
+      "properties": {
+        "Comments": {
+          "description": "Bemerkungen zu diesem Objekt",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "Identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastChange": {
+          "description": "Zeitpunkt der letzten nderung Wenn der Zeitpunkt nicht zur Verf gung steht wird das Feld weggelassen",
+          "$ref": "#/definitions/LastChangeType"
+        },
+        "No": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "TCList": {
+          "$ref": "#/definitions/ControllerGroupTypeTCList"
+        }
+      }
+    },
+    "ControllerGroupTypeTCList": {
+      "type": "object",
+      "properties": {
+        "TC": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "DetectorListType": {
+      "type": "object",
+      "properties": {
+        "Detector": {
+          "description": "Siehe OCIT Element DigEingang Sowohl digital als auch seriell angeschlossene Detektoren als auch gleichzeitig seriell UND digital angeschlossene Detektoren werden hier eingetragen Die seriell erfassten Daten werden auf einem DigEingang oder mehreren DigEing ngen abgebildet Wenn eine Schleife auf mehrere Detektoren abgebildet wird werden auch mehrere DigEing nge eingetragen",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetectorType"
+          }
+        }
+      }
+    },
+    "DetectorType": {
+      "type": "object",
+      "properties": {
+        "Comments": {
+          "description": "Bemerkungen zu diesem Objekt",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "Controller": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastChange": {
+          "description": "Zeitpunkt der letzten nderung Wenn der Zeitpunkt nicht zur Verf gung steht wird das Feld weggelassen",
+          "$ref": "#/definitions/LastChangeType"
+        },
+        "ObjNo": {
+          "description": "OCIT Nummer falls das Objekte eine OCIT Nr hat ansonsten logische Nummer In Planungssituationen in denen die Nummer noch nicht festgelegt wird wird das Feld weggelassen Die Nummer muss gr er oder gleich 1 sein",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "EnumListType": {
+      "type": "object",
+      "properties": {
+        "Enum": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EnumType"
+          }
+        }
+      }
+    },
+    "EnumType": {
+      "type": "object",
+      "properties": {
+        "Identifier": {
+          "type": "string"
+        },
+        "Value": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "HeaderDataType": {
+      "type": "object",
+      "properties": {
+        "Comments": {
+          "description": "kundenspezifische Bemerkungen Wenn keine Bemerkung vorhanden ist wird das Feld weggelassen Systeme die keine Bemerkungen erlauben m ssen das Feld unver ndert beibehalten",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "DataTimeStamp": {
+          "description": "Speicherdatum und Uhrzeit der letzten nderung",
+          "type": "string",
+          "format": "date-time"
+        },
+        "DataVersion": {
+          "description": "Planungsversion als String Format beliebig und abh ngig von der Quelle",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Identification": {
+          "description": "Identifikation des Knotens Bleibt w hrend der reinen Planungsphase frei wenn noch keine Identifikation vorliegt",
+          "$ref": "#/definitions/HeaderDataTypeIdentification"
+        },
+        "Machine": {
+          "description": "Rechner auf dem die Daten der letzten nderung erstellt wurden Wenn der Wert nicht zur Verf gung steht wird der Eintrag weggelassen",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Name": {
+          "description": "Langname des Knotens max 250 Zeichen Beispiel Meierstrasse Muellerstrasse",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Operator": {
+          "description": "Name des Users der die letzte nderung gespeichert hat",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ShortName": {
+          "description": "Kurzbezeichnung maximal 10 Zeichen z B K242",
+          "type": "string"
+        },
+        "UID": {
+          "type": "string"
+        },
+        "Uploader": {
+          "description": "Versorgungsprogramm welches die Datei als letztes bearbeitet hat",
+          "$ref": "#/definitions/HeaderDataTypeUploader"
+        }
+      }
+    },
+    "HeaderDataTypeIdentification": {
+      "type": "object",
+      "properties": {
+        "IntersectionId": {
+          "description": "Logische Adressierung des Knotens",
+          "$ref": "#/definitions/HeaderDataTypeIdentificationIntersectionId"
+        },
+        "OCITIdentity": {
+          "description": "Technische OCIT Kennung des Knotens Darf nur dann ausgef llt werden wenn die Kennung festgelegt ist",
+          "$ref": "#/definitions/HeaderDataTypeIdentificationOCITIdentity"
+        }
+      }
+    },
+    "HeaderDataTypeIdentificationIntersectionId": {
+      "type": "object",
+      "properties": {
+        "City": {
+          "description": "Stadt in der der Knoten l uft Mu nur gesetzt werden wenn mehrere St dte in einem Projekt gemeinsam vorhanden sind",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "District": {
+          "description": "Bezirk in dem der Knoten l uft Mu nur in St dten gesetzt werden die in Bezirke aufgeteilt sind Beispiel Wien",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "IntersectionNumber": {
+          "description": "Stadtweit eindeutige Nummer des Knotens Die Nummer ist die technische Nummer und hat nichts mit Auftragskennungen etc zu tun Mu vor der echten Ger teversorgung gesetzt werden Darf w hrend der reinen Planungsphase zusammen mit der KnotenId frei bleiben",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "HeaderDataTypeIdentificationOCITIdentity": {
+      "type": "object",
+      "properties": {
+        "CenNo": {
+          "description": "znr Nummer entspricht der technischen VSR Nummer Siehe OCIT Dokumentation",
+          "type": "integer",
+          "format": "int32"
+        },
+        "SubNo": {
+          "description": "Nur notwenidg wenn mehr als ein Knoten auf dem Feldger t vorhanden ist Ansonsten ist der Wert auf den Default Wert 1 gesetzt",
+          "type": "integer",
+          "format": "int32"
+        },
+        "TCNo": {
+          "description": "Wird nur gesetzt wenn der Wert ungleich der Knotennummer gesetzt Ansonsten ist der Wert defaultm ig auf knotenNummer gesetzt",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "HeaderDataTypeUploader": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "description": "Name des Versorgungsprogramm max 32 Zeichen",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Version": {
+          "description": "Programmversion frei definierbarer Text mit max 10 Zeichen",
+          "type": "string"
+        }
+      }
+    },
+    "IdentObjectType": {
+      "description": "Basistyp f r Bezeichner Objekte",
+      "type": "object",
+      "properties": {
+        "Comments": {
+          "description": "Bemerkungen zu diesem Objekt",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "Identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastChange": {
+          "description": "Zeitpunkt der letzten nderung Wenn der Zeitpunkt nicht zur Verf gung steht wird das Feld weggelassen",
+          "$ref": "#/definitions/LastChangeType"
+        }
+      }
+    },
+    "LastChangeType": {
+      "description": "Letzte nderung",
+      "type": "object",
+      "properties": {
+        "Datum": {
+          "description": "Zeitstempel der letzten nderung",
+          "type": "string",
+          "format": "date-time"
+        },
+        "Operator": {
+          "description": "Benutzer der dieses Objekt als letztes bearbeitet hat",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "LogicParameterType": {
+      "type": "object",
+      "properties": {
+        "ParameterBlock": {
+          "description": "Alle Daten eines Parametertyps",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ParameterBlockType"
+          }
+        }
+      }
+    },
+    "LogicVariableListType": {
+      "type": "object",
+      "properties": {
+        "LogicVariable": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LogicVariableType"
+          }
+        }
+      }
+    },
+    "LogicVariableType": {
+      "type": "object",
+      "properties": {
+        "ArrayLength": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Comments": {
+          "description": "Bemerkungen zu diesem Objekt",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "Controller": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastChange": {
+          "description": "Zeitpunkt der letzten nderung Wenn der Zeitpunkt nicht zur Verf gung steht wird das Feld weggelassen",
+          "$ref": "#/definitions/LastChangeType"
+        },
+        "ObjNo": {
+          "description": "OCIT Nummer falls das Objekte eine OCIT Nr hat ansonsten logische Nummer In Planungssituationen in denen die Nummer noch nicht festgelegt wird wird das Feld weggelassen Die Nummer muss gr er oder gleich 1 sein",
+          "type": "integer",
+          "format": "int32"
+        },
+        "Type": {
+          "type": "string"
+        },
+        "Writeable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ObjectHeader": {
+      "description": "Header f r die Objekte",
+      "type": "object",
+      "properties": {
+        "Comments": {
+          "description": "Bemerkungen zu diesem Objekt",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "Identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastChange": {
+          "description": "Zeitpunkt der letzten nderung Wenn der Zeitpunkt nicht zur Verf gung steht wird das Feld weggelassen",
+          "$ref": "#/definitions/LastChangeType"
+        },
+        "ObjNo": {
+          "description": "OCIT Nummer falls das Objekte eine OCIT Nr hat ansonsten logische Nummer In Planungssituationen in denen die Nummer noch nicht festgelegt wird wird das Feld weggelassen Die Nummer muss gr er oder gleich 1 sein",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "ParameterBlockType": {
+      "type": "object",
+      "properties": {
+        "Comments": {
+          "description": "Bemerkungen zu diesem Objekt",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "Identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastChange": {
+          "description": "Zeitpunkt der letzten nderung Wenn der Zeitpunkt nicht zur Verf gung steht wird das Feld weggelassen",
+          "$ref": "#/definitions/LastChangeType"
+        },
+        "ObjNo": {
+          "description": "OCIT Nummer falls das Objekte eine OCIT Nr hat ansonsten logische Nummer In Planungssituationen in denen die Nummer noch nicht festgelegt wird wird das Feld weggelassen Die Nummer muss gr er oder gleich 1 sein",
+          "type": "integer",
+          "format": "int32"
+        },
+        "ParameterSet": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ParameterSetType"
+          }
+        },
+        "Structur": {
+          "description": "Strukturbeschreibung der Parameter einer Parametertabelle",
+          "$ref": "#/definitions/ParameterStruturType"
+        },
+        "UUID": {
+          "type": "string"
+        }
+      }
+    },
+    "ParameterDefType": {
+      "description": "Einzelner Parameter Tabellenspalte",
+      "type": "object",
+      "properties": {
+        "EnumList": {
+          "$ref": "#/definitions/EnumListType"
+        },
+        "Identifier": {
+          "description": "Bezeichner Tab Spaltenname",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Referencetype": {
+          "description": "Elemente aus Versorgorgung",
+          "type": "string"
+        },
+        "StandardType": {
+          "description": "float word",
+          "type": "string"
+        },
+        "bDefault": {
+          "description": "byte",
+          "type": "integer",
+          "format": "int32"
+        },
+        "fDefault": {
+          "description": "float",
+          "type": "number",
+          "format": "double"
+        },
+        "iDefault": {
+          "description": "integer",
+          "type": "integer",
+          "format": "int32"
+        },
+        "sDefault": {
+          "description": "string",
+          "type": "string"
+        },
+        "wDefault": {
+          "description": "word",
+          "type": "integer",
+          "format": "int32"
+        },
+        "zDefault": {
+          "description": "boolean",
+          "type": "boolean"
+        }
+      }
+    },
+    "ParameterSetType": {
+      "type": "object",
+      "properties": {
+        "No": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Record": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RecordType"
+          }
+        }
+      }
+    },
+    "ParameterStruturType": {
+      "type": "object",
+      "properties": {
+        "MaxRecordCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Parameter": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ParameterDefType"
+          }
+        }
+      }
+    },
+    "ParameterValueType": {
+      "type": "object",
+      "properties": {
+        "Parameter": {
+          "description": "Referenz auf Tabellenspalte",
+          "type": "string"
+        },
+        "Reference": {
+          "description": "Referenz auf ein Element",
+          "type": "string"
+        },
+        "bItem": {
+          "description": "byte",
+          "type": "integer",
+          "format": "int32"
+        },
+        "fItem": {
+          "description": "float",
+          "type": "number",
+          "format": "double"
+        },
+        "iItem": {
+          "description": "integer",
+          "type": "integer",
+          "format": "int32"
+        },
+        "sItem": {
+          "description": "string",
+          "type": "string"
+        },
+        "wItem": {
+          "description": "word",
+          "type": "integer",
+          "format": "int32"
+        },
+        "zItem": {
+          "description": "boolean",
+          "type": "boolean"
+        }
+      }
+    },
+    "RecordType": {
+      "type": "object",
+      "properties": {
+        "Item": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ParameterValueType"
+          }
+        },
+        "No": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "ServiceType": {
+      "type": "object",
+      "properties": {
+        "Service": {
+          "type": "string"
+        },
+        "URL": {
+          "type": "string"
+        }
+      }
+    },
+    "SignalGroupListType": {
+      "type": "object",
+      "properties": {
+        "SignalGroup": {
+          "description": "Siehe OCIT Element SignalGruppe Pro Signalgruppe wird hier ein Eintrag vorgenommen",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SignalGroupType"
+          }
+        }
+      }
+    },
+    "SignalGroupType": {
+      "type": "object",
+      "properties": {
+        "Comments": {
+          "description": "Bemerkungen zu diesem Objekt",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "Controller": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastChange": {
+          "description": "Zeitpunkt der letzten nderung Wenn der Zeitpunkt nicht zur Verf gung steht wird das Feld weggelassen",
+          "$ref": "#/definitions/LastChangeType"
+        },
+        "ObjNo": {
+          "description": "OCIT Nummer falls das Objekte eine OCIT Nr hat ansonsten logische Nummer In Planungssituationen in denen die Nummer noch nicht festgelegt wird wird das Feld weggelassen Die Nummer muss gr er oder gleich 1 sein",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "SignalProgramListType": {
+      "type": "object",
+      "properties": {
+        "SignalProgram": {
+          "description": "Signalprogramm ist die Aufh ngung f r unterschiedliche Signalprogramme Echte Festzeitsignalprogramme k nnen auf zwei Arten gespeichert werden Als eine Liste von Signalbildern in die gewechselt wird oder als eine Liste von Phasen berg ngen die zu bestimmten Zeitpunkten beginnen",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SignalProgramType"
+          }
+        }
+      }
+    },
+    "SignalProgramType": {
+      "type": "object",
+      "properties": {
+        "Comments": {
+          "description": "Bemerkungen zu diesem Objekt",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "Identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastChange": {
+          "description": "Zeitpunkt der letzten nderung Wenn der Zeitpunkt nicht zur Verf gung steht wird das Feld weggelassen",
+          "$ref": "#/definitions/LastChangeType"
+        },
+        "ObjNo": {
+          "description": "OCIT Nummer falls das Objekte eine OCIT Nr hat ansonsten logische Nummer In Planungssituationen in denen die Nummer noch nicht festgelegt wird wird das Feld weggelassen Die Nummer muss gr er oder gleich 1 sein",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "SubIntersectionListType": {
+      "type": "object",
+      "properties": {
+        "SubIntersection": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubIntersectionType"
+          }
+        }
+      }
+    },
+    "SubIntersectionType": {
+      "type": "object",
+      "properties": {
+        "Comments": {
+          "description": "Bemerkungen zu diesem Objekt",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "Controller": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastChange": {
+          "description": "Zeitpunkt der letzten nderung Wenn der Zeitpunkt nicht zur Verf gung steht wird das Feld weggelassen",
+          "$ref": "#/definitions/LastChangeType"
+        },
+        "ObjNo": {
+          "description": "OCIT Nummer falls das Objekte eine OCIT Nr hat ansonsten logische Nummer In Planungssituationen in denen die Nummer noch nicht festgelegt wird wird das Feld weggelassen Die Nummer muss gr er oder gleich 1 sein",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "TCObjectHeader": {
+      "description": "Header f r die Objekte",
+      "type": "object",
+      "properties": {
+        "Comments": {
+          "description": "Bemerkungen zu diesem Objekt",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "Controller": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastChange": {
+          "description": "Zeitpunkt der letzten nderung Wenn der Zeitpunkt nicht zur Verf gung steht wird das Feld weggelassen",
+          "$ref": "#/definitions/LastChangeType"
+        },
+        "ObjNo": {
+          "description": "OCIT Nummer falls das Objekte eine OCIT Nr hat ansonsten logische Nummer In Planungssituationen in denen die Nummer noch nicht festgelegt wird wird das Feld weggelassen Die Nummer muss gr er oder gleich 1 sein",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "TimerListType": {
+      "type": "object",
+      "properties": {
+        "Timer": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TimerType"
+          }
+        }
+      }
+    },
+    "TimerType": {
+      "type": "object",
+      "properties": {
+        "Comments": {
+          "description": "Bemerkungen zu diesem Objekt",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "Identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastChange": {
+          "description": "Zeitpunkt der letzten nderung Wenn der Zeitpunkt nicht zur Verf gung steht wird das Feld weggelassen",
+          "$ref": "#/definitions/LastChangeType"
+        },
+        "ObjNo": {
+          "description": "OCIT Nummer falls das Objekte eine OCIT Nr hat ansonsten logische Nummer In Planungssituationen in denen die Nummer noch nicht festgelegt wird wird das Feld weggelassen Die Nummer muss gr er oder gleich 1 sein",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "TrafficControllerListType": {
+      "type": "object",
+      "properties": {
+        "TrafficController": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TrafficControllerType"
+          }
+        }
+      }
+    },
+    "TrafficControllerType": {
+      "type": "object",
+      "properties": {
+        "CenNo": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Comments": {
+          "description": "Bemerkungen zu diesem Objekt",
+          "$ref": "#/definitions/CommentsType"
+        },
+        "Identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastChange": {
+          "description": "Zeitpunkt der letzten nderung Wenn der Zeitpunkt nicht zur Verf gung steht wird das Feld weggelassen",
+          "$ref": "#/definitions/LastChangeType"
+        },
+        "TCNo": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  },
+  "type": "object"
+}

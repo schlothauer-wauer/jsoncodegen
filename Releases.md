@@ -1,3 +1,7 @@
+## 0.13.1
+- handle the right notation of external references: e.g. ./object_base.json#/definitions/ObjectBase
+
+  (Attention, the wrong reference style before that version, is still working)
 ## 0.8.4
 - add additional generator parameters to improve plantuml view (ignoreAttribs,ignoreRefs,ignoreImplicitRefs, ignoreCompositions)
 
