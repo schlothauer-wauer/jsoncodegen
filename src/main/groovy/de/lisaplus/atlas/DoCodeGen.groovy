@@ -54,7 +54,7 @@ class DoCodeGen {
      * Generator to use
      */
     @Parameter(names = ['-gs', '--generator-scripts'], description = "additional script that should be passed to the used templates")
-    String generatorScript
+        String generatorScript
 
     /**
      * Generator parameter

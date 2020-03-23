@@ -395,6 +395,15 @@ class JsonSchemaBuilder {
     }
 
     @Test
+    void lisaInesTypes2() {
+        def modelFile = new File('src/test/resources/test_schemas/ds/ines_network.json')
+        assertTrue(modelFile.isFile())
+        def builder = new de.lisaplus.atlas.builder.JsonSchemaBuilder()
+        def model = builder.buildModel(modelFile)
+        assertNotNull(model)
+    }
+
+    @Test
     void lisaInesTypes_externalRef() {
         def modelFile = new File('src/test/resources/test_schemas/ds/lisa-ines-network_new_references.json')
         assertTrue(modelFile.isFile())

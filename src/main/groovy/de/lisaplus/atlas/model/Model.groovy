@@ -72,7 +72,7 @@ class Model {
     void setPropertySelfReferenceFlag() {
         types.each { type ->
             type.properties.each { prop ->
-                if (prop.type instanceof UUIDType && prop.implicitRef && prop.implicitRef.type.class==type.class) {
+                if (prop.type instanceof UUIDType && prop.implicitRef && prop.implicitRef.type && prop.implicitRef.type.class==type.class) {
                     prop.selfReference = true
                 }
             }

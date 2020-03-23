@@ -1,0 +1,54 @@
+
+
+{
+  "id": "http://schlothauer.de/schemas/shared/tenant.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "A region is some kind of a logical group that could be set for some entries. It allows 'vertical' restrictions of object visibility",
+  "type": "object",
+  "properties": {
+    "guid": {
+      "type": "string",
+      "format": "uuid",
+      "__tags": ["notDisplayed", "notNull"]
+    },
+    "name": {
+      "description": "Name of the tag",
+      "type": "string",
+      "__tags": ["notNull","unique"]
+    },
+    "group": {
+      "description": "Short text that describes the tag",
+      "type": "string"
+    },
+    "comment": {
+      "description": "Comment to that tab",
+      "type": "string"
+    },
+    "created": {
+      "type": "string",
+      "format": "datetime"
+    },
+    "active": {
+      "type": "boolean",
+      "__tags": ["notNull","defaultTrue"]
+    },
+    "locked": {
+      "description": "entry is needed and should not be deleted",
+      "type": "boolean",
+      "__tags": ["notNull","defaultFalse"]
+    },
+    "tenantId": {
+      "description": "what is the related domain",
+      "type": "string",
+      "format": "uuid",
+      "__ref": "./tenant.json",
+      "__tags": ["notDisplayed"]
+    }
+  },
+  "required": [
+    "guid",
+    "text"
+  ],
+  "__tags": ["rest","mongodb","selList"],
+  "__version": 1
+}
