@@ -192,7 +192,7 @@ class PlantUml {
         assertEquals(6,mainTypeCount)
     }
 
-    @Test
+    //@Test
     void addMainTypeTagsMultipleModels() {
         def destFile = 'tmp/incident_mainTypeTags_multipleModels.puml'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
