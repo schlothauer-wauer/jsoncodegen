@@ -4,7 +4,20 @@ package ${extraParam.packageName};
 /**
  * ${currentType.description}
  */
-<% } %>
+<% }
+//def isEnum = (currentType instanceof de.lisaplus.atlas.model.EnumType)
+//println "isEnum $isEnum to $currentType"
+if (currentType instanceof de.lisaplus.atlas.model.EnumType) {
+%>public enum ${ upperCamelCase.call(currentType.name) } {
+    <% boolean first=true; currentType.allowedValues.each { value ->
+    if (first) {%>
+    ${value}
+    <% first=false} else { %>
+    ,${value}
+    <% } } %>
+}
+<% } else {
+%>
 public interface I${ firstUpperCase.call(currentType.name) } {
     <% currentType.properties.each { prop -> %>
     <% if (prop.description) { %>
@@ -12,7 +25,20 @@ public interface I${ firstUpperCase.call(currentType.name) } {
      * ${prop.description}
      */
     <% } %>
-    public ${ typeToJava.call(prop.type,'I') } get${ firstUpperCase.call(prop.name) } ();
+    <%
+    def isEnum = false
+    if(prop.isRefTypeOrComplexType()) {
+       isEnum = (prop.type.type instanceof de.lisaplus.atlas.model.EnumType)
+       //println "${prop.type.type} with name ${prop.name} isEnum $isEnum"
+    }
+    if (isEnum) {
+    %>
+    public ${ typeToJava.call(prop.type) } get${ firstUpperCase.call(prop.name) } ();
+    public void set${ firstUpperCase.call(prop.name) } (${ typeToJava.call(prop.type) } ${prop.name});
+    <% } else { %>
+     public ${ typeToJava.call(prop.type,'I') } get${ firstUpperCase.call(prop.name) } ();
     public void set${ firstUpperCase.call(prop.name) } (${ typeToJava.call(prop.type,'I') } ${prop.name});
     <% } %>
+    <% } %>
 }
+<% } %>

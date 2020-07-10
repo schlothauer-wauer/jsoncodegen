@@ -483,7 +483,6 @@ class JsonSchemaBuilder implements IModelBuilder {
             throw new Exception(errorMsg)
         }
         String enumTypeName = propertiesParent."__enumName" ? propertiesParent."__enumName" : baseTypeName
-
         def allowedValues = propertiesParent."enum"
 
         def alreadyCreated = createdTypes[enumTypeName]

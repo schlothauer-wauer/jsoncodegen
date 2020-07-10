@@ -70,7 +70,7 @@ public class ${ upperCamelCase.call(currentType.name) } {
         // handle complex types
         <% currentType.properties.findAll {prop -> return prop.isRefTypeOrComplexType() }.each { prop -> %>
             <% if (prop.type.isArray) { %>
-        newObj.${prop.name} = ${ prop.type.type.name }.createArrayFromDocument((java.util.List<Document>)document.get(${toUpperCase.call(prop.name)}));
+        newObj.${prop.name} = ${ prop.type.type.name }.createArrayFromDocument((java.util.Collection<? extends Document>)document.get(${toUpperCase.call(prop.name)}));
             <% } else { %>
         newObj.${prop.name} = ${ typeToJava.call(prop.type) }.createFromDocument((Document)document.get(${toUpperCase.call(prop.name)}));
             <% } %>
@@ -79,7 +79,7 @@ public class ${ upperCamelCase.call(currentType.name) } {
     }
     <% } %>
 
-    public static java.util.List<${ upperCamelCase.call(currentType.name) }> createArrayFromDocument(java.util.List<Document> documentList) {
+    public static java.util.Collection<? extends ${ upperCamelCase.call(currentType.name) }> createArrayFromDocument(java.util.Collection<? extends Document> documentList) {
         if (documentList==null) return null;
         ArrayList<${ upperCamelCase.call(currentType.name) }> ret = new ArrayList<>();
         for (Document document: documentList) {

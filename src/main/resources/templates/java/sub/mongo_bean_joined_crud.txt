@@ -10,7 +10,7 @@
         // handle complex types
         <% actObj.properties.findAll {prop -> return prop.isRefTypeOrComplexType() }.each { prop -> %>
             <% if (prop.type.isArray) { %>
-        newObj.${prop.name} = ${ prop.type.type.name }.createArrayFromDocument((java.util.List<Document>)document.get(${toUpperCase.call(prop.name)}));
+        newObj.${prop.name} = ${ prop.type.type.name }.createArrayFromDocument((java.util.Collection<? extends Document>)document.get(${toUpperCase.call(prop.name)}));
             <% } else { %>
         newObj.${prop.name} = ${ typeToJava.call(prop.type) }.createFromDocument((Document)document.get(${toUpperCase.call(prop.name)}));
             <% } %>
@@ -40,7 +40,7 @@
     // byId
     public static ${ upperCamelCase.call(actObj.name) } byId (String guid) throws SerializationException {
         MongoCollection collection = getCollection();
-        java.util.List<Bson> aggregations  = new ArrayList<>();
+        java.util.Collection<? extends Bson> aggregations  = new ArrayList<>();
         <% actObj.properties.find { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
         aggregations.add(Aggregates.match(Filters.eq(${ toUpperCase.call(prop.name) }, guid)));
         aggregations.add(Aggregates.lookup(${ upperCamelCase.call(prop.implicitRef.type.name) }.COLLECTION_NAME,${ toUpperCase.call(prop.implicitRef.type.name) }_JOINID,"_id","${ lowerCamelCase.call(prop.implicitRef.type.name) }"));
@@ -67,7 +67,7 @@
      * @return
      * @throws SerializationException
      */
-    public static java.util.List<${ upperCamelCase.call(actObj.name) }> list () throws SerializationException {
+    public static java.util.Collection<? extends ${ upperCamelCase.call(actObj.name) }> list () throws SerializationException {
         return list(-1,-1);
     }
 
@@ -78,9 +78,9 @@
      * @return
      * @throws SerializationException
      */
-    public static java.util.List<${ upperCamelCase.call(actObj.name) }> list (int skip, int limit) throws SerializationException {
+    public static java.util.Collection<? extends ${ upperCamelCase.call(actObj.name) }> list (int skip, int limit) throws SerializationException {
         MongoCollection collection = getCollection();
-        java.util.List<Bson> aggregations  = new ArrayList<>();
+        java.util.Collection<? extends Bson> aggregations  = new ArrayList<>();
 
         <% actObj.properties.find { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() }.each { prop -> %>
         aggregations.add(Aggregates.lookup(${ upperCamelCase.call(prop.implicitRef.type.name) }.COLLECTION_NAME,${ toUpperCase.call(prop.implicitRef.type.name) }_JOINID,"_id","${ lowerCamelCase.call(prop.implicitRef.type.name) }"));

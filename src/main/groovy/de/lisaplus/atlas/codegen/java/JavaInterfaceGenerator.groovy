@@ -3,6 +3,7 @@ package de.lisaplus.atlas.codegen.java
 import de.lisaplus.atlas.codegen.TemplateType
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Type
+import de.lisaplus.atlas.model.EnumType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -10,16 +11,21 @@ import org.slf4j.LoggerFactory
  * Created by eiko on 05.06.17.
  */
 class JavaInterfaceGenerator extends JavaGeneratorBase {
-    private static final Logger log=LoggerFactory.getLogger(JavaInterfaceGenerator.class)
+
+    private static final Logger log = LoggerFactory.getLogger(JavaInterfaceGenerator.class)
 
     @Override
     String getDestFileName(Model dataModel, Map<String, String> extraParameters, Type currentType=null) {
         String fileNameBase = firstUpperCase(currentType.name)
-        return "I${fileNameBase}.java"
+        if (currentType instanceof EnumType) {
+            return "${ fileNameBase }.java"
+        } else {
+            return "I${fileNameBase}.java"
+        }
     }
 
     void initTemplate() {
-        template = createTemplateFromResource('templates/java/interface.txt',TemplateType.GString)
+        template = createTemplateFromResource('templates/java/interface.txt', TemplateType.GString)
     }
 
     Logger getLogger() {
