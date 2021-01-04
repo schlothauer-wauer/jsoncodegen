@@ -5,7 +5,6 @@ import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
 import de.lisaplus.atlas.codegen.test.DoCodeGen
 import de.lisaplus.atlas.model.AggregationType
 import de.lisaplus.atlas.model.ByteType
-import de.lisaplus.atlas.model.EnumType
 import de.lisaplus.atlas.model.IntType
 import de.lisaplus.atlas.model.LongType
 import de.lisaplus.atlas.model.RefType
@@ -59,9 +58,10 @@ class JsonSchemaBuilder {
         def grantsEnumType = model.types.find { it.name == 'GrantsEnum'}
         assertNotNull(grantsEnumType)
         List<String> expected1 = ['read','write','commit']
-        assertEquals(expected1.size(),((EnumType)grantsEnumType).allowedValues.size())
+        assertTrue(grantsEnumType.isEnum)
+        assertEquals(expected1.size(),grantsEnumType.allowedValues.size())
         for (int i=0; i<expected1.size();i++) {
-            assertEquals(expected1[i],((EnumType)grantsEnumType).allowedValues[i])
+            assertEquals(expected1[i],grantsEnumType.allowedValues[i])
         }
 
         def userLogType = model.types.find { it.name == 'UserLogType'}
@@ -73,9 +73,10 @@ class JsonSchemaBuilder {
         assertTrue ( userLogTypeProp.type instanceof RefType )
         assertEquals('UserLogType', userLogTypeProp.type.type.name )
         List<String> expected2 = ['login','logout']
-        assertEquals(expected2.size(),((EnumType)userLogType).allowedValues.size())
+        assertTrue(userLogType.isEnum)
+        assertEquals(expected2.size(),userLogType.allowedValues.size())
         for (int i=0; i<expected2.size();i++) {
-            assertEquals(expected2[i],((EnumType)userLogType).allowedValues[i])
+            assertEquals(expected2[i],userLogType.allowedValues[i])
         }
     }
 
