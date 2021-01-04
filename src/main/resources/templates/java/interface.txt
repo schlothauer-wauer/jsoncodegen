@@ -5,9 +5,9 @@ package ${extraParam.packageName};
  * ${currentType.description}
  */
 <% }
-//def isEnum = (currentType instanceof de.lisaplus.atlas.model.EnumType)
-//println "isEnum $isEnum to $currentType"
-if (currentType instanceof de.lisaplus.atlas.model.EnumType) {
+// def isTypeEnum = currentType.isEnum
+// println "isTypeEnum $isTypeEnum to ${currentType.name}"
+if (currentType.isEnum) {
 %>public enum ${ upperCamelCase.call(currentType.name) } {
     <% boolean first=true; currentType.allowedValues.each { value ->
     if (first) {%>
@@ -28,7 +28,7 @@ public interface I${ firstUpperCase.call(currentType.name) } {
     <%
     def isEnum = false
     if(prop.isRefTypeOrComplexType()) {
-       isEnum = (prop.type.type instanceof de.lisaplus.atlas.model.EnumType)
+       isEnum = (prop.type.type.isEnum)
        //println "${prop.type.type} with name ${prop.name} isEnum $isEnum"
     }
     if (isEnum) {

@@ -63,6 +63,17 @@ class Type {
      */
     boolean onlyBaseType=false
 
+
+    /**
+     * defines whether this type is an Enum
+     */
+    boolean isEnum=false
+
+    /**
+     * allowed values in case of Enum
+     */
+    String[] allowedValues=[]
+
     /**
      * array of free definable strings to add keywords to types and attributes.
      * This keywords can be used to select or deselect types or attributes while code generation
@@ -102,6 +113,8 @@ class Type {
         this.refOwner = source.refOwner == null ? null : source.refOwner.collect { owner -> Type.copyOf(owner, typeCopies)}
         this.onlyBaseType = source.onlyBaseType
         this.tags = source.tags== null ? null : new ArrayList<>(source.tags)
+        this.isEnum = source.isEnum
+        this.allowedValues = source.allowedValues
     }
 
     String toString() {
@@ -119,6 +132,8 @@ class Type {
         this.description = t.description
         this.requiredProps = t.requiredProps
         this.sinceVersion = t.sinceVersion
+        this.isEnum = t.isEnum
+        this.allowedValues = t.allowedValues
     }
 
     /**
@@ -237,10 +252,3 @@ class ExternalType extends Type {
     }
 }
 
-/**
- * type that implements enums
- */
-class EnumType extends Type {
-    // defined values for that enum
-    String[] allowedValues=[]
-}

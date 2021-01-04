@@ -3,7 +3,6 @@ package de.lisaplus.atlas.codegen.java
 import de.lisaplus.atlas.codegen.TemplateType
 import de.lisaplus.atlas.model.Model
 import de.lisaplus.atlas.model.Type
-import de.lisaplus.atlas.model.EnumType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -17,7 +16,7 @@ class JavaInterfaceGenerator extends JavaGeneratorBase {
     @Override
     String getDestFileName(Model dataModel, Map<String, String> extraParameters, Type currentType=null) {
         String fileNameBase = firstUpperCase(currentType.name)
-        if (currentType instanceof EnumType) {
+        if (currentType.isEnum) {
             return "${ fileNameBase }.java"
         } else {
             return "I${fileNameBase}.java"

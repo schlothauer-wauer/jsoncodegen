@@ -9,7 +9,7 @@ sourceCompatibility = 8
 def mainClass='de.lisaplus.atlas.DoCodeGen'
 
 project.group = 'de.lisaplus.tools'
-project.version = '0.13.2'
+project.version = '0.13.3'
 
 
 task sourcesJar(type: Jar) {
@@ -49,9 +49,11 @@ task dependenciesToLibDir(type: Copy) {
     from configurations.runtime
 }
 
-task buildRelease (type: Copy) {
+task buildRelease {
+    outputs.upToDateWhen { false }
+    doLast {
         println 'buildRelease start ...'
-        outputs.upToDateWhen { false }
+        
 
         copy {
             from "${project.rootDir}/src/main/resources/bin"
@@ -62,11 +64,14 @@ task buildRelease (type: Copy) {
             into "${buildDir}/release/conf"
         }
 
-
-        into "${buildDir}/release/lib"
-        from "${buildDir}/libs"
+        copy {
+          into "${buildDir}/release/lib"
+          from "${buildDir}/libs"
+          
+        }
 
         println 'buildRelease end ...'
+    }
 }
 
 task zipRelease (type: Zip) {

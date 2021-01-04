@@ -11,7 +11,6 @@ import de.lisaplus.atlas.model.ComplexType
 import de.lisaplus.atlas.model.DateTimeType
 import de.lisaplus.atlas.model.DateType
 import de.lisaplus.atlas.model.DummyType
-import de.lisaplus.atlas.model.EnumType
 import de.lisaplus.atlas.model.ExternalType
 import de.lisaplus.atlas.model.InnerType
 import de.lisaplus.atlas.model.IntType
@@ -376,6 +375,7 @@ class JsonSchemaBuilder implements IModelBuilder {
             // it's needed to avoid StackOverflows in case of self references  (*1)
             ExternalType extT = new ExternalType()
             def tmpTypeName = typeFormRefStr(refStr)
+            
             externalTypes.put(tmpTypeName,extT)
             if (indexOfTrenner != -1) {
                 // "$ref": "definitions.json#/address"
@@ -406,6 +406,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                     // the early declaration is needed to avoid StackOverflow-Errors in case of self references
                     externalTypes.remove(tmpTypeName) // this is maybe a critical point
                     addModelTypesToExternal(tmpModel)
+                    // println "external type 1 ${tmpTypeName}"
                     return extT
                 }
             }
@@ -430,6 +431,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                 // can be removed, because it's identical to the early init call (*1)
                 //externalTypes.put(typeFormRefStr(refStr),extT)
                 addModelTypesToExternal(tmpModel)
+                // println "external type 2 tmp type ${tmpT}"
                 return extT
             }
         }
@@ -476,7 +478,7 @@ class JsonSchemaBuilder implements IModelBuilder {
 
     }
 
-    private EnumType initEnumType(Model model,def propertiesParent,def baseTypeName, String schemaFileName, String currentSchemaPath) {
+    private Type initEnumType(Model model,def propertiesParent,def baseTypeName, String schemaFileName, String currentSchemaPath) {
         if (!propertiesParent) {
             def errorMsg = "undefined properties map, so cancel init complex type"
             log.error(errorMsg)
@@ -488,12 +490,12 @@ class JsonSchemaBuilder implements IModelBuilder {
         def alreadyCreated = createdTypes[enumTypeName]
         if (alreadyCreated) {
             // check if the values are the same as already defined
-            if (!(alreadyCreated instanceof EnumType)) {
+            if (!alreadyCreated.isEnum) {
                 def errorMsg = "expect an enum type but there already exists an non-enum type with the same name: $enumTypeName"
                 log.error(errorMsg)
                 throw new Exception(errorMsg)
             }
-            EnumType alreadyCreatedEnumType = (EnumType) alreadyCreated
+            Type alreadyCreatedEnumType = alreadyCreated
             if (alreadyCreatedEnumType.allowedValues != allowedValues) {
                 def errorMsg = "expect an enum type but there already exists an non-enum type with the same name: $enumTypeName"
                 log.error(errorMsg)
@@ -502,7 +504,7 @@ class JsonSchemaBuilder implements IModelBuilder {
             return alreadyCreated
         }
 
-        EnumType newType = new EnumType()
+        Type newType = new Type()
         newType.name = enumTypeName
         newType.schemaPath = currentSchemaPath
         newType.schemaFileName = schemaFileName
@@ -510,6 +512,7 @@ class JsonSchemaBuilder implements IModelBuilder {
         TypeToColor.setColor(newType)
         createdTypes[newType.name] = newType
         model.types.add(newType)
+        newType.isEnum = true
         return newType
     }
 
@@ -531,6 +534,8 @@ class JsonSchemaBuilder implements IModelBuilder {
     }
 
     private BaseType getBaseTypeFromString(Model model,String schemaFileName, String currentSchemaPath,def propObjMap, def innerTypeBaseName, def isArrayAllowed=true) {
+        //log.info("Get baseType for ${propObjMap}")
+        
         switch (propObjMap.type) {
             case 'string':
                 if (propObjMap.format && propObjMap.format.toLowerCase()=="uuid") {
@@ -548,7 +553,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                 }
                 else {
                     if (createEnumTypes && propObjMap.enum) {
-                        EnumType enumType = initEnumType(model,propObjMap,innerTypeBaseName,schemaFileName,currentSchemaPath)
+                        Type enumType = initEnumType(model,propObjMap,innerTypeBaseName,schemaFileName,currentSchemaPath)
                         RefType ret = new RefType()
                         ret.type=enumType
                         ret.typeName=enumType.name
