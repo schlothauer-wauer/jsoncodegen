@@ -78,6 +78,7 @@ gradle myRun -PmyArgs="-o,/tmp/test_beans,-m,src/test/resources/test_schemas/mul
 -gp,destFileNameExt=java,-gp,packageName=de.sw.atlas.test"
 ```
 ### Usage of the release
+**First download [the latest release from here](https://github.com/kaiso/jsoncodegen/releases/download/v0.13.3/jsonCodeGen-v0.13.3.zip)**
 
 ```bash
 ./jsonCodeGen.sh
