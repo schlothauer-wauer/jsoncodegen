@@ -45,29 +45,29 @@ class JavaTypeConvert {
         }
         switch(type.name()) {
             case IntType.NAME:
-                return type.isArray? 'java.util.List<Integer>' : 'Integer'
+                return type.isArray? 'java.util.Collection<? extends Integer>' : 'Integer'
             case LongType.NAME:
-                return type.isArray? 'java.util.List<Long>' : 'Long'
+                return type.isArray? 'java.util.Collection<? extends Long>' : 'Long'
             case NumberType.NAME:
-                return type.isArray? 'java.util.List<Double>' : 'Double'
+                return type.isArray? 'java.util.Collection<? extends Double>' : 'Double'
             case StringType.NAME:
-                return type.isArray? 'java.util.List<String>' : 'String'
+                return type.isArray? 'java.util.Collection<? extends String>' : 'String'
             case UUIDType.NAME:
-                return type.isArray? 'java.util.List<UUID>' : 'UUID'
+                return type.isArray? 'java.util.Collection<? extends UUID>' : 'UUID'
             case BooleanType.NAME:
-                return type.isArray? 'java.util.List<Boolean>' : 'Boolean'
+                return type.isArray? 'java.util.Collection<? extends Boolean>' : 'Boolean'
             case ByteType.NAME:
-                return type.isArray? 'java.util.List<Byte>' : 'Byte'
+                return type.isArray? 'java.util.Collection<? extends Byte>' : 'Byte'
             case DateType.NAME:
-                return type.isArray? "java.util.List<${preset.dateClass}>" : "${preset.dateClass}"
+                return type.isArray? "java.util.Collection<? extends ${preset.dateClass}>" : "${preset.dateClass}"
             case DateTimeType.NAME:
-                return type.isArray? "java.util.List<${preset.dateTimeClass}>" : "${preset.dateTimeClass}"
+                return type.isArray? "java.util.Collection<? extends ${preset.dateTimeClass}>" : "${preset.dateTimeClass}"
             case RefType.NAME:
-                return type.isArray? "java.util.List<${prefix}${firstUpperCamelCase(type.type.name)}>" : "${prefix}${firstUpperCamelCase(type.type.name)}"
+                return type.isArray? "java.util.Collection<? extends ${prefix}${firstUpperCamelCase(type.type.name)}>" : "${prefix}${firstUpperCamelCase(type.type.name)}"
             case ComplexType.NAME:
-                return type.isArray? "java.util.List<${prefix}${firstUpperCamelCase(type.type.name)}>" : "${prefix}${firstUpperCamelCase(type.type.name)}"
+                return type.isArray? "java.util.Collection<? extends ${prefix}${firstUpperCamelCase(type.type.name)}>" : "${prefix}${firstUpperCamelCase(type.type.name)}"
             case ArrayType.NAME:
-                String base = "java.util.List<%s>";
+                String base = "java.util.Collection<? extends %s>";
                 BaseType aktType = type;
                 String ret = base;
                 String baseTypeStr = convert.call (type.baseType)

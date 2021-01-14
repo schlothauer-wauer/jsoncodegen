@@ -10,16 +10,21 @@ import org.slf4j.LoggerFactory
  * Created by eiko on 05.06.17.
  */
 class JavaInterfaceGenerator extends JavaGeneratorBase {
-    private static final Logger log=LoggerFactory.getLogger(JavaInterfaceGenerator.class)
+
+    private static final Logger log = LoggerFactory.getLogger(JavaInterfaceGenerator.class)
 
     @Override
     String getDestFileName(Model dataModel, Map<String, String> extraParameters, Type currentType=null) {
         String fileNameBase = firstUpperCase(currentType.name)
-        return "I${fileNameBase}.java"
+        if (currentType.isEnum) {
+            return "${ fileNameBase }.java"
+        } else {
+            return "I${fileNameBase}.java"
+        }
     }
 
     void initTemplate() {
-        template = createTemplateFromResource('templates/java/interface.txt',TemplateType.GString)
+        template = createTemplateFromResource('templates/java/interface.txt', TemplateType.GString)
     }
 
     Logger getLogger() {

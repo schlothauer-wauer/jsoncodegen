@@ -22,7 +22,7 @@
     // byId
     public static ${ upperCamelCase.call(actObj.name) } byId (String guid) throws SerializationException {
         MongoCollection collection = getCollection();
-        java.util.List<Bson> aggregations  = new ArrayList<>();
+        java.util.Collection<? extends Bson> aggregations  = new ArrayList<>();
         aggregations.add(Aggregates.match(Filters.eq("guid", guid)));
         AggregateIterable iterable = collection.aggregate(
                 aggregations
@@ -44,7 +44,7 @@
      * @return
      * @throws SerializationException
      */
-    public static java.util.List<${ upperCamelCase.call(actObj.name) }> list () throws SerializationException {
+    public static java.util.Collection<? extends ${ upperCamelCase.call(actObj.name) }> list () throws SerializationException {
         return list (-1,-1);
     }
 
@@ -55,9 +55,9 @@
      * @return
      * @throws SerializationException
      */
-    public static java.util.List<${ upperCamelCase.call(actObj.name) }> list (int skip, int limit) throws SerializationException {
+    public static java.util.Collection<? extends ${ upperCamelCase.call(actObj.name) }> list (int skip, int limit) throws SerializationException {
         MongoCollection collection = getCollection();
-        java.util.List<Bson> aggregations  = new ArrayList<>();
+        java.util.Collection<? extends Bson> aggregations  = new ArrayList<>();
         if (skip>0) {
             aggregations.add(Aggregates.skip(skip));
         }
