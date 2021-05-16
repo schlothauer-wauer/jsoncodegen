@@ -1,0 +1,48 @@
+<%
+boolean versionConst = extraParam.versionConst
+
+def memberVisibility = extraParam.memberVisibility && extraParam.memberVisibility.toLowerCase()=='protected' ? 'protected' : 'private'
+def hasUuid = !currentType.properties.findAll { it.type.name() == 'UUID'}.isEmpty()
+def importStr = 'import groovy.transform.*;\nimport java.activation.annotation.*\n' + (hasUuid ? '\nimport java.util.UUID;\n' : '')
+
+%>package ${extraParam.packageName};
+${importStr}
+
+<% if ( currentType.description ) { %>
+/**
+ * ${currentType.description}
+ *
+ * Generated on <%=new Date().toString()%>
+ */
+<% }
+if (currentType instanceof de.lisaplus.atlas.model.EnumType) {
+%>public enum ${ upperCamelCase.call(currentType.name) } {
+    <% boolean first=true; currentType.allowedValues.each { value ->
+    if (first) {%>
+    ${value}
+    <% first=false} else { %>
+    ,${value}
+    <% } } %>
+}
+<% } else {
+%>@Canonical(includeNames=true,includePackage=false)
+class ${ upperCamelCase.call(currentType.name) } implements Serializable {
+    <% currentType.properties.each { prop -> %>
+    <% if (prop.description) {
+    %>/**
+     * ${prop.description}
+     */
+    <% }
+    println("$prop.name vs $currentType.requiredProps");
+    if(prop.name in currentType.requiredProps) { 
+    %>@Nonnull
+    <%}
+    if (!prop.type.isArray) {
+    %> ${ typeToJava.call(prop.type) } ${prop.name}
+    <% } else {
+    %> ${ typeToJava.call(prop.type).replace('java.util.','') } ${prop.name} = [];
+    <% }
+    %>
+    <% } %>
+}
+<% } %>
