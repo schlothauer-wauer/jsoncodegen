@@ -624,6 +624,12 @@ class JsonSchemaBuilder implements IModelBuilder {
                     ret.isArray = true
                     return ret
                 }
+                else if (propObjMap.items['allOf'] && propObjMap.items.allOf.any { it.containsKey('$ref')}) {
+                    String refType = propObjMap.items.allOf.find { it.containsKey('$ref')}['$ref']
+                    BaseType ret = initRefType(refType,schemaFileName,currentSchemaPath)
+                    ret.isArray = true
+                    return ret
+                }
                 else if (propObjMap.items.size()==0) {
                     return new VoidType()
                 }
