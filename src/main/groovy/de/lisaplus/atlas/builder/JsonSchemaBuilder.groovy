@@ -634,7 +634,7 @@ class JsonSchemaBuilder implements IModelBuilder {
                     return new VoidType()
                 }
                 else {
-                    def errorMsg = "unknown array type"
+                    def errorMsg = "unknown array type for $propObjMap"
                     log.error(errorMsg)
                     throw new Exception(errorMsg)
                 }
