@@ -69,12 +69,12 @@ gradle myRun -PmyArgs="-m,src/test/resources/schemas/ProcessDataEvent.json"
 
 # complex example for debug mode run
 gradle myRun -PDEBUG -PmyArgs="-o,/tmp/test_beans,-m,src/test/resources/test_schemas/multiType.json,\
--g,multifiles=src/main/resources/templates/java/java_bean.txt,\
+-g,multifiles=src/main/resources/templates/java/bean.txt,\
 -gp,destFileNameExt=java,-gp,packageName=de.sw.atlas.test"
 
 # complex example without debug mode run
 gradle myRun -PmyArgs="-o,/tmp/test_beans,-m,src/test/resources/test_schemas/multiType.json,\
--g,multifiles=src/main/resources/templates/java/java_bean.txt,\
+-g,multifiles=src/main/resources/templates/java/bean.txt,\
 -gp,destFileNameExt=java,-gp,packageName=de.sw.atlas.test"
 ```
 ### Usage of the release
