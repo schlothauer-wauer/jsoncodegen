@@ -2,8 +2,8 @@
 A simple Groovy based program to do generation tasks from a JSON schema.
 
 ## Requirements
-* Java 8
-* Gradle v5.4*
+* Java 17
+* Gradle v7.*
 
 ## Unsupported JSON schema features
 * patternProperties - make no sense in model description
