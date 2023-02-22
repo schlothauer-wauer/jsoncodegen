@@ -1,8 +1,8 @@
 /**
  * This is a platform independent start script for jsonCodeGen
  * Requirements:
- *      Java 8
- *      Groovy > 2.4.7
+ *      Java 17
+ *      Groovy >= 4.0.0
  * Created by eiko on 13.07.17.
  */
 

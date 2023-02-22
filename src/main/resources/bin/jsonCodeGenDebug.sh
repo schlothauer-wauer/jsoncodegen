@@ -38,7 +38,7 @@ esac
 args=
 for arg in "$@";
 do
-  args="$args \"$arg\""
+  args="$args $arg"
 done
 
 if [ -d $scriptPos/lib ]; then
