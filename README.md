@@ -89,6 +89,9 @@ Usage: de.lisaplus.atlas.DoCodeGen [options]
     -b, --black-list
       black listed type, multiple usage possible
       Default: []
+    -cet, --create-enum-types
+      if set the model is built with enum types
+      Default: false
     -g, --generator
       generator that are used with the model. This parameter can be used 
       multiple times
@@ -96,19 +99,22 @@ Usage: de.lisaplus.atlas.DoCodeGen [options]
     -gp, --generator-parameter
       special parameter that are passed to template via maps
       Default: []
+    -gs, --generator-scripts
+      additional script that should be passed to the used templates
     -h, --help
 
+    -mta, --main-types-attrib
+      specify a needed attribute to be a maintype, used in addition to the 
+      schema location
   * -m, --model
       Path to JSON schema to parse
+      Default: []
     -o, --outputBase
       Base directory for the output
     -pmt, --print-main-types
       don't do any code generation, simply loads the model and print the 
       main-types of it
       Default: false
-    -pmta, --print-main-types-attrib
-      don't do any code generation, simply loads the model and print the 
-      main-types of it
     -pmti, --print-main-types-info
       print with info header
       Default: false
@@ -120,6 +126,15 @@ Usage: de.lisaplus.atlas.DoCodeGen [options]
     -rta, --remove-tag-all
       remove a tag from all model types, f.e. -rta rest
       Default: []
+    -rta2, --remove-tag-all-if-not-main
+      remove a tag from all model types that are no main types, f.e. -rta rest
+      Default: []
+    -rta2a, --remove-tag-all-if-not-main-attrib
+      don't do any code generation, simply loads the model and print the 
+      main-types of it
+    -tmt, --tag-main-types
+      if this flag is set all maintypes will be extended with a 'mainType' tag
+      Default: false
     -w, --white-list
       white listed type, multiple usage possible
       Default: []
