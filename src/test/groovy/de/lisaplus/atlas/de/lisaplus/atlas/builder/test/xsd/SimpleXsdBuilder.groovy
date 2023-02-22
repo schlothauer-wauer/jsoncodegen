@@ -3,8 +3,6 @@ package de.lisaplus.atlas.de.lisaplus.atlas.builder.test.xsd
 import de.lisaplus.atlas.builder.XSDBuilder
 import org.junit.Test
 
-import static junit.framework.Assert.assertTrue
-import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertNotNull
 import static org.junit.Assert.assertTrue
 
