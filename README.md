@@ -76,6 +76,10 @@ gradle myRun -PDEBUG -PmyArgs="-o,/tmp/test_beans,-m,src/test/resources/test_sch
 gradle myRun -PmyArgs="-o,/tmp/test_beans,-m,src/test/resources/test_schemas/multiType.json,\
 -g,multifiles=src/main/resources/templates/java/bean.txt,\
 -gp,destFileNameExt=java,-gp,packageName=de.sw.atlas.test"
+
+# swagger example
+gradle myRun -PmyArgs="-o,/tmp/swagger,-m,src/test/resources/test_schemas/ds/user.json\
+,-g,swagger,-gp,removeEmptyLines=true,-gp,host=api.lisaplus.de"
 ```
 ### Usage of the release
 
