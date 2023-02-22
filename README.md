@@ -59,7 +59,7 @@ A simple Groovy based program to do generation tasks from a JSON schema.
 gradle buildRelease
 
 # builds release and copy artifacts to docker image dir as preparation for the image build
-gradle copyReleaseToDockerImage
+gradle buildDockerImage
 
 # run program without any arguments from project
 gradle myRun
