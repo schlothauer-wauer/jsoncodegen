@@ -14,19 +14,19 @@ plugins {
 sourceCompatibility = 17
 targetCompatibility = 17
 
-def mainClass='de.lisaplus.atlas.DoCodeGen'
+def mc='de.lisaplus.atlas.DoCodeGen'
 
 project.group = 'de.lisaplus.tools'
 project.version = '0.14.0'
 
 
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allJava
 }
 
 task javadocJar(type: Jar) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
@@ -97,7 +97,7 @@ task myRun (type: JavaExec, dependsOn: classes){
         jvmArgs '-Xdebug',
                 '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=9009'
     }
-    main = mainClass
+    mainClass = mc
     classpath = sourceSets.main.runtimeClasspath
 }
 
