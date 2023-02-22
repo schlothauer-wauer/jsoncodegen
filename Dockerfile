@@ -1,7 +1,8 @@
-# FROM mcr.microsoft.com/java/jdk:11u3-zulu-alpine as build
 FROM azul/zulu-openjdk-alpine:17.0.4.1 as build
 
-# "--module-path", "/usr/lib/jvm/zulu-11-azure-jdk_11.31.11-11.0.3-linux_musl_x64/jmods", \
+# replace '--strip-debug' with '--strip-java-debug-attributes' or install package binutils
+# Avoid error 'Cannot run program "objcopy": error=2, No such file or directory'!
+RUN apk add --no-cache binutils
 RUN ["jlink", \
      "--compress=2", \
      "--strip-debug", \
