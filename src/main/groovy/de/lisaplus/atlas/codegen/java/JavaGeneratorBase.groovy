@@ -13,14 +13,15 @@ import org.slf4j.LoggerFactory
 abstract class JavaGeneratorBase extends MultiFileGenarator {
     @Override
     String getDestFileName(Model dataModel, Map<String, String> extraParameters, Type currentType=null) {
-        String fileNameBase = firstUpperCase(currentType.name)
+        String fileNameBase = firstUpperCamelCase(currentType.name)
         return "${fileNameBase}.java"
     }
 
     @Override
     String getDestDir(Model dataModel, String outputBasePath, Map<String, String> extraParameters, Type currentType=null) {
         String destDirBase = extraParameters.outputDirExt ? outputBasePath + File.separator + extraParameters.outputDirExt : outputBasePath
-        String packageStr = extraParameters.packageName ? extraParameters.packageName.replaceAll('\\.',File.separator) : ''
+        // Force linux/unix file separator, JVM can handle that on all plattforms!
+        String packageStr = extraParameters.packageName ? extraParameters.packageName.replaceAll('\\.','/') : ''
         String destDirStr = "${destDirBase}${File.separator}${packageStr}"
         File destDir = new File(destDirStr)
         if (!destDir.exists()) destDir.mkdirs()

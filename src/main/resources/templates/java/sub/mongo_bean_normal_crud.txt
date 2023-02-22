@@ -1,0 +1,106 @@
+//// prints the CRUD operations for normal mongo beans
+    public static ${ upperCamelCase.call(actObj.name) } createFromDocument(Document document) {
+        if (document==null) return null;
+        ${ upperCamelCase.call(actObj.name) } newObj = new ${ upperCamelCase.call(actObj.name) }();
+        // handle base types
+        <% actObj.properties.findAll {prop -> return ! prop.isRefTypeOrComplexType() }.each { prop -> %>
+        newObj.${prop.name} = (${ typeToJava.call(prop.type) }) document.get(${toUpperCase.call(prop.name)});
+        <% } %>
+        // handle complex types
+        <% actObj.properties.findAll {prop -> return prop.isRefTypeOrComplexType() }.each { prop -> %>
+            <% if (prop.type.isArray) { %>
+        newObj.${prop.name} = ${ typeToJava.call(prop.type) }.createArrayFromDocument((Document)document.get(${toUpperCase.call(prop.name)}));
+            <% } else { %>
+        newObj.${prop.name} = ${ typeToJava.call(prop.type) }.createFromDocument((Document)document.get(${toUpperCase.call(prop.name)}));
+            <% } %>
+        <% } %>
+        newObj.objectId = (ObjectId) document.get("_id");
+        return newObj;
+    }
+
+
+    // byId
+    public static ${ upperCamelCase.call(actObj.name) } byId (String guid) throws SerializationException {
+        MongoCollection collection = getCollection();
+        java.util.List<Bson> aggregations  = new ArrayList<>();
+        aggregations.add(Aggregates.match(Filters.eq("guid", guid)));
+        AggregateIterable iterable = collection.aggregate(
+                aggregations
+        );
+        Object o = iterable.first();
+        if (o==null) throw new ObjNotFoundException(guid);
+        if (! (o instanceof Document )) {
+            // TODO logging
+            throw new SerializationException(String.format("Wrong result type, expect Document but got: %s",o.getClass().getName()));
+        }
+
+        Document document = (Document) o;
+        ${ upperCamelCase.call(actObj.name) } newObj = createFromDocument(document);
+        return newObj;
+    }
+
+    /**
+     * return a list of elements
+     * @return
+     * @throws SerializationException
+     */
+    public static java.util.List<${ upperCamelCase.call(actObj.name) }> list () throws SerializationException {
+        return list (-1,-1);
+    }
+
+    /**
+     * return a list of elements
+     * @param skip an offset how many values should be skipped, values <1 cause the ignore the skipping
+     * @param limit how many set shall be returned
+     * @return
+     * @throws SerializationException
+     */
+    public static java.util.List<${ upperCamelCase.call(actObj.name) }> list (int skip, int limit) throws SerializationException {
+        MongoCollection collection = getCollection();
+        java.util.List<Bson> aggregations  = new ArrayList<>();
+        if (skip>0) {
+            aggregations.add(Aggregates.skip(skip));
+        }
+        if (limit>0) {
+            aggregations.add(Aggregates.limit(limit));
+        }
+        AggregateIterable iterable = collection.aggregate(
+                aggregations
+        );
+        ArrayList<${ upperCamelCase.call(actObj.name) }> list = new ArrayList<>();
+        MongoCursor<Document> iterator = iterable.iterator();
+        while (iterator.hasNext()) {
+            ${ upperCamelCase.call(actObj.name) } newObj = createFromDocument(iterator.next());
+            if (newObj!=null) {
+                list.add(newObj);
+            }
+        }
+        return list;
+    }
+
+    // insert
+    public void insert () throws SerializationException {
+        MongoCollection collection = getCollection();
+        String guid = getGuid();
+        if (guid==null) {
+            guid = UUID.randomUUID().toString();
+            setGuid(guid);
+        }
+        Document document = new Document();
+        <% actObj.properties.each { prop -> %>
+        document.put(${toUpperCase.call(prop.name)}, ${prop.name});
+        <% } %>
+        collection.insertOne(document);
+        objectId = (ObjectId)document.get( "_id" );
+    }
+
+    // update
+    public void update () {
+
+    }
+
+    // delete
+    public void delete () {
+
+    }
+

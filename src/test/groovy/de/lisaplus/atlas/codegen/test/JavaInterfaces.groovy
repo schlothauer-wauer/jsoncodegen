@@ -16,7 +16,7 @@ class JavaInterfaces {
         FileHelper.removeDirectoryIfExists(destDir)
         def modelFile = new File('src/test/resources/test_schemas/ds/user.json')
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = modelFile
+        doCodeGen.models = [modelFile]
         doCodeGen.generators.add('java_interfaces')
         doCodeGen.outputBaseDir = destDir
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -30,7 +30,7 @@ class JavaInterfaces {
         FileHelper.removeDirectoryIfExists(destDir)
         def modelFile = new File('src/test/resources/test_schemas/ds/base_types/map_object_multi_type.json')
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = modelFile
+        doCodeGen.models = [modelFile]
         doCodeGen.generators.add('java_interfaces')
         doCodeGen.outputBaseDir = destDir
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -44,7 +44,7 @@ class JavaInterfaces {
         FileHelper.removeDirectoryIfExists(destDir)
         def modelFile = new File('src/test/resources/test_schemas/ds/base_types/simple_map_object.json')
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = modelFile
+        doCodeGen.models = [modelFile]
         doCodeGen.generators.add('java_interfaces')
         doCodeGen.outputBaseDir = destDir
         doCodeGen.generator_parameters.add('removeEmptyLines=true')

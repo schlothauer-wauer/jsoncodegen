@@ -1,0 +1,92 @@
+<xs:schema
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:po="http://openuri.org/easypo"
+        targetNamespace="http://openuri.org/easypo"
+        elementFormDefault="qualified">
+    <xs:element name="purchase-order">
+        <xs:annotation>
+            <xs:documentation>This is a simple test</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="customer" type="po:customer"/>
+                <xs:element name="date" type="xs:dateTime"/>
+                <xs:element name="line-itemx" type="po:line-item" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="shipper" type="po:shipper" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="customer">
+        <xs:annotation>
+            <xs:documentation>
+                This is a simple test2
+                over more than one line
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="name" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>That's a name</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="address" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="age" type="xs:int"/>
+        <xs:attribute name="moo" type="xs:int" default="100"/>
+        <xs:attribute name="poo" type="xs:int" fixed="200"/>
+    </xs:complexType>
+    <xs:complexType name="line-item">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="per-unit-ounces" type="xs:decimal"/>
+            <xs:element name="price" type="xs:decimal"/>
+            <xs:element name="quantity">
+                <xs:complexType>
+                    <xs:annotation>
+                        <xs:documentation>
+                            This is a simple test2
+                            over more than one line
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:sequence>
+                        <xs:element name="name" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation>That's a name</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="address" type="xs:string"/>
+                    </xs:sequence>
+                    <xs:attribute name="age" type="xs:int"/>
+                    <xs:attribute name="moo" type="xs:int" default="100"/>
+                    <xs:attribute name="poo" type="xs:int" fixed="200"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="shipper">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="5"/>
+            <xs:element name="per-ounce-rate" type="xs:decimal" minOccurs="10" maxOccurs="unbounded"/>
+            <xs:element name="customer" type="po:customer"/>
+            <xs:element name="guid" type="po:guid"/>
+            <xs:element name="posList" type="po:VehicleToLanePositionList"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="guid">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="VehicleToLanePositionList">
+        <xs:sequence minOccurs="1" maxOccurs="5">
+            <xs:element name="VehicleToLanePosition" type="po:VehicleToLanePosition"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="VehicleToLanePosition">
+        <xs:sequence>
+            <xs:element name="stationID" type="xs:string"/>
+            <xs:element name="laneID" type="xs:int"/>
+            <xs:element name="timeReference" minOccurs="0" type="xs:long"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

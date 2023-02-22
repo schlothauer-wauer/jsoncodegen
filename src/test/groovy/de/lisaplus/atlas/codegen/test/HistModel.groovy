@@ -11,7 +11,7 @@ import static junit.framework.Assert.assertTrue
 class HistModel {
     private static void generateHistModel(String model, String destFile) {
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model=model
+        doCodeGen.models = [model]
         doCodeGen.generators.add('hist_model')
         doCodeGen.outputBaseDir='tmp'
         doCodeGen.generator_parameters.add("destFileName=${destFile}")
@@ -22,7 +22,7 @@ class HistModel {
 
     private static void generatePlantUML(String model, String destFile) {
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model=model
+        doCodeGen.models=[model]
         doCodeGen.generators.add('plantuml')
         doCodeGen.outputBaseDir='tmp'
         doCodeGen.generator_parameters.add("destFileName=${destFile}")

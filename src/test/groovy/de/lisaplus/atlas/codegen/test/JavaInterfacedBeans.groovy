@@ -17,7 +17,7 @@ class JavaInterfacedBeans {
         def modelFile = new File('src/test/resources/test_schemas/ds/user.json')
 
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = modelFile
+        doCodeGen.models=[modelFile]
         doCodeGen.generators.add('java_interfaces')
         doCodeGen.outputBaseDir = destDir
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -25,7 +25,7 @@ class JavaInterfacedBeans {
         doCodeGen.run()
 
         de.lisaplus.atlas.DoCodeGen doCodeGen2 = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen2.model = modelFile
+        doCodeGen2.models = [modelFile]
         doCodeGen2.generators.add('java_interfaced_beans')
         doCodeGen2.outputBaseDir = destDir
         doCodeGen2.generator_parameters.add('removeEmptyLines=true')
@@ -41,7 +41,7 @@ class JavaInterfacedBeans {
         FileHelper.removeDirectoryIfExists(destDir)
 
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = modelFile
+        doCodeGen.models=[modelFile]
         doCodeGen.generators.add('java_interfaces')
         doCodeGen.outputBaseDir = destDir
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -49,7 +49,7 @@ class JavaInterfacedBeans {
         doCodeGen.run()
 
         de.lisaplus.atlas.DoCodeGen doCodeGen2 = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen2.model = modelFile
+        doCodeGen2.models = [modelFile]
         doCodeGen2.generators.add('java_interfaced_beans')
         doCodeGen2.outputBaseDir = destDir
         doCodeGen2.generator_parameters.add('removeEmptyLines=true')
@@ -65,7 +65,7 @@ class JavaInterfacedBeans {
         FileHelper.removeDirectoryIfExists(destDir)
 
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model = modelFile
+        doCodeGen.models=[modelFile]
         doCodeGen.generators.add('java_interfaces')
         doCodeGen.outputBaseDir = destDir
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -73,7 +73,7 @@ class JavaInterfacedBeans {
         doCodeGen.run()
 
         de.lisaplus.atlas.DoCodeGen doCodeGen2 = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen2.model = modelFile
+        doCodeGen2.models = [modelFile]
         doCodeGen2.generators.add('java_interfaced_beans')
         doCodeGen2.outputBaseDir = destDir
         doCodeGen2.generator_parameters.add('removeEmptyLines=true')

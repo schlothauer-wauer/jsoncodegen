@@ -3,129 +3,10 @@
   "title": "Incident model",
   "description": "Model describes data that are needed to collect incident states and the task to solve it ",
   "definitions": {
-    "incident": {
+    "Incident": {
       "type": "object",
       "description": "A detected failure state that needs some actions to solve it",
       "properties": {
-        "stages": {
-          "description": "what are the stages of that event",
-          "type": "object",
-          "properties": {
-            "entered" : {
-              "description": "when has the information entered the system",
-              "type": "object",
-              "properties": {
-                "time": {
-                  "description": "date/time when it was first reported",
-                  "type": "string",
-                  "format": "date-time"
-                },
-                "report_type": {
-                  "description": "on what way comes the information to the system",
-                  "type": "string"
-                },
-                "description": {
-                  "description": "Short the description of the problem",
-                  "type": "string"
-                }
-              }
-            },
-            "reported": {
-              "description": "data about the report of that information to another administration",
-              "type": "object",
-              "properties": {
-                "time": {
-                  "description": "date/time when it was reported",
-                  "type": "string",
-                  "format": "date-time"
-                },
-                "report_type": {
-                  "description": "on what way goes the information to the recipient",
-                  "type": "string"
-                }
-              }
-            },
-            "transferred": {
-              "description": "data about the transfer of the responsibility about that event to another entity",
-              "type": "object",
-              "properties": {
-                "time": {
-                  "description": "date/time when it was transferred",
-                  "type": "string",
-                  "format": "date-time"
-                },
-                "report_type": {
-                  "description": "on what way goes the information to the recipient",
-                  "type": "string"
-                }
-              }
-            },
-            "repair": {
-              "description": "data about the repair stages",
-              "type": "object",
-              "properties": {
-                "start": {
-                  "description": "when started the repair",
-                  "type": "object",
-                  "properties": {
-                    "time": {
-                      "description": "date/time when",
-                      "type": "string",
-                      "format": "date-time"
-                    }
-                  }
-                },
-                "finished": {
-                  "description": "when was the repair finished",
-                  "type": "object",
-                  "properties": {
-                    "time": {
-                      "description": "date/time when",
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "problem": {
-                      "description": "what was the problem",
-                      "type": "string"
-                    }
-                  }
-                },
-                "rejected": {
-                  "description": "when was the repair rejected, f.i. as a result of control and the detection of unsolved problems",
-                  "type": "object",
-                  "properties": {
-                    "time": {
-                      "description": "date/time when",
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "reason": {
-                      "description": "why was the repair rejected",
-                      "type": "string"
-                    }
-                  }
-                },
-                "accepted": {
-                  "description": "when was the repair finished",
-                  "type": "object",
-                  "properties": {
-                    "time": {
-                      "description": "date/time when",
-                      "type": "string",
-                      "format": "date-time"
-                    }
-                  }
-                }
-              }
-            },
-            "comments": {
-              "type": "array",
-              "items": {
-                "$ref": "./shared/comment.json"
-              }
-            }
-          }
-        },
         "number": {
           "description": "all the number (technical names) of this object",
           "type": "object",
@@ -140,39 +21,142 @@
             }
           }
         },
-        "gis": {
-          "type": "object",
-          "properties": {
-            "area": {
-              "description": "geografic area of this object",
-              "$ref": "./shared/geo_area.json"
-            },
-            "center": {
-              "description": "geografic area of this object",
-              "$ref": "./shared/geo_point.json"
-            }
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "__ref": "#/definitions/IncidentTag"
           }
         },
         "type": {
           "description": "what type has this event",
           "type": "string",
-          "ref": "#/definitions/incident_type"
+          "__ref": "#/definitions/IncidentType"
         },
-        "junction": {
-          "description": "what junction is related to this event",
-          "$ref": "./shared/junction_short.json"
+        "urgency": {
+          "description": "some kind of priority",
+          "type": "integer"
         },
-        "insurance_relavant": {
-          "description": "this event is relevant to insurance contracts",
-          "type": "boolean"
+        "description": {
+          "description": "some more words to describe the problem",
+          "type": "string"
         },
-        "comments": {
+        "states": {
           "type": "array",
           "items": {
-            "$ref": "./shared/comment.json"
+            "$ref": "#/definitions/IncidentState"
           }
         },
-        "gid": {
+        "rawData": {
+          "description": "container for additional, app-specific content",
+          "type": "object",
+          "properties": {
+            "type": {
+              "description": "to identify the raw data, different versions can be encoded in that string",
+              "type": "string"
+            },
+            "mimeType": {
+              "description": "how are the data encoded",
+              "type": "string"
+            },
+            "data": {
+              "type": "string"
+            }
+          }
+        },
+        "references": {
+          "type": "array",
+          "__tags": ["recursion"],
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "__ref": "#/definitions/Incident"
+          }
+        },
+        "innerReferences": {
+          "type": "array",
+          "__tags": ["recursion"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "startDate": {
+                "description": "when occurs the event that became the incident",
+                "type": "string",
+                "format": "date-time"
+              },
+              "startedBy": {
+                "description": "user name that starts the processing",
+                "type": "string"
+              },
+              "startComment": {
+                "description": "additional information about the state",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "guid": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "__tags": ["rest", "joined","mongodb"]
+    },
+    "IncidentState": {
+      "type": "object",
+      "properties": {
+        "startDate": {
+          "description": "when occurs the event that became the incident",
+          "type": "string",
+          "format": "date-time"
+        },
+        "startedBy": {
+          "description": "user name that starts the processing",
+          "type": "string"
+        },
+        "startComment": {
+          "description": "additional information about the state",
+          "type": "string"
+        },
+        "endDate": {
+          "description": "end date of that state",
+          "type": "string",
+          "format": "date-time"
+        },
+        "assignTo": {
+          "description": "user name that ends the",
+          "type": "string"
+        },
+        "endedBy": {
+          "description": "user name that ends the",
+          "type": "string"
+        },
+        "endComment": {
+          "description": "additional information about closing the state",
+          "type": "string"
+        },
+        "stateType": {
+          "description": "name of the state",
+          "type": "string",
+          "__ref": "#/definitions/IncidentStateType"
+        }
+      }
+    },
+    "IncidentStateType": {
+      "type": "object",
+      "description": "occurs, entered, resolved, ...",
+      "properties": {
+        "name": {
+          "description": "a describing name",
+          "type": "string"
+        },
+        "comment": {
+          "description": "some more words to explain",
+          "type": "string"
+        },
+        "guid": {
+          "description": "global identifier",
           "type": "string",
           "format": "uuid"
         },
@@ -180,25 +164,116 @@
           "description": "what is the related domain",
           "type": "string",
           "format": "uuid",
-          "ref": "./shared/domain.json"
+          "__ref": "./shared/domain.json"
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean"
+        },
+        "order": {
+          "description": "order in that the states should follow",
+          "type": "boolean"
+        },
+        "progress": {
+          "description": "order in that the states should follow",
+          "type": "string",
+          "enum": [
+            "new",
+            "doing",
+            "done"
+          ]
+        },
+        "locked": {
+          "description": "entry is needed and should not be deleted",
+          "type": "boolean"
+        },
+        "incidentTypeId": {
+          "description": "what incident types is that state related to (f.e. intersections, INES nets, public transport route, ...)",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "__ref": "#/definitions/IncidentType"
+          }
         }
       }
     },
-    "incident_type": {
-      "description": "types of incidents",
+    "IncidentComment": {
+      "type": "object",
+      "description": "Comment entries to incidents",
       "allOf": [
         {
-          "$ref": "./shared/selection_entry.json"
+          "$ref": "./shared/comment.json"
+        },
+        {
+          "properties": {
+            "domain_id": {
+              "description": "what is the related domain",
+              "type": "string",
+              "format": "uuid",
+              "__ref": "./shared/domain.json"
+            },
+            "guid": {
+              "description": "object specific ID of that entry",
+              "type": "string",
+              "format": "uuid",
+              "__tags": ["notDisplayed","notNull"]
+            },
+            "incidentId": {
+              "type": "string",
+              "format": "uuid",
+              "__ref": "#/definitions/Incident"
+            }
+          }
         }
-      ]
+      ],
+      "__tags": ["rest", "joined","mongodb"]
     },
-    "report_type": {
-      "description": "how a event is reported",
+    "IncidentType": {
+      "description": "types of incidents",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "a describing name",
+          "type": "string"
+        },
+        "comment": {
+          "description": "some more words to explain",
+          "type": "string"
+        },
+        "guid": {
+          "description": "global identifier",
+          "type": "string",
+          "format": "uuid"
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean"
+        },
+        "locked": {
+          "description": "entry is needed and should not be deleted",
+          "type": "boolean"
+        },
+        "objectGroupIds": {
+          "description": "what groups is that object related to (f.e. intersections, INES nets, public transport route, ...)",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "__tags": ["rest","mongodb","selList"]
+    },
+    "IncidentTag": {
+      "type": "object",
+      "description": "key-word for additional incident tagging",
       "allOf": [
         {
-          "$ref": "./shared/selection_entry.json"
+          "$ref": "./shared/tag.json"
         }
-      ]
+      ],
+      "__tags": ["rest", "mongodb"]
     }
   },
   "type": "object",

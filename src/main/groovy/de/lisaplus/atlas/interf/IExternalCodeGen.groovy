@@ -8,6 +8,12 @@ import de.lisaplus.atlas.model.Model
  */
 interface IExternalCodeGen extends ICodeGen {
     /**
+     * initialize additional scripts that should be passed to the used templates
+     * @param generatorScripts
+     */
+    void setGeneratorScript (String generatorScript)
+
+    /**
      * initialize the template file for the generator
      * @param templateFile
      * @param templateType

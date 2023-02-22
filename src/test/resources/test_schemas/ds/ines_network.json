@@ -1,0 +1,1800 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "INES network model",
+  "description": "Model describes data that define an INES network",
+  "definitions": {
+    "InesNetwork": {
+      "type": "object",
+      "description": "Main type that describes an INES network",
+      "properties": {
+        "guid": {
+          "description": "object specific ID of that entry",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "objectBaseId": {
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./object_base.json#/definitions/ObjectBase",
+          "__tags": [
+            "prepLookup"
+          ]
+        },
+        "state": {
+          "description": "what is the current state of that object",
+          "$ref": "./shared/list_entry.json",
+          "__ref": "#/definitions/NetworkState",
+          "__tags": [
+            "listEntry"
+          ]
+        },
+        "operationParameters": {
+          "description": "??",
+          "$ref": "#/definitions/OperationParameters"
+        },
+        "interval": {
+          "description": "??",
+          "type": "integer",
+          "format": "int64"
+        },
+        "measurementInterval": {
+          "description": "??, (remark: seems to prove that the central have to aggregate pd data)",
+          "type": "integer",
+          "format": "int64"
+        },
+        "smoothFactor": {
+          "description": "??",
+          "type": "number"
+        },
+        "prognoseStep": {
+          "description": "??",
+          "type": "integer"
+        },
+        "toleranceVolume": {
+          "description": "??",
+          "type": "number"
+        },
+        "toleranceLoss": {
+          "description": "??",
+          "type": "number"
+        },
+        "currentGreen": {
+          "description": "??",
+          "type": "integer"
+        },
+        "occupancyFormat": {
+          "description": "??",
+          "type": "integer"
+        },
+        "comment": {
+          "description": "some more words to explain",
+          "type": "string"
+        },
+        "controlMethodParamFormat": {
+          "description": "string to enable logic to decide how the methodControlParameters should be formatted",
+          "type": "string"
+        },
+        "isValid": {
+          "description": "is the network valid and can be deployed",
+          "type": "boolean"
+        },
+        "tenantId": {
+          "description": "what is the related tenant to that entry",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": [
+            "notDisplayed"
+          ]
+        }
+      },
+      "__tags": [
+        "rest",
+        "joined",
+        "mongodb"
+      ],
+      "__version": 4
+    },
+    "OperationParameters": {
+      "type": "object",
+      "description": "defines parameter for logic behavior",
+      "properties": {
+        "sendCommands": {
+          "type": "boolean"
+        },
+        "operatorScenarioId": {
+          "description": "choosen by an operation over GUI, reference to another scenario in the network",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/Scenario",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "autoOff": {
+          "description": "logic turns itself off in case of errors",
+          "type": "boolean"
+        },
+        "autoOn": {
+          "description": "logic turns itself on if previous errors are gone",
+          "type": "boolean"
+        },
+        "coolDowns": {
+          "description": "logic turns itself on if previous errors are gone",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CoolDown"
+          }
+        },
+        "greentimeRedistributions": {
+          "description": "??",
+          "$ref": "#/definitions/GreentimeRedistribution"
+        },
+        "greenCorridor": {
+          "description": "??",
+          "$ref": "#/definitions/GreenCorridor"
+        }
+      }
+    },
+    "GreenCorridor": {
+      "type": "object",
+      "description": "??",
+      "properties": {
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean"
+        },
+        "gcParams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GcParam"
+          }
+        }
+      }
+    },
+    "GcParam": {
+      "type": "object",
+      "description": "??",
+      "properties": {
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean"
+        },
+        "test": {
+          "description": "sending parameters regardless of shadow mode",
+          "type": "boolean"
+        },
+        "triggerBlocker": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TriggerBlockerElement"
+          }
+        },
+        "networkNodeId": {
+          "description": "reference the related network node of the network",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/NetworkNode",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        }
+      },
+      "__tags": [
+        "noHandling",
+        "noMask"
+      ]
+    },
+    "GreentimeRedistribution": {
+      "type": "object",
+      "description": "operation parameters for greentime redistribution",
+      "properties": {
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean"
+        },
+        "gtrParams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GtrParam"
+          }
+        }
+      }
+    },
+    "GtrParam": {
+      "type": "object",
+      "description": "redistribution parameter for network node",
+      "properties": {
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean"
+        },
+        "test": {
+          "description": "sending parameters regardless of shadow mode",
+          "type": "boolean"
+        },
+        "offsetOnOff": {
+          "type": "boolean"
+        },
+        "strategy": {
+          "type": "string"
+        },
+        "networkNodeId": {
+          "description": "reference the related network node of the network",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/NetworkNode",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        }
+      },
+      "__tags": [
+        "noHandling",
+        "noMask"
+      ]
+    },
+    "CoolDown": {
+      "type": "object",
+      "description": "number of intervals until switch",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "UP",
+            "DOWN",
+            "EQUAL",
+            "SEAMLESS"
+          ]
+        },
+        "intervals": {
+          "type": "integer"
+        }
+      },
+      "__tags": [
+        "noHandling",
+        "noMask"
+      ]
+    },
+    "InesNetworkJoined": {
+      "type": "object",
+      "description": "INES network with joined ObjectBase",
+      "allOf": [
+        {
+          "$ref": "#/definitions/InesNetwork"
+        },
+        {
+          "properties": {
+            "objectBase": {
+              "$ref": "./object_base.json#/definitions/ObjectBase",
+              "__tags": [
+                "join"
+              ]
+            }
+          }
+        }
+      ],
+      "__tags": [
+        "rest",
+        "joinedType",
+        "navigation"
+      ],
+      "__version": 1
+    },
+    "NetworkNode": {
+      "type": "object",
+      "description": "Node in the network, that hold references to nodes from other services (ObjectBase)",
+      "properties": {
+        "guid": {
+          "description": "some kind of network related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "externalId": {
+          "description": "the external ID of that node, e.g. OCITOutstation-ID",
+          "type": "string"
+        },
+        "externalCentralId": {
+          "description": "the external ID of the central system that controls that node",
+          "type": "string"
+        },
+        "name": {
+          "description": "name of the item",
+          "type": "string"
+        },
+        "inesNetworkId": {
+          "description": "guid index of the related InesNetwork object",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/InesNetwork",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "type": {
+          "description": "what type is the network node",
+          "$ref": "./shared/list_entry.json",
+          "__ref": "#/definitions/NetworkNodeType",
+          "__tags": [
+            "listEntry"
+          ]
+        },
+        "subIntersections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InesSubIntersection"
+          }
+        },
+        "signalPrograms": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InesSignalProgram"
+          }
+        },
+        "stages": {
+          "description": "???",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Stage"
+          },
+          "__tags": [
+            "restSubPath"
+          ]
+        },
+        "controlMethodParameters": {
+          "description": "definition of the node related control method parameters",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InesControlMethodParameter"
+          }
+        },
+        "comment": {
+          "description": "some more words to explain",
+          "type": "string"
+        },
+        "regions": {
+          "description": "collection of regions where this network node belongs to (e.g. PD server, command handler)",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/NetworkNodeRegion"
+          }
+        },
+        "tenantId": {
+          "description": "what is the related tenant to that entry",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": [
+            "notDisplayed"
+          ]
+        }
+      },
+      "__tags": [
+        "rest",
+        "mongodb"
+      ],
+      "__version": 4
+    },
+
+    "NetworkNodeRegion": {
+      "type": "object",
+      "description": "A region where a network node belongs to",
+      "properties": {
+        "entryId": {
+          "description": "object specific ID of that entry",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "region": {
+          "$ref": "./shared/list_entry.json",
+          "__ref": "#/definitions/NetworkNodeRegions",
+          "__tags": [
+            "listEntry",
+            "notNull"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "enum": ["allSrc","detectorSrc","stateSrc","greentimeSrc","parameterSrc","cmdDest","parameterDest","allDest"]
+        }
+      },
+      "__version": 1
+    },
+    "NetworkNodeRegions": {
+      "type": "object",
+      "description": "List of regions availale for NetworkNodes",
+      "properties": {
+        "name": {
+          "description": "Name of the region",
+          "type": "string",
+          "__tags": [
+            "unique",
+            "notNull"
+          ]
+        },
+        "comment": {
+          "description": "the common field contain all un-modeled stuff",
+          "type": "string"
+        },
+        "types": {
+          "description": "for what types is this region available",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["allSrc","detectorSrc","stateSrc","greentimeSrc","parameterSrc","cmdDest","parameterDest","allDest"]
+          }
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean",
+          "__tags": [
+            "notNull",
+            "defaultTrue"
+          ]
+        },
+        "locked": {
+          "description": "entry is needed and should not be deleted",
+          "type": "boolean",
+          "__tags": [
+            "notNull",
+            "defaultFalse"
+          ]
+        },
+        "guid": {
+          "description": "global identifier",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "tenantId": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": [
+            "notDisplayed"
+          ]
+        }
+      },
+      "__tags": [
+        "rest",
+        "mongodb",
+        "selList"
+      ],
+      "__version": 1
+    },
+
+    "Stage": {
+      "description": "so called Phasen",
+      "type": "object",
+      "properties": {
+        "entryId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "externalId": {
+          "description": "the external ID of that node, e.g. OCITOutstation-ID",
+          "type": "string"
+        },
+        "priority": {
+          "description": "factor for the priority of the stage",
+          "type": "number"
+        },
+        "freeSignalGroups": {
+          "description": "stage related free signal groups",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "__ref": "#/definitions/InesSignalGroup"
+          }
+        },
+        "linkedStages": {
+          "description": "stages that are linked to that stage",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "__ref": "#/definitions/Stage"
+          }
+        }
+      },
+      "__tags": [
+        "noMask"
+      ],
+      "__version": 3
+    },
+    "TriggerBlockerElement": {
+      "description": "detection station that can trigger or block coordinations",
+      "type": "object",
+      "properties": {
+        "detectionStationId": {
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/DetectionStation",
+          "__tags": [
+            "key"
+          ]
+        },
+        "blocker": {
+          "description": "if true it acts as blocker, in any other case it acts as trigger",
+          "type": "boolean"
+        },
+        "threshold1": {
+          "description": "threshold used to process - magic",
+          "type": "number"
+        },
+        "threshold2": {
+          "description": "threshold used to process - magic",
+          "type": "number"
+        },
+        "maxRunCount": {
+          "description": "how often should this element be used in sequence",
+          "type": "integer"
+        },
+        "maxRunTime": {
+          "description": "how long should this element be used in sequence",
+          "type": "integer"
+        }
+      },
+      "__tags": [
+        "noMask"
+      ],
+      "__version": 1
+    },
+    "InesSignalGroup": {
+      "description": "todo",
+      "type": "object",
+      "properties": {
+        "signalGroupId": {
+          "description": "refers to centralObject->Signalgroup->entryId, modeled creepily :D",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "key"
+          ]
+        },
+        "name": {
+          "description": "name of the signalgroup",
+          "type": "string"
+        },
+        "externalId": {
+          "description": "the external ID of that node, e.g. OCITOutstation-ID",
+          "type": "string"
+        }
+      },
+      "__tags": [
+        "noMask"
+      ],
+      "__version": 2
+    },
+    "InesSubIntersection": {
+      "description": "subintersection information for network nodes",
+      "type": "object",
+      "properties": {
+        "entryId": {
+          "description": "some kind of network related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "signalGroups": {
+          "description": "ID/name of signal group",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InesSignalGroup"
+          }
+        }
+      }
+    },
+    "Corridor": {
+      "type": "object",
+      "description": "defined coordination inside the INES network",
+      "properties": {
+        "guid": {
+          "description": "some kind of network related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "inesNetworkId": {
+          "description": "guid index of the related InesNetwork object",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/InesNetwork",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CorridorSegment"
+          }
+        },
+        "comment": {
+          "description": "some more words to explain",
+          "type": "string"
+        },
+        "tenantId": {
+          "description": "what is the related tenant to that entry",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": [
+            "notDisplayed"
+          ]
+        }
+      },
+      "__tags": [
+        "rest",
+        "mongodb",
+        "noMask"
+      ],
+      "__version": 1
+    },
+    "CorridorSegment": {
+      "type": "object",
+      "description": "link between points of the coordination",
+      "properties": {
+        "entryId": {
+          "description": "some kind of network related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "startNode": {
+          "description": "start point of that link",
+          "$ref": "#/definitions/CorridorSegmentNode"
+        },
+        "distance": {
+          "description": "distance between startNode and the startNode from the next CorridorSegment in meters",
+          "type": "number"
+        }
+      },
+      "__tags": [
+        "noMask"
+      ],
+      "__version": 1
+    },
+    "CorridorSegmentNode": {
+      "type": "object",
+      "description": "link between points of the coordination",
+      "properties": {
+        "subIntersectionId": {
+          "description": "entryId of the related subIntersection",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/InesSubIntersection"
+        },
+        "signalGroupId": {
+          "description": "ID/name of signal group",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/InesSignalGroup"
+        }
+      },
+      "__tags": [
+        "noMask"
+      ],
+      "__version": 1
+    },
+    "InesSignalProgram": {
+      "description": "subintersection information for network nodes",
+      "type": "object",
+      "properties": {
+        "entryId": {
+          "description": "some kind of network related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "externalId": {
+          "description": "the external ID of that node, e.g. OCITOutstation-ID",
+          "type": "string"
+        },
+        "name": {
+          "description": "name of the signal program",
+          "type": "string"
+        },
+        "cycleTime": {
+          "description": "duration of signal program, in milli seconds",
+          "type": "integer"
+        },
+        "offset": {
+          "description": "signal program offset in milli seconds",
+          "type": "integer"
+        }
+      }
+    },
+    "Scenario": {
+      "type": "object",
+      "description": "container that define switch relations and switch parameters",
+      "properties": {
+        "guid": {
+          "description": "some kind of network related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "inesNetworkId": {
+          "description": "guid index of the related InesNetwork object",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/InesNetwork",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "groupName": {
+          "description": "a additional name to group some scenarios",
+          "type": "string"
+        },
+        "name": {
+          "description": "some kind of visual identifier",
+          "type": "string"
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean",
+          "__tags": [
+            "notNull",
+            "defaultTrue"
+          ]
+        },
+        "utilityParams": {
+          "description": "???",
+          "$ref": "#/definitions/UtilityParams"
+        },
+        "lossTimes": {
+          "description": "???",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LossTime"
+          },
+          "__tags": [
+            "restSubPath"
+          ]
+        },
+        "scenarioNodes": {
+          "description": "???",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ScenarioNode"
+          },
+          "__tags": [
+            "restSubPath"
+          ]
+        },
+        "switchRelatedScenarios": {
+          "description": "???",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SwitchRelatedScenario"
+          },
+          "__tags": [
+            "restSubPath"
+          ]
+        },
+        "cycleTime": {
+          "description": "??",
+          "type": "integer"
+        },
+        "comment": {
+          "description": "some more words to explain",
+          "type": "string"
+        },
+        "tenantId": {
+          "description": "what is the related tenant to that entry",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": [
+            "notDisplayed"
+          ]
+        }
+      },
+      "__tags": [
+        "rest",
+        "mongodb"
+      ],
+      "__version": 2
+    },
+    "DetectionStation": {
+      "type": "object",
+      "description": "bundles some detectors to a so called Messstation :D",
+      "properties": {
+        "guid": {
+          "description": "some kind of network related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "inesNetworkId": {
+          "description": "guid index of the related InesNetwork object",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/InesNetwork",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "name": {
+          "description": "some kind of visual identifier",
+          "type": "string"
+        },
+        "detectors": {
+          "description": "ids of detectors related to that bundle",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "andRelated": {
+          "description": "all detectors are combined with an and relation",
+          "type": "boolean"
+        },
+        "comment": {
+          "description": "some more words to explain",
+          "type": "string"
+        },
+        "tenantId": {
+          "description": "what is the related tenant to that entry",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": [
+            "notDisplayed"
+          ]
+        }
+      },
+      "__tags": [
+        "rest",
+        "mongodb"
+      ],
+      "__version": 2
+    },
+    "InesControlMethodParameter": {
+      "type": "object",
+      "description": "bundles some detectors to a so called Messstation :D",
+      "properties": {
+        "entryId": {
+          "description": "some kind of network node related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "comment": {
+          "description": "some words to explain",
+          "type": "string"
+        },
+        "readable": {
+          "description": "true if the parameter is readable",
+          "type": "boolean"
+        },
+        "writable": {
+          "description": "true if the parameter is writable",
+          "type": "boolean"
+        },
+        "oitdNo": {
+          "description": "some kind of semantic information about the type",
+          "type": "integer",
+          "format": "int64"
+        },
+        "oitdIndex": {
+          "description": "index inside the array",
+          "type": "integer",
+          "format": "int64"
+        },
+        "comment": {
+          "description": "some more words to explain",
+          "type": "string"
+        }
+      },
+      "__version": 1
+    },
+    "UtilityParams": {
+      "type": "object",
+      "description": "??",
+      "properties": {
+        "sgMin": {
+          "description": "??",
+          "type": "number"
+        },
+        "sgMin2": {
+          "description": "??",
+          "type": "number"
+        },
+        "sgMax": {
+          "description": "??",
+          "type": "number"
+        },
+        "sgMax2": {
+          "description": "??",
+          "type": "number"
+        }
+      },
+      "__version": 1
+    },
+    "LossTime": {
+      "type": "object",
+      "description": "??",
+      "properties": {
+        "entryId": {
+          "description": "some kind of scenario related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "sectionId": {
+          "description": "reference to another section in the network",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/Section",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "averageLossDirection": {
+          "description": "??",
+          "type": "number"
+        }
+      },
+      "__version": 1
+    },
+    "ScenarioNode": {
+      "type": "object",
+      "description": "??",
+      "properties": {
+        "entryId": {
+          "description": "some kind of scenario related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "networkNodeId": {
+          "description": "reference the related network node of the network",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/NetworkNode",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "scenarioSections": {
+          "description": "???",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ScenarioSection"
+          },
+          "__tags": [
+            "restSubPath"
+          ]
+        },
+        "signalProgramName": {
+          "description": "name of the signal program, based on the idea that only the name of the program is used for INES itself, TODO useful?",
+          "type": "string"
+        },
+        "signalProgramId": {
+          "description": "network node signal program id, SignalProgram->entryId",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/SignalProgram"
+        }
+      },
+      "__version": 2
+    },
+    "ScenarioSection": {
+      "type": "object",
+      "description": "??",
+      "properties": {
+        "entryId": {
+          "description": "some kind of scenario related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "sectionId": {
+          "description": "reference to another section in the network",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/Section",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "greenTime": {
+          "description": "??",
+          "type": "integer"
+        }
+      },
+      "__version": 1
+    },
+    "SwitchRelatedScenario": {
+      "type": "object",
+      "description": "??",
+      "properties": {
+        "entryId": {
+          "description": "some kind of scenario related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "scenarioId": {
+          "description": "reference to another scenario in the network",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/Scenario",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "switchRelation": {
+          "description": "??",
+          "type": "integer"
+        },
+        "allowed": {
+          "description": "??",
+          "type": "boolean"
+        },
+        "enforced": {
+          "description": "??",
+          "type": "boolean"
+        }
+      },
+      "__version": 1
+    },
+    "Section": {
+      "type": "object",
+      "description": "Input container that groups related detectors, signal groups and stuff",
+      "properties": {
+        "guid": {
+          "description": "some kind of network related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "inesNetworkId": {
+          "description": "guid index of the related InesNetwork object",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/InesNetwork",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "name": {
+          "description": "caption of scenario",
+          "type": "string"
+        },
+        "signalGroup": {
+          "description": "ID/name of signal group",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/InesSignalGroup"
+        },
+        "headWay": {
+          "description": "??",
+          "type": "number"
+        },
+        "outgoingLanes": {
+          "description": "??",
+          "type": "integer"
+        },
+        "streamProp": {
+          "description": "??",
+          "type": "number"
+        },
+        "weightFactor": {
+          "description": "??",
+          "type": "number"
+        },
+        "nextSectionId": {
+          "description": "reference to another section in the network, have to be renamed later to nextSectionId",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/Section",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "detectors": {
+          "description": "Detectors related to that section",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SectionDetector"
+          },
+          "__tags": [
+            "restSubPath"
+          ]
+        },
+        "opposingSectionId": {
+          "description": "reference to another section in the network",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/Section",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "utilityParams": {
+          "description": "Parameter are used in case that this section for green-time redistribution",
+          "$ref": "#/definitions/UtilityParams"
+        },
+        "onlyGreenTimeRedistribution": {
+          "description": "if true then this section only used for green-time redistribution",
+          "type": "boolean"
+        },
+        "comment": {
+          "description": "some more words to explain",
+          "type": "string"
+        },
+        "tenantId": {
+          "description": "what is the related tenant to that entry",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": [
+            "notDisplayed"
+          ]
+        }
+      },
+      "__tags": [
+        "rest",
+        "mongodb"
+      ],
+      "__version": 2
+    },
+    "SectionDetector": {
+      "type": "object",
+      "properties": {
+        "entryId": {
+          "description": "some kind of network related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "networkDetectorId": {
+          "description": "reference to the ines network detector list",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/NetworkDetector",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "detectorType": {
+          "description": "enum based detector type",
+          "type": "string",
+          "enum": [
+            "incoming",
+            "outgoing",
+            "strategic"
+          ]
+        },
+        "factor": {
+          "description": "some kind of weight",
+          "type": "number"
+        }
+      },
+      "__version": 2
+    },
+    "NetworkDetector": {
+      "type": "object",
+      "description": "Section specific information about the related detectors",
+      "properties": {
+        "guid": {
+          "description": "some kind of network related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "inesNetworkId": {
+          "description": "guid index of the related InesNetwork object",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/InesNetwork",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "detectorId": {
+          "description": "ID to a real world detector, reference to centralObject->detector->guid",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "networkNodeId": {
+          "description": "reference to the NetworkNode that contains that detector",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/NetworkNode",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "type": {
+          "description": "deprecated, not used any longer - because it's basically an enum",
+          "$ref": "./shared/list_entry.json",
+          "__ref": "#/definitions/DetectorType",
+          "__tags": [
+            "listEntry"
+          ]
+        },
+        "name": {
+          "description": "name of the detector",
+          "type": "string"
+        },
+        "externalId": {
+          "description": "the external ID of that node, e.g. OCITOutstation-ID",
+          "type": "string"
+        },
+        "strategic": {
+          "description": "this attribute is filled if the detector is a strategic detector",
+          "$ref": "#/definitions/StrategicDetector"
+        },
+        "comment": {
+          "description": "some more words to explain",
+          "type": "string"
+        },
+        "tenantId": {
+          "description": "what is the related tenant to that entry",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": [
+            "notDisplayed"
+          ]
+        }
+      },
+      "__tags": [
+        "rest",
+        "mongodb"
+      ],
+      "__version": 3
+    },
+    "StrategicDetector": {
+      "type": "object",
+      "description": "Stategic detector information",
+      "properties": {
+        "length": {
+          "description": "??",
+          "type": "number"
+        },
+        "lengthVeh": {
+          "description": "??",
+          "type": "number"
+        },
+        "maxSpeed": {
+          "description": "??",
+          "type": "number"
+        },
+        "maxVolume": {
+          "description": "??",
+          "type": "number"
+        },
+        "fuzzyFlowDetParam": {
+          "description": "??",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FuzzyParam"
+          }
+        },
+        "fuzzyVolumeDetParam": {
+          "description": "??",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FuzzyParam"
+          }
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean",
+          "__tags": [
+            "notNull",
+            "defaultTrue"
+          ]
+        }
+      },
+      "__version": 1
+    },
+    "FuzzyParam": {
+      "type": "object",
+      "description": "parameter type for fuzzy calculation",
+      "properties": {
+        "state": {
+          "type": "string"
+        },
+        "upperLimit": {
+          "type": "number"
+        },
+        "lowerLimit": {
+          "type": "number"
+        }
+      },
+      "__tags": [
+        "noHandling",
+        "noMask"
+      ],
+      "__version": 1
+    },
+    "NetworkState": {
+      "type": "object",
+      "description": "state of a network",
+      "properties": {
+        "name": {
+          "description": "Name of the state",
+          "type": "string",
+          "__tags": [
+            "unique",
+            "notNull"
+          ]
+        },
+        "comment": {
+          "description": "the common field contain all unmodeled stuff",
+          "type": "string"
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean",
+          "__tags": [
+            "notNull",
+            "defaultTrue"
+          ]
+        },
+        "locked": {
+          "description": "entry is needed and should not be deleted",
+          "type": "boolean",
+          "__tags": [
+            "notNull",
+            "defaultFalse"
+          ]
+        },
+        "guid": {
+          "description": "global identifier",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "tenantId": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": [
+            "notDisplayed"
+          ]
+        }
+      },
+      "__tags": [
+        "rest",
+        "mongodb",
+        "selList"
+      ],
+      "__version": 1
+    },
+    "DetectorType": {
+      "type": "object",
+      "description": "detector type",
+      "properties": {
+        "name": {
+          "description": "Name of the type",
+          "type": "string",
+          "__tags": [
+            "unique",
+            "notNull"
+          ]
+        },
+        "comment": {
+          "description": "the common field contain all unmodeled stuff",
+          "type": "string"
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean",
+          "__tags": [
+            "notNull",
+            "defaultTrue"
+          ]
+        },
+        "locked": {
+          "description": "entry is needed and should not be deleted",
+          "type": "boolean",
+          "__tags": [
+            "notNull",
+            "defaultFalse"
+          ]
+        },
+        "guid": {
+          "description": "global identifier",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "tenantId": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": [
+            "notDisplayed"
+          ]
+        }
+      },
+      "__tags": [
+        "rest",
+        "mongodb",
+        "selList"
+      ],
+      "__version": 1
+    },
+    "NetworkNodeType": {
+      "type": "object",
+      "description": "state of a network",
+      "properties": {
+        "name": {
+          "description": "Name of the state",
+          "type": "string",
+          "__tags": [
+            "unique",
+            "notNull"
+          ]
+        },
+        "comment": {
+          "description": "the common field contain all unmodeled stuff",
+          "type": "string"
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean",
+          "__tags": [
+            "notNull",
+            "defaultTrue"
+          ]
+        },
+        "locked": {
+          "description": "entry is needed and should not be deleted",
+          "type": "boolean",
+          "__tags": [
+            "notNull",
+            "defaultFalse"
+          ]
+        },
+        "guid": {
+          "description": "global identifier",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "tenantId": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": [
+            "notDisplayed"
+          ]
+        }
+      },
+      "__tags": [
+        "rest",
+        "mongodb",
+        "selList"
+      ],
+      "__version": 1
+    },
+    "TimeRule": {
+      "type": "object",
+      "description": "Time rule entry to define what scenario can be used to specific times",
+      "properties": {
+        "guid": {
+          "description": "some kind of network related index",
+          "type": "string",
+          "format": "uuid",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "inesNetworkId": {
+          "description": "guid index of the related InesNetwork object",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "#/definitions/InesNetwork",
+          "__tags": [
+            "notDisplayed",
+            "notNull"
+          ]
+        },
+        "scenarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "__ref": "#/definitions/Scenario"
+          }
+        },
+        "comment": {
+          "description": "some more words to explain",
+          "type": "string"
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean",
+          "__tags": [
+            "notNull",
+            "defaultTrue"
+          ]
+        },
+        "monday": {
+          "description": "the rule is valid on Monday",
+          "type": "boolean"
+        },
+        "tuesday": {
+          "description": "the rule is valid on Tuesday",
+          "type": "boolean"
+        },
+        "wednesday": {
+          "description": "the rule is valid on Wednesday",
+          "type": "boolean"
+        },
+        "thursday": {
+          "description": "the rule is valid on Thursday",
+          "type": "boolean"
+        },
+        "friday": {
+          "description": "the rule is valid on Friday",
+          "type": "boolean"
+        },
+        "saturday": {
+          "description": "the rule is valid on Saturday",
+          "type": "boolean"
+        },
+        "sunday": {
+          "description": "the rule is valid on Sunday",
+          "type": "boolean"
+        },
+        "startHour": {
+          "description": "start hour of that rule",
+          "type": "integer"
+        },
+        "startMin": {
+          "description": "start minute",
+          "type": "integer"
+        },
+        "endHour": {
+          "description": "start hour of that rule",
+          "type": "integer"
+        },
+        "endMin": {
+          "description": "start minute",
+          "type": "integer"
+        },
+        "tenantId": {
+          "description": "what is the related tenant to that entry",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": [
+            "notDisplayed"
+          ]
+        }
+      },
+      "__tags": [
+        "rest",
+        "mongodb"
+      ],
+      "__version": 1
+    },
+    "InesNetworkBundle": {
+      "type": "object",
+      "description": "This is the container to bundle all information related to one ines network",
+      "properties": {
+        "inesNetwork": {
+          "description": "the basic information",
+          "$ref": "#/definitions/InesNetwork",
+          "__tags": [
+            "noRestSubPath"
+          ]
+        },
+        "objectBase": {
+          "$ref": "./object_base.json#/definitions/ObjectBase",
+          "__tags": [
+            "noRestSubPath"
+          ]
+        },
+        "networkNodes": {
+          "description": "network related network nodes",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/NetworkNode"
+          },
+          "__tags": [
+            "noRestSubPath"
+          ]
+        },
+        "corridors": {
+          "description": "network related coordination corridors",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Corridor"
+          },
+          "__tags": [
+            "noRestSubPath"
+          ]
+        },
+        "scenarios": {
+          "description": "network related scenarios",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Scenario"
+          },
+          "__tags": [
+            "noRestSubPath"
+          ]
+        },
+        "detectionStations": {
+          "description": "network related detection stations",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetectionStation"
+          },
+          "__tags": [
+            "noRestSubPath"
+          ]
+        },
+        "sections": {
+          "description": "network related sections",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Section"
+          },
+          "__tags": [
+            "noRestSubPath"
+          ]
+        },
+        "timeRules": {
+          "description": "network configured time rules",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TimeRule"
+          },
+          "__tags": [
+            "noRestSubPath"
+          ]
+        },
+        "networkDetectors": {
+          "description": "network related network detectors",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/NetworkDetector"
+          },
+          "__tags": [
+            "noRestSubPath"
+          ]
+        }
+      },
+      "__tags": [
+        "noMask",
+        "customRestDelegate"
+      ],
+      "__version": 3
+    },
+    "NetworkValidationInfo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "name of the network",
+          "type": "string"
+        },
+        "inesNetworkId": {
+          "description": "guid of the InesNetwork",
+          "type": "string",
+          "format": "uuid"
+        },
+        "isValid": {
+          "type": "boolean"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

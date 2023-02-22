@@ -1,36 +1,45 @@
 package de.lisaplus.atlas.codegen
 
 import de.lisaplus.atlas.DoCodeGen
-import de.lisaplus.atlas.codegen.helper.java.JavaTypeConvert
-import de.lisaplus.atlas.codegen.helper.java.JsonTypeConvert
-import de.lisaplus.atlas.codegen.helper.java.SwaggerTypeConvert
-import de.lisaplus.atlas.model.ComplexType
-import de.lisaplus.atlas.model.InnerType
 import de.lisaplus.atlas.model.Model
-import de.lisaplus.atlas.model.Property
-import de.lisaplus.atlas.model.RefType
 import de.lisaplus.atlas.model.Type
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
 import groovy.text.TemplateEngine
-import groovy.text.XmlTemplateEngine
 import groovy.text.markup.MarkupTemplateEngine
-import org.codehaus.groovy.runtime.StringBufferWriter
 import org.slf4j.Logger
 
-/**
- * it ignores the XML template engine because there is no XML input
- */
-enum TemplateType {
-    GString,
-    Markup
-}
 
 /**
  * Created by eiko on 05.06.17.
  */
-abstract class GeneratorBase {
+abstract class GeneratorBase extends TypeStringManipulation {
     Template template
+    Map<String,String> extraParams
+
+    String generatorScript
+
+    /**
+     * initialize additional scripts that should be passed to the used templates
+     * @param generatorScripts
+     */
+    void setGeneratorScript (String generatorScript) {
+        this.generatorScript = generatorScript
+    }
+
+    protected void initGeneratorScriptForTemplate (Map data) {
+        if (this.generatorScript) {
+            File scriptFile = new File(this.generatorScript)
+            if (scriptFile.isFile()) {
+                GroovyShell shell = new GroovyShell()
+                def script = shell.parse(scriptFile)
+                data.script = script
+            }
+            else {
+                throw new Exception("can't find passed script file: ${this.generatorScript}")
+            }
+        }
+    }
 
     static void createDir(String dirName) {
         DoCodeGen.prepareOutputBaseDir(dirName)
@@ -144,240 +153,47 @@ abstract class GeneratorBase {
     }
 
     /**
-     * methon create a map object and initialize it with some basic stuff
+     * method create a map object and initialize it with some basic string manipulation stuff
+     * needed for working with the types and their properties in the templates.
+     * @return
+     */
+    /*
+    Map getClosures() {
+        return new TypeStringManipulation().getClosures()
+    }
+    */
+
+    /**
+     * method create a map object and initialize it with some basic stuff
      * @param model
      * @return
      */
     Map createTemplateDataMap(Model model) {
-        return [
-                model:model,
-                DOLLAR:'$',
-                toLowerCase: toLowerCase,
-                toUpperCase: toUpperCase,
-                firstLowerCase: firstLowerCase,
-                firstUpperCase: firstUpperCase,
-                lowerCamelCase: firstLowerCamelCase,
-                upperCamelCase: firstUpperCamelCase,
-                isInnerType: isInnerType,
-                isPropComplexType: isPropComplexType,
-                typeToJava: JavaTypeConvert.convert,
-                typeToSwagger: SwaggerTypeConvert.convert,
-                typeToJson: JsonTypeConvert.convert,
-                typeToMeta: JsonTypeConvert.meta,
-                typeFormatToSwagger: SwaggerTypeConvert.format,
-                typeFormatToJson: JsonTypeConvert.format,
-                renderInnerTemplate: renderInnerTemplate,
-                breakTxt: breakTxt,
-                containsTag: containsTag,
-                missingTag: missingTag,
-                containsPropName: containsPropName,
-                missingPropName: missingPropName,
-                propsContainsTag: propsContainsTag
-        ]
-    }
-
-    def isInnerType = { type ->
-        return type && (type instanceof InnerType )
-    }
-
-    def isPropComplexType = { prop ->
-        return prop && prop.type && (prop.type instanceof ComplexType || prop.type instanceof RefType)
-    }
-
-    def containsTag = { obj, tag ->
-        if (! tag ) return false
-        if (! ((obj instanceof Type) || (obj instanceof Property))) {
-            return false
-        }
-        if (!obj.tags) {
-            return false
-        }
-        return obj.tags.contains(tag)
-    }
-
-    def containsPropName = { type, propName ->
-        if (! type ) return false
-        if (! propName ) return false
-        if (! (type instanceof Type)) return false
-        return type.properties.findIndexOf{
-            it.name==propName
-        } != -1
-    }
-
-    def missingPropName = { type, propName ->
-        if (! type ) return false
-        if (! propName ) return false
-        if (! (type instanceof Type)) return false
-        return type.properties.findIndexOf{
-            it.name==propName
-        } == -1
-    }
-
-    def missingTag = { obj, tag ->
-        if (! tag ) return false
-        if (! ((obj instanceof Type) || (obj instanceof Property))) {
-            return false
-        }
-        if (!obj.tags) {
-            return false
-        }
-        return ! obj.tags.contains(tag)
-    }
-
-    def propsContainsTag = { type, name ->
-        if (! type ) return false
-        if (! name ) return false
-        if (! (type instanceof Type)) {
-            return false
-        }
-        def result = type.properties.find { it.tags.contains(name) }
-        if (result) {
-            return true
-        }
-        else {
-            return false
-        }
-    }
-
-    def breakTxt = { String txtToBreak,int charPerLine,String breakText='\n' ->
-        if (!txtToBreak) return EMPTY
-        StringBuilder sb = new StringBuilder()
-        int txtLen = txtToBreak.length()
-        int aktPos = 0
-        while (aktPos < txtLen) {
-            if ((aktPos + charPerLine) >= txtLen) {
-                // The rest of the word is smaller than the desired char count per line
-                sb.append(txtToBreak.substring(aktPos))
-                break;
-            } else {
-                sb.append(txtToBreak.substring(aktPos, aktPos + charPerLine))
-                aktPos += charPerLine
-                if (txtToBreak.substring(aktPos, aktPos + 1) == ' ') {
-                    sb.append(breakText)
-                    aktPos++
-                } else {
-                    for (aktPos; aktPos < txtLen; aktPos++) {
-                        String subStr = txtToBreak.substring(aktPos, aktPos + 1)
-                        if (subStr == ' ') {
-                            sb.append(breakText)
-                            aktPos++
-                            break
-                        } else {
-                            sb.append(subStr)
-                        }
-                    }
-                }
-            }
-        }
-        return sb.toString()
-    }
-
-    def toLowerCase = { str ->
-        return str==null ? EMPTY : str.toLowerCase()
-    }
-
-    def toUpperCase = { str ->
-        return str==null ? EMPTY : str.toUpperCase()
+        Map map = getClosures()
+        map.model = model
+        map.renderInnerTemplate = renderInnerTemplate
+        return map
     }
 
     def renderInnerTemplate = { templateResource,actObj,indent ->
         def test = actObj.toString()
         def innerTemplate = createTemplateFromResource(templateResource,TemplateType.GString)
-        def data = [
-                actObj: actObj,
-                indent: indent,
-                printIndent: printIndent,
-                DOLLAR:'$',
-                toLowerCase: toLowerCase,
-                toUpperCase: toUpperCase,
-                firstLowerCase: firstLowerCase,
-                firstUpperCase: firstUpperCase,
-                lowerCamelCase: firstLowerCamelCase,
-                upperCamelCase: firstUpperCamelCase,
-                isInnerType: isInnerType,
-                typeToJava: JavaTypeConvert.convert,
-                typeToSwagger: SwaggerTypeConvert.convert,
-                typeToJson: JsonTypeConvert.convert,
-                typeToMeta: JsonTypeConvert.meta,
-                typeFormatToSwagger: SwaggerTypeConvert.format,
-                typeFormatToJson: JsonTypeConvert.format,
-                renderInnerTemplate: renderInnerTemplate,
-                breakTxt: breakTxt
-        ]
-
+        def data = getClosures()
+        data.actObj = actObj
+        data.indent = indent
+        initGeneratorScriptForTemplate(data)
+        data.renderInnerTemplate = renderInnerTemplate
+        if (this.extraParams) {
+            data.extraParam = this.extraParams
+        }
+        else {
+            data.extraParam = [:]
+        }
         return innerTemplate.make(data)
     }
-
-    def printIndent = { indent ->
-        def ret = ''
-        for (def i=0;i<indent;i++) ret+=' '
-        return ret
-    }
-
-    def firstLowerCase = { str ->
-        if (!str) return EMPTY
-        def first = str.substring(0,1)
-        first = first.toLowerCase()
-        if (str.length()>1) {
-            def rest = str.substring(1)
-            return first + rest
-        }
-        else {
-            return first
-        }
-    }
-
-    def firstUpperCase = { str ->
-        if (!str) return EMPTY
-        def first = str.substring(0,1)
-        first = first.toUpperCase()
-        if (str.length()>1) {
-            def rest = str.substring(1)
-            return first + rest
-        }
-        else {
-            return first
-        }
-    }
-
-    def firstUpperCamelCase = { str ->
-        if (!str) return EMPTY
-        def firstUpper = firstUpperCase(str)
-        return convertAllUnderLinesToCamelCase(firstUpper)
-    }
-
-    def firstLowerCamelCase = { str ->
-        if (!str) return EMPTY
-        def firstLower = firstLowerCase(str)
-        return convertAllUnderLinesToCamelCase(firstLower)
-    }
-
-    def convertAllUnderLinesToCamelCase = { String str ->
-        if (!str) return EMPTY
-        def i_ = str.indexOf('_')
-        while (i_!=-1) {
-            def stopLen = str.length()-1
-            if (i_<stopLen) {
-                def nextChar = new String(str.charAt(i_+1))
-                if (nextChar=='_') {
-                    str = str.replace('__','_')
-                }
-                else {
-                    def nextCharUpper = nextChar.toUpperCase()
-                    str = str.replace('_'+nextChar,new String(nextCharUpper))
-                }
-            }
-            else
-                break
-            i_ = str.indexOf('_',i_)
-        }
-        return str
-    }
-
-    private final static String EMPTY=''
 
     abstract String getDestFileName(Model dataModel, Map<String,String> extraParameters,Type currentType=null)
     abstract String getDestDir(Model dataModel, String outputBasePath, Map<String,String> extraParameters,Type currentType=null)
 
-    abstract Logger getLogger();
+    abstract Logger getLogger()
 }

@@ -14,6 +14,8 @@ class JsonTypeConvert {
         switch(type.name()) {
             case IntType.NAME:
                 return 'integer'
+            case LongType.NAME:
+                return 'integer'
             case NumberType.NAME:
                 return 'number'
             case StringType.NAME:
@@ -22,6 +24,8 @@ class JsonTypeConvert {
                 return 'string'
             case BooleanType.NAME:
                 return 'boolean'
+            case ByteType.NAME:
+                return 'integer'
             case DateType.NAME:
                 return 'string'
             case DateTimeType.NAME:
@@ -44,6 +48,8 @@ class JsonTypeConvert {
         switch(type.name()) {
             case IntType.NAME:
                 return 'integer'
+            case LongType.NAME:
+                return 'integer/int64'
             case NumberType.NAME:
                 return 'number'
             case StringType.NAME:
@@ -52,6 +58,8 @@ class JsonTypeConvert {
                 return 'string/uuid'
             case BooleanType.NAME:
                 return 'boolean'
+            case ByteType.NAME:
+                return 'integer/byte'
             case DateType.NAME:
                 return 'string/date'
             case DateTimeType.NAME:
@@ -70,7 +78,11 @@ class JsonTypeConvert {
     static def format = { type ->
         switch(type.name()) {
             case IntType.NAME:
+                return 'int32'
+            case LongType.NAME:
                 return 'int64'
+            case ByteType.NAME:
+                return 'byte'
             case NumberType.NAME:
                 return 'double'
             case DateType.NAME:

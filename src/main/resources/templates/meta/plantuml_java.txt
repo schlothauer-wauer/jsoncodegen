@@ -1,4 +1,14 @@
 <%
+def ignoreAttribs = extraParam.ignoreAttribs=='true' ? true : false
+def ignoreRefs = extraParam.ignoreRefs=='true' ? true : false
+def ignoreImplicitRefs = extraParam.ignoreImplicitRefs=='true' ? true : false
+def ignoreCompositions = extraParam.ignoreCompositions=='true' ? true : false
+def printTypeTagsValue = extraParam.printTypeTags=='false' ? false : true
+def printPropTagsValue = extraParam.printPropTags=='true' ? true : false
+def ignoreUnRefTypes = extraParam.ignoreUnRefTypes=='false' ? false : true
+
+def guidTypeColor = extraParam.guidTypeColor ? extraParam.guidTypeColor : 'e4ffd4'
+def printJoins = extraParam.printJoins
 def printStereoType = { type ->
     if ( type instanceof de.lisaplus.atlas.model.InnerType ) {
         return '<<InnerType>>'
@@ -12,12 +22,76 @@ def printStereoType = { type ->
      else
         return ''
     }
+
+def printPropTags = { prop ->
+    if (printPropTagsValue && prop.tags) {
+        return "<color:#888888 ><&tag> <size:10><i>${prop.tags}</i>"
+    }
+    else
+        return ''
+    }
+
+def printTypeTags = { type ->
+    if (printTypeTagsValue && type.tags) {
+        def s = null
+        type.tags.each { tag ->
+            if (s!=null) {
+                s+=',\\n'
+                s+=tag
+            }
+            else
+                s=tag
+        }
+        return " <${s}>"
+    }
+    else
+        return ''
+}
+
+def typesToIgnore = []
+
+extraParam.blackListed.each { typeName ->
+    typesToIgnore.add(typeName)
+}
+
+if (ignoreUnRefTypes) {
+    // remove unreferenced type from the diagram
+    def linkedTypes=[]
+    model.types.findAll { type ->
+        ! typesToIgnore.contains(type.name)
+    }.each  { type ->
+        type.properties.each  { prop ->
+            def propType
+            if (prop.isRefTypeOrComplexType()) {
+                propType = prop.type.type.name
+            }
+            else if (prop.implicitRef) {
+                propType = prop.implicitRef.type.name
+            }
+            if (!linkedTypes.contains(propType)) {
+                linkedTypes.add(propType)
+            }
+        }
+        if (type.refOwner && !linkedTypes.contains(type.name)) {
+            linkedTypes.add(type.name)
+        }
+    }
+    model.types.each  { type ->
+        if (!linkedType.contains(type.name) && !typesToIgnore.contains(type.name)) {
+            typesToIgnore.add(type.name)
+        }
+    }
+}
+
 %>
 <% if (extraParam.markdown) { %>
 ```plantuml
 <% } else { %>
 @startuml
 <% } %>
+
+skinparam roundcorner 10
+
 skinparam class {
 	BackgroundColor #FFFFFF
 	ArrowColor #000000
@@ -26,7 +100,7 @@ skinparam class {
 	BorderColor<<InnerType>> #777777
 	BackgroundColor<<InnerType>> #EEEEEE
 
-	BackgroundColor<<GidType>> #e4ffd4
+	BackgroundColor<<GidType>> #${guidTypeColor}
 
 	FontName Courier
 	FontSize 12
@@ -44,16 +118,23 @@ skinparam classAttribute {
 	FontSize 12
 }
 
-<% model.types.each  { type -> %>
-class ${firstUpperCase.call(type.name)} ${ printStereoType(type) } << ( ,${type.color}) >> {
-    <% type.properties.each  { prop ->
-        def arrayStr = prop.type.isArray ? '[]' : '' %>
-        <% if (prop.isRefTypeOrComplexType()) { %>
+<% model.types.findAll { type ->
+    ! typesToIgnore.contains(type.name)
+}.each  { type -> %>
+class ${firstUpperCase.call(type.name)} ${printTypeTags(type) }${ printStereoType(type) } << ( ,${type.color}) >> {
+    <% if (!ignoreAttribs)  {
+        def i=0; type.properties.each  { prop ->
+        def arrayStr = prop.type.isArray ? '[]' : ''
+        i++
+    if (i>1) { %>
+    ..
+    <% } %>
+    ${printPropTags.call(prop)}
     -<color:${prop.type.type.color} ><b>${prop.name}: ${typeToJava.call(prop.type)}${arrayStr}</b></color>
         <% } else { %>
     -${prop.name}: ${typeToJava.call(prop.type)}${arrayStr}
         <% } %>
-    <% } %>
+    <% } } %>
 }
     <% if (type.description) { %>
 note top of ${firstUpperCase.call(type.name)}
@@ -62,28 +143,30 @@ end note
     <% } %>
 <% } %>
 hide methods
+<% if ( ignoreAttribs ) {
+%>hide attributes
+<% } %>
 
-<% model.types.each  { type -> %>
+<% model.types.findAll { type ->
+    ! typesToIgnore.contains(type.name)
+}.each  { type -> %>
     <% def linkedTypes=[] %>
     <% type.properties.each  { prop -> %>
-        <% if (prop.isRefTypeOrComplexType()) { %>
+        <% if (prop.isRefTypeOrComplexType() && (!ignoreRefs) && (!typesToIgnore.contains(prop.type.type.name))) { %>
             <% def testStr="${type.name}-${prop.type.type.name}"%>
             <% if(!linkedTypes.contains(testStr)) { %>
                 <% if (prop.isAggregation()) { %>
 ${firstUpperCase.call(type.name)} o-- <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.type.type.name) } ${ prop.type.type.color }
-                <% } else { %>
+                <% } else { if (!ignoreCompositions) { %>
 ${firstUpperCase.call(type.name)} *-- <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.type.type.name) } ${ prop.type.type.color }
-                <% } %>
+                <% } } %>
                 <% linkedTypes.add(testStr) %>
             <% } %>
-        <% } else if (prop.implicitRef) { %>
+        <% }
+        if (prop.implicitRef && (!ignoreImplicitRefs) && (!typesToIgnore.contains(prop.implicitRef.type.name))) { %>
             ${firstUpperCase.call(type.name)} .. <% if(prop.type.isArray) { %>"many"<% } %> ${ firstUpperCase.call(prop.implicitRef.type.name) } ${ prop.implicitRef.type.color }
         <% } %>
     <% } %>
-    <% type.baseTypes.each  { baseType -> %>
-        ${firstUpperCase.call(type.name)} --|> ${firstUpperCase.call(baseType)}
-    <% } %>
-
 <% } %>
 footer powered by plantuml, created with jsonCodeGen
 <% if (extraParam.markdown) { %>

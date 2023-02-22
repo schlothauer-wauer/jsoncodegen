@@ -3,6 +3,7 @@ package de.lisaplus.atlas.codegen.test
 import org.junit.Test
 
 import static junit.framework.Assert.assertTrue
+import static org.junit.Assert.assertTrue
 
 /**
  * Tests the plantuml generator and template
@@ -11,7 +12,7 @@ import static junit.framework.Assert.assertTrue
 class JsonSchema {
     private static void generateHistModel(String model, String destFile) {
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model=model
+        doCodeGen.models=[model]
         doCodeGen.generators.add('json_schema')
         doCodeGen.outputBaseDir='tmp'
         doCodeGen.generator_parameters.add("destFileName=${destFile}")
@@ -22,7 +23,7 @@ class JsonSchema {
 
     private static void generatePlantUML(String model, String destFile) {
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model=model
+        doCodeGen.models=[model]
         doCodeGen.generators.add('plantuml')
         doCodeGen.outputBaseDir='tmp'
         doCodeGen.generator_parameters.add("destFileName=${destFile}")
@@ -65,6 +66,11 @@ class JsonSchema {
         def plantUml='options_response.puml'
         generateHistModel(model,histModel)
         generatePlantUML("tmp/${histModel}",plantUml)
+    }
+
+    @Test
+    void testXsdInput() {
+        generateHistModel('src/test/resources/xsd/ui-tlc.xsd','ui-tlc.json')
     }
 
 }

@@ -18,6 +18,15 @@
           "format": "uuid",
           "__ref": "#/definitions/user"
         },
+        "domains": {
+          "description": "dummy to test UUID arrays",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "__ref": "./shared/domain.json"
+          }
+        },
         "type": {
           "description": "type of the entry",
           "type": "string",
@@ -109,7 +118,8 @@
                   "read",
                   "write",
                   "commit"
-                ]
+                ],
+                "__enumName": "GrantsEnum"
               }
             },
             "__tags": [
@@ -140,10 +150,22 @@
                   "write",
                   "commit"
                 ],
+                "__enumName": "GrantsEnum",
                 "__tags": [
                   "one",
                   "two"
                 ]
+              },
+              "byteTest": {
+                "type": "integer",
+                "format": "byte"
+              },
+              "byteArrayTest": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "byte"
+                }
               }
             }
           }
@@ -152,9 +174,10 @@
           "description": "is this entry still active",
           "type": "boolean"
         }
-      }
+      },
+      "__version": 2
     }
   },
   "type": "object",
-  "version": 1
+  "__version": 3
 }

@@ -24,6 +24,7 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
             throw new Exception(errorMsg)
         }
         def data = createTemplateDataMap(model)
+        this.extraParams = extraParams
         if (extraParams) {
             data.extraParam = extraParams
         }
@@ -31,10 +32,20 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
             data.extraParam = [:]
         }
 
+        initGeneratorScriptForTemplate(data)
+
+        def blackListed=data.extraParam['blackListed']
+        def whiteListed=data.extraParam['whiteListed']
+
         def shouldRemoveEmptyLines = extraParams['removeEmptyLines']
 
         def neededAttrib = extraParams['containsAttrib']
         def missingAttrib = extraParams['missingAttrib']
+        def neededTag = extraParams['neededTag']
+        def neededTagList = splitValueToArray(neededTag)
+
+        def ignoredTag = extraParams['ignoreTag']
+        def ignoredTagList = splitValueToArray(ignoredTag)
         model.types*.each { type ->
             boolean handleNeeded = neededAttrib ? type.properties.find { prop ->
                 return prop.name==neededAttrib
@@ -43,7 +54,31 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
                 return prop.name==missingAttrib
             } == null : true
 
-            if (handleNeeded && handleMissing) {
+            boolean handleType=true;
+            if (whiteListed && (!whiteListed.contains(type.name))) {
+                handleType = false
+                println "ingnored by white-list: ${type.name}"
+            }
+            else if (blackListed && blackListed.contains(type.name)) {
+                handleType = false
+                println "ingnored by black-list: ${type.name}"
+            }
+
+            boolean handleTag = ignoredTagList ? type.tags.find { tag ->
+                return ignoredTagList.contains(tag)
+            } == null : true
+
+            if (handleTag && neededTagList) {
+                boolean allTagsFound=true;
+                neededTagList.each { needed ->
+                    if (!type.tags.contains(needed)) {
+                        allTagsFound = false
+                    }
+                }
+                handleTag = allTagsFound
+            }
+
+            if (handleType && handleNeeded && handleMissing && handleTag) {
                 data.put('currentType', type)
                 def ergebnis = template.make(data)
                 def destFileName = getDestFileName(model, extraParams, type)
@@ -56,5 +91,10 @@ abstract class MultiFileGenarator extends GeneratorBase implements ICodeGen {
                 println ("written: $pathToFile")
             }
         }
+    }
+
+    private List<String> splitValueToArray(String value) {
+        if (!value) return []
+        return value.indexOf(',')!=-1 ? value.split(',') : value.split(':')
     }
 }

@@ -1,0 +1,1093 @@
+
+@startuml
+skinparam roundcorner 10
+skinparam class {
+	BackgroundColor #FFFFFF
+	ArrowColor #000000
+	BorderColor #000000
+	BorderColor<<InnerType>> #777777
+	BackgroundColor<<InnerType>> #EEEEEE
+	BackgroundColor<<GidType>> #e4ffd4
+	FontName Courier
+	FontSize 12
+}
+
+skinparam note {
+	BackgroundColor #dedede
+	BorderColor #000000
+	FontSize 10
+}
+
+skinparam classAttribute {
+	FontName Courier
+	FontSize 12
+}
+
+class JunctionLocationStreetsItem  <restSubPath><<InnerType>> << ( ,#ff0000) >> {
+    -classification: string
+    ..
+    -entryId: string/uuid
+    ..
+    -main: boolean
+    ..
+    -name: string
+    ..
+    -position: number
+}
+
+class JunctionLocation <<InnerType>> << ( ,#ff00ff) >> {
+    -city: string
+    ..
+    -country: string
+    ..
+    -county: string
+    ..
+    -district: string
+    ..
+    -<color:#ff0000 ><b>streets: JunctionLocationStreetsItem[]</b></color>
+}
+
+class Junction  <rest,\njoined,\nmongodb><<GidType>> << ( ,#ff0000) >> {
+    -guid: string/uuid
+    ..
+    -<color:#ff00ff ><b>location: JunctionLocation</b></color>
+    ..
+    -objectBaseId: string/uuid
+    ..
+    -startupDate: string/date
+    ..
+    -<color:#0000ff ><b>state: ListEntry</b></color>
+    ..
+    -tenantId: string/uuid
+    ..
+    -<color:#0000ff ><b>type: ListEntry</b></color>
+}
+
+note top of Junction
+Junction is
+a anchor point
+of interest
+of application
+level
+end note
+class JunctionComment  <rest,\nmongodb><<GidType>> << ( ,#007f00) >> {
+    -date: string/date-time
+    ..
+    -text: string
+    ..
+    -user: string
+    ..
+    -guid: string/uuid
+    ..
+    -junctionId: string/uuid
+    ..
+    -tenantId: string/uuid
+}
+
+note top of JunctionComment
+Junction is
+a anchor point
+of interest
+of application
+level
+end note
+class JunctionContact  <rest,\nmongodb><<GidType>> << ( ,#00007f) >> {
+    -<color:#007f00 ><b>address: Address</b></color>
+    ..
+    -<color:#0000ff ><b>type: ListEntry</b></color>
+    ..
+    -guid: string/uuid
+    ..
+    -junctionId: string/uuid
+    ..
+    -tenantId: string/uuid
+}
+
+note top of JunctionContact
+Junction is
+a anchor point
+of interest
+of application
+level
+end note
+class JunctionDocument  <rest,\nmongodb><<GidType>> << ( ,#ff00ff) >> {
+    -date: string
+    ..
+    -mimeType: string
+    ..
+    -name: string
+    ..
+    -originalName: string
+    ..
+    -previewUrl: string
+    ..
+    -smallPreviewUrl: string
+    ..
+    -thumbUrl: string
+    ..
+    -<color:#0000ff ><b>type: ListEntry</b></color>
+    ..
+    -url: string
+    ..
+    -user: string
+    ..
+    -guid: string/uuid
+    ..
+    -junctionId: string/uuid
+    ..
+    -tenantId: string/uuid
+}
+
+note top of JunctionDocument
+Junction is
+a anchor point
+of interest
+of application
+level
+end note
+class JunctionJoined  <rest,\njoinedType><<GidType>> << ( ,#0000ff) >> {
+    -guid: string/uuid
+    ..
+    -<color:#ff00ff ><b>location: JunctionLocation</b></color>
+    ..
+    -objectBaseId: string/uuid
+    ..
+    -startupDate: string/date
+    ..
+    -<color:#0000ff ><b>state: ListEntry</b></color>
+    ..
+    -tenantId: string/uuid
+    ..
+    -<color:#0000ff ><b>type: ListEntry</b></color>
+    ..
+    -<color:#007f00 ><b>objectBase: ObjectBase</b></color>
+}
+
+note top of JunctionJoined
+Junction with
+joined ObjectBase
+end note
+class JunctionNumber  <rest,\nmongodb><<GidType>> << ( ,#007f00) >> {
+    -guid: string/uuid
+    ..
+    -junctionId: string/uuid
+    ..
+    -number: string
+    ..
+    -tenantId: string/uuid
+    ..
+    -<color:#0000ff ><b>type: ListEntry</b></color>
+}
+
+note top of JunctionNumber
+Junction is
+a anchor point
+of interest
+of application
+level
+end note
+class JunctionNumberType  <rest,\nmongodb,\nselList><<GidType>> << ( ,#7f007f) >> {
+    -active: boolean
+    ..
+    -comment: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -resStr: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of JunctionNumberType
+Technical identifier
+for that junction
+end note
+class JunctionState  <rest,\nmongodb,\nselList><<GidType>> << ( ,#ff6100) >> {
+    -active: boolean
+    ..
+    -comment: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -resStr: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of JunctionState
+state of junction
+end note
+class JunctionType  <rest,\nmongodb,\nselList><<GidType>> << ( ,#00007f) >> {
+    -active: boolean
+    ..
+    -comment: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -resStr: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of JunctionType
+types of junctions
+end note
+class GeoArea  << ( ,#007f00) >> {
+    -<color:#ff6100 ><b>points: GeoPoint[]</b></color>
+    ..
+    -projection: string
+}
+
+note top of GeoArea
+Area geo-type
+end note
+class GeoPoint  << ( ,#ff6100) >> {
+    -lon: number
+    ..
+    -lat: number
+    ..
+    -projection: string
+}
+
+note top of GeoPoint
+Single point
+geo-type
+end note
+class ObjectBase  <rest,\nmongodb,\nindex2d><<GidType>> << ( ,#007f00) >> {
+    -<color:#9b0000 ><b>gis: ObjectBaseGis</b></color>
+    ..
+    -guid: string/uuid
+    ..
+    -name: string
+    ..
+    -number: string
+    ..
+    -<color:#0000ff ><b>objectGroup: ListEntry</b></color>
+    ..
+    -regions: string/uuid[]
+    ..
+    -<color:#0000ff ><b>tags: ListEntry[]</b></color>
+    ..
+    -tenantId: string/uuid
+}
+
+note top of ObjectBase
+Object is a
+anchor point
+of interest
+of application
+level, that's
+the minimal
+information
+about that
+end note
+class GeoMultiline  << ( ,#ff0000) >> {
+    -<color:#ff6100 ><b>points: GeoPoint[]</b></color>
+    ..
+    -projection: string
+}
+
+note top of GeoMultiline
+Multiline geo-type
+end note
+class ListEntry  << ( ,#0000ff) >> {
+    -refId: string
+    ..
+    -text: string
+}
+
+note top of ListEntry
+type for entries
+that have references
+to look-up
+tables - as
+an more dynamic
+alternative
+to enums
+end note
+class Region  <rest,\nmongodb,\nselList><<GidType>> << ( ,#00007f) >> {
+    -active: boolean
+    ..
+    -comment: string
+    ..
+    -created: string/date-time
+    ..
+    -group: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of Region
+A region is
+some kind of
+a logical group
+that could
+be set for
+some entries.
+It allows 'vertical'
+restrictions
+of object visibility
+end note
+class Tenant <<GidType>> << ( ,#7f007f) >> {
+    -active: boolean
+    ..
+    -description: string
+    ..
+    -guid: string/uuid
+    ..
+    -name: string
+}
+
+note top of Tenant
+Tenant of a
+running application.
+end note
+class Tag  <rest,\nmongodb,\nselList><<GidType>> << ( ,#5f005f) >> {
+    -active: boolean
+    ..
+    -color: string
+    ..
+    -comment: string
+    ..
+    -created: string/date-time
+    ..
+    -group: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of Tag
+A tag is some
+kind of a global
+keyword that
+could be set
+for some entries
+end note
+class ObjectBaseGis <<InnerType>> << ( ,#9b0000) >> {
+    -<color:#007f00 ><b>area: GeoArea</b></color>
+    ..
+    -<color:#ff6100 ><b>center: GeoPoint</b></color>
+    ..
+    -<color:#ff0000 ><b>route: GeoMultiline</b></color>
+}
+
+class ObjectGroup  <rest,\nmongodb,\nselList><<GidType>> << ( ,#9b0000) >> {
+    -active: boolean
+    ..
+    -comment: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -resStr: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of ObjectGroup
+Groups of objects
+(f.e. intersections,
+INES nets,
+public transport
+route, ...)
+end note
+class Comment  << ( ,#0000ff) >> {
+    -date: string/date-time
+    ..
+    -text: string
+    ..
+    -user: string
+}
+
+note top of Comment
+A comment for
+an data entry
+end note
+class Contact  << ( ,#ff6100) >> {
+    -<color:#007f00 ><b>address: Address</b></color>
+    ..
+    -<color:#0000ff ><b>type: ListEntry</b></color>
+}
+
+note top of Contact
+contact to
+a specific
+entity
+end note
+class Address  << ( ,#007f00) >> {
+    -city: string
+    ..
+    -<color:#9b0000 ><b>contact: ContactData</b></color>
+    ..
+    -country: string
+    ..
+    -department: string
+    ..
+    -extra: string
+    ..
+    -name: string
+    ..
+    -<color:#5f005f ><b>persons: AddressPerson[]</b></color>
+    ..
+    -postalCode: string
+    ..
+    -street: string
+    ..
+    -<color:#0000ff ><b>type: ListEntry</b></color>
+    ..
+    -web: string
+}
+
+class ContactData  << ( ,#9b0000) >> {
+    -email: string[]
+    ..
+    -fax: string
+    ..
+    -phone: string[]
+}
+
+note top of ContactData
+contact data
+for a person
+or address
+end note
+class Person  << ( ,#ff00ff) >> {
+    -active: boolean
+    ..
+    -addressId: string/uuid
+    ..
+    -<color:#9b0000 ><b>contact: ContactData</b></color>
+    ..
+    -firstName: string
+    ..
+    -name: string
+    ..
+    -title: string
+}
+
+note top of Person
+simple person
+definition
+end note
+class AddressPerson  << ( ,#5f005f) >> {
+    -active: boolean
+    ..
+    -addressId: string/uuid
+    ..
+    -<color:#9b0000 ><b>contact: ContactData</b></color>
+    ..
+    -firstName: string
+    ..
+    -name: string
+    ..
+    -title: string
+    ..
+    -entryId: string/uuid
+}
+
+note top of AddressPerson
+a person that
+is linked to
+an address
+end note
+class AddressType  <rest,\nmongodb,\nselList><<GidType>> << ( ,#ff0000) >> {
+    -active: boolean
+    ..
+    -comment: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -resStr: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of AddressType
+type of a document
+end note
+class ContactType  <rest,\nmongodb,\nselList><<GidType>> << ( ,#ff6100) >> {
+    -active: boolean
+    ..
+    -comment: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -resStr: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of ContactType
+type of a contact
+end note
+class Document  << ( ,#9b0000) >> {
+    -date: string
+    ..
+    -mimeType: string
+    ..
+    -name: string
+    ..
+    -originalName: string
+    ..
+    -previewUrl: string
+    ..
+    -smallPreviewUrl: string
+    ..
+    -thumbUrl: string
+    ..
+    -<color:#0000ff ><b>type: ListEntry</b></color>
+    ..
+    -url: string
+    ..
+    -user: string
+}
+
+note top of Document
+description
+of a contained
+document
+end note
+class DocumentType  <rest,\nmongodb,\nselList><<GidType>> << ( ,#ff0000) >> {
+    -active: boolean
+    ..
+    -comment: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -resStr: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of DocumentType
+type of a document
+end note
+class Incident  <rest,\njoined,\nmongodb><<GidType>> << ( ,#0000ff) >> {
+    -description: string
+    ..
+    -guid: string/uuid
+    ..
+    -<color:#0000ff ><b>number: IncidentNumber</b></color>
+    ..
+    -objectBaseId: string/uuid
+    ..
+    -opMessages: string/uuid[]
+    ..
+    -<color:#007f00 ><b>rawData: IncidentRawData</b></color>
+    ..
+    -references: string/uuid[]
+    ..
+    -<color:#7f007f ><b>states: IncidentState[]</b></color>
+    ..
+    -<color:#007f00 ><b>tags: ListEntry[]</b></color>
+    ..
+    -tenantId: string/uuid
+    ..
+    -<color:#007f00 ><b>type: ListEntry</b></color>
+    ..
+    -urgency: integer
+}
+
+note top of Incident
+A detected
+failure state
+that needs
+some actions
+to solve it
+end note
+class IncidentComment  <rest,\nmongodb><<GidType>> << ( ,#ff6100) >> {
+    -date: string/date-time
+    ..
+    -text: string
+    ..
+    -user: string
+    ..
+    -guid: string/uuid
+    ..
+    -incidentId: string/uuid
+    ..
+    -tenantId: string/uuid
+}
+
+note top of IncidentComment
+Comment entries
+to incidents
+end note
+class IncidentDocument  <rest,\nmongodb><<GidType>> << ( ,#ff0000) >> {
+    -date: string
+    ..
+    -mimeType: string
+    ..
+    -name: string
+    ..
+    -originalName: string
+    ..
+    -previewUrl: string
+    ..
+    -smallPreviewUrl: string
+    ..
+    -thumbUrl: string
+    ..
+    -<color:#007f00 ><b>type: ListEntry</b></color>
+    ..
+    -url: string
+    ..
+    -user: string
+    ..
+    -guid: string/uuid
+    ..
+    -incidentId: string/uuid
+    ..
+    -tenantId: string/uuid
+}
+
+note top of IncidentDocument
+documents linked
+to incident
+entries
+end note
+class IncidentJoined  <rest,\njoinedType><<GidType>> << ( ,#ff00ff) >> {
+    -description: string
+    ..
+    -guid: string/uuid
+    ..
+    -<color:#0000ff ><b>number: IncidentNumber</b></color>
+    ..
+    -objectBaseId: string/uuid
+    ..
+    -opMessages: string/uuid[]
+    ..
+    -<color:#007f00 ><b>rawData: IncidentRawData</b></color>
+    ..
+    -references: string/uuid[]
+    ..
+    -<color:#7f007f ><b>states: IncidentState[]</b></color>
+    ..
+    -<color:#007f00 ><b>tags: ListEntry[]</b></color>
+    ..
+    -tenantId: string/uuid
+    ..
+    -<color:#007f00 ><b>type: ListEntry</b></color>
+    ..
+    -urgency: integer
+    ..
+    -<color:#0000ff ><b>objectBase: ObjectBase</b></color>
+}
+
+note top of IncidentJoined
+Incident with
+joined ObjectBase
+end note
+class IncidentNumber  << ( ,#0000ff) >> {
+    -external: string
+    ..
+    -internal: string
+}
+
+class IncidentRawData  << ( ,#007f00) >> {
+    -data: string
+    ..
+    -mimeType: string
+    ..
+    -type: string
+}
+
+class IncidentState  << ( ,#7f007f) >> {
+    -assignTo: string
+    ..
+    -endComment: string
+    ..
+    -endDate: string/date-time
+    ..
+    -endedBy: string
+    ..
+    -entryId: string/uuid
+    ..
+    -startComment: string
+    ..
+    -startDate: string/date-time
+    ..
+    -startedBy: string
+    ..
+    -<color:#007f00 ><b>stateType: ListEntry</b></color>
+}
+
+class IncidentStateType  <rest,\nmongodb,\nselList><<GidType>> << ( ,#ff6100) >> {
+    -active: boolean
+    ..
+    -comment: string
+    ..
+    -guid: string/uuid
+    ..
+    -incidentTypeId: string/uuid[]
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -order: boolean
+    ..
+    -progress: string
+    ..
+    -resStr: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of IncidentStateType
+occurs, entered,
+resolved, ...
+end note
+class IncidentTag  <rest,\nmongodb,\nselList><<GidType>> << ( ,#00007f) >> {
+    -active: boolean
+    ..
+    -color: string
+    ..
+    -comment: string
+    ..
+    -created: string/date-time
+    ..
+    -group: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of IncidentTag
+key-word for
+additional
+incident tagging
+end note
+class IncidentType  <rest,\nmongodb,\nselList><<GidType>> << ( ,#007f00) >> {
+    -active: boolean
+    ..
+    -comment: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -objectGroupIds: string/uuid[]
+    ..
+    -resStr: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of IncidentType
+types of incidents
+end note
+class OpMessage  <rest,\njoined,\nmongodb><<GidType>> << ( ,#ff6100) >> {
+    -creationTime: string/date-time
+    ..
+    -eventTimeEnd: string/date-time
+    ..
+    -eventTimeStart: string/date-time
+    ..
+    -guid: string/uuid
+    ..
+    -level: string
+    ..
+    -msgCode: integer
+    ..
+    -msgResStr: string
+    ..
+    -msgText: string
+    ..
+    -objectBaseId: string/uuid
+    ..
+    -<color:#007f00 ><b>rawData: OpMessageRawData</b></color>
+    ..
+    -references: string/uuid[]
+    ..
+    -<color:#007f00 ><b>sender: ListEntry</b></color>
+    ..
+    -<color:#007f00 ><b>tags: ListEntry[]</b></color>
+    ..
+    -tenantId: string/uuid
+    ..
+    -<color:#007f00 ><b>type: ListEntry</b></color>
+}
+
+note top of OpMessage
+General system
+operation message
+end note
+class OpMessageJoined  <rest,\njoinedType><<GidType>> << ( ,#00007f) >> {
+    -creationTime: string/date-time
+    ..
+    -eventTimeEnd: string/date-time
+    ..
+    -eventTimeStart: string/date-time
+    ..
+    -guid: string/uuid
+    ..
+    -level: string
+    ..
+    -msgCode: integer
+    ..
+    -msgResStr: string
+    ..
+    -msgText: string
+    ..
+    -objectBaseId: string/uuid
+    ..
+    -<color:#007f00 ><b>rawData: OpMessageRawData</b></color>
+    ..
+    -references: string/uuid[]
+    ..
+    -<color:#007f00 ><b>sender: ListEntry</b></color>
+    ..
+    -<color:#007f00 ><b>tags: ListEntry[]</b></color>
+    ..
+    -tenantId: string/uuid
+    ..
+    -<color:#007f00 ><b>type: ListEntry</b></color>
+    ..
+    -<color:#0000ff ><b>objectBase: ObjectBase</b></color>
+}
+
+note top of OpMessageJoined
+OpMessage with
+joined ObjectBase
+end note
+class OpMessageRawData  << ( ,#007f00) >> {
+    -data: string
+    ..
+    -mimeType: string
+    ..
+    -type: string
+}
+
+note top of OpMessageRawData
+container for
+additional,
+app-specific
+content
+end note
+class OpMessageSender  <rest,\nmongodb,\nselList><<GidType>> << ( ,#9b0000) >> {
+    -active: boolean
+    ..
+    -comment: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -resStr: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of OpMessageSender
+Who sends the
+message
+end note
+class OpMessageTag  <rest,\nmongodb,\nselList><<GidType>> << ( ,#5f005f) >> {
+    -active: boolean
+    ..
+    -color: string
+    ..
+    -comment: string
+    ..
+    -created: string/date-time
+    ..
+    -group: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of OpMessageTag
+Tag to group
+messages
+end note
+class OpMessageType  <rest,\nmongodb,\nselList><<GidType>> << ( ,#ff0000) >> {
+    -active: boolean
+    ..
+    -comment: string
+    ..
+    -guid: string/uuid
+    ..
+    -locked: boolean
+    ..
+    -name: string
+    ..
+    -resStr: string
+    ..
+    -tenantId: string/uuid
+}
+
+note top of OpMessageType
+types of message
+end note
+hide methods
+JunctionLocation *-- "many" JunctionLocationStreetsItem #ff0000
+Junction *--  JunctionLocation #ff00ff
+            Junction ..  ObjectBase #007f00
+Junction *--  ListEntry #0000ff
+            Junction ..  JunctionState #ff6100
+            Junction ..  Tenant #7f007f
+            Junction ..  JunctionType #00007f
+            JunctionComment ..  Junction #ff0000
+            JunctionComment ..  Tenant #7f007f
+JunctionContact *--  Address #007f00
+JunctionContact *--  ListEntry #0000ff
+            JunctionContact ..  ContactType #ff6100
+            JunctionContact ..  Junction #ff0000
+            JunctionContact ..  Tenant #7f007f
+JunctionDocument *--  ListEntry #0000ff
+            JunctionDocument ..  DocumentType #ff0000
+            JunctionDocument ..  Junction #ff0000
+            JunctionDocument ..  Tenant #7f007f
+JunctionJoined *--  JunctionLocation #ff00ff
+            JunctionJoined ..  ObjectBase #007f00
+JunctionJoined *--  ListEntry #0000ff
+            JunctionJoined ..  JunctionState #ff6100
+            JunctionJoined ..  Tenant #7f007f
+            JunctionJoined ..  JunctionType #00007f
+JunctionJoined *--  ObjectBase #007f00
+            JunctionNumber ..  Junction #ff0000
+            JunctionNumber ..  Tenant #7f007f
+JunctionNumber *--  ListEntry #0000ff
+            JunctionNumber ..  JunctionNumberType #7f007f
+            JunctionNumberType ..  Tenant #7f007f
+            JunctionState ..  Tenant #7f007f
+            JunctionType ..  Tenant #7f007f
+GeoArea *-- "many" GeoPoint #ff6100
+ObjectBase *--  ObjectBaseGis #9b0000
+ObjectBase *--  ListEntry #0000ff
+            ObjectBase ..  ObjectGroup #9b0000
+            ObjectBase .. "many" Region #00007f
+            ObjectBase .. "many" Tag #5f005f
+            ObjectBase ..  Tenant #7f007f
+GeoMultiline *-- "many" GeoPoint #ff6100
+            Region ..  Tenant #7f007f
+            Tag ..  Tenant #7f007f
+ObjectBaseGis *--  GeoArea #007f00
+ObjectBaseGis *--  GeoPoint #ff6100
+ObjectBaseGis *--  GeoMultiline #ff0000
+            ObjectGroup ..  Tenant #7f007f
+Contact *--  Address #007f00
+Contact *--  ListEntry #0000ff
+            Contact ..  ContactType #ff6100
+Address *--  ContactData #9b0000
+Address *-- "many" AddressPerson #5f005f
+Address *--  ListEntry #0000ff
+            Address ..  AddressType #ff0000
+Person *--  ContactData #9b0000
+AddressPerson *--  ContactData #9b0000
+            AddressType ..  Tenant #7f007f
+            ContactType ..  Tenant #7f007f
+Document *--  ListEntry #0000ff
+            Document ..  DocumentType #ff0000
+            DocumentType ..  Tenant #7f007f
+Incident *--  IncidentNumber #0000ff
+            Incident ..  ObjectBase #0000ff
+            Incident .. "many" OpMessage #ff00ff
+Incident *--  IncidentRawData #007f00
+            Incident .. "many" Incident #0000ff
+Incident *-- "many" IncidentState #7f007f
+Incident *-- "many" ListEntry #007f00
+            Incident .. "many" IncidentTag #00007f
+            Incident ..  Tenant #5f005f
+            Incident ..  IncidentType #007f00
+            IncidentComment ..  Incident #0000ff
+            IncidentComment ..  Tenant #5f005f
+IncidentDocument *--  ListEntry #007f00
+            IncidentDocument ..  DocumentType #5f005f
+            IncidentDocument ..  Incident #0000ff
+            IncidentDocument ..  Tenant #5f005f
+IncidentJoined *--  IncidentNumber #0000ff
+            IncidentJoined ..  ObjectBase #0000ff
+            IncidentJoined .. "many" OpMessage #ff00ff
+IncidentJoined *--  IncidentRawData #007f00
+            IncidentJoined .. "many" Incident #0000ff
+IncidentJoined *-- "many" IncidentState #7f007f
+IncidentJoined *-- "many" ListEntry #007f00
+            IncidentJoined .. "many" IncidentTag #00007f
+            IncidentJoined ..  Tenant #5f005f
+            IncidentJoined ..  IncidentType #007f00
+IncidentJoined *--  ObjectBase #0000ff
+IncidentState *--  ListEntry #007f00
+            IncidentState ..  IncidentStateType #ff6100
+            IncidentStateType .. "many" IncidentType #007f00
+            IncidentStateType ..  Tenant #5f005f
+            IncidentTag ..  Tenant #5f005f
+            IncidentType .. "many" ObjectGroup #007f00
+            IncidentType ..  Tenant #5f005f
+            OpMessage ..  ObjectBase #0000ff
+OpMessage *--  OpMessageRawData #007f00
+            OpMessage .. "many" OpMessage #ff6100
+OpMessage *--  ListEntry #007f00
+            OpMessage ..  OpMessageSender #9b0000
+            OpMessage .. "many" OpMessageTag #5f005f
+            OpMessage ..  Tenant #5f005f
+            OpMessage ..  OpMessageType #ff0000
+            OpMessageJoined ..  ObjectBase #0000ff
+OpMessageJoined *--  OpMessageRawData #007f00
+            OpMessageJoined .. "many" OpMessage #ff6100
+OpMessageJoined *--  ListEntry #007f00
+            OpMessageJoined ..  OpMessageSender #9b0000
+            OpMessageJoined .. "many" OpMessageTag #5f005f
+            OpMessageJoined ..  Tenant #5f005f
+            OpMessageJoined ..  OpMessageType #ff0000
+OpMessageJoined *--  ObjectBase #0000ff
+            OpMessageSender ..  Tenant #5f005f
+            OpMessageTag ..  Tenant #5f005f
+            OpMessageType ..  Tenant #5f005f
+footer powered by plantuml, created with jsonCodeGen
+@enduml

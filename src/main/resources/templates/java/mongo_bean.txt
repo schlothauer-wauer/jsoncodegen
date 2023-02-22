@@ -1,0 +1,114 @@
+<% def isJoinedType = currentType.properties.find { prop -> return prop.hasTag('join') && prop.implicitRefIsRefType() } !=null %>
+
+package ${extraParam.packageName};
+
+import de.lisaplus.util.mongodb.DbFactory;
+import org.bson.Document;
+import java.util.ArrayList;
+<% if (currentType.tags.contains('mongodb')) { %>
+import de.lisaplus.util.mongodb.SerializationException;
+import de.lisaplus.util.mongodb.ObjNotFoundException;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.MongoCursor;
+import org.bson.conversions.Bson;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import org.bson.types.*;
+import java.util.Arrays;
+import java.util.UUID;
+<% } %>
+
+<% if ( currentType.description ) { %>
+/**
+ * ${currentType.description}
+ */
+<% } %>
+public class ${ upperCamelCase.call(currentType.name) } {
+    <% currentType.properties.each { prop -> %>
+    <% if (prop.description) { %>
+    /**
+     * ${prop.description}
+     */
+    <% } %>
+    private ${ typeToJava.call(prop.type) } ${prop.name};
+    public ${ typeToJava.call(prop.type) } get${ firstUpperCase.call(prop.name) } () { return this.${prop.name}; }
+    public void set${ firstUpperCase.call(prop.name) } (${ typeToJava.call(prop.type) } ${prop.name}) {
+        this.${prop.name} = ${prop.name};
+    }
+
+    <% } %>
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj==null) return false;
+        if ( ! (obj instanceof ${ upperCamelCase.call(currentType.name) })) return false;
+
+        ${ upperCamelCase.call(currentType.name) } _typeInst = (${ upperCamelCase.call(currentType.name) }) obj;
+    <% currentType.properties.each { prop -> %>
+        ${ typeToJava.call(prop.type) } _${prop.name} = _typeInst.get${ firstUpperCase.call(prop.name) } ();
+        if (this.${prop.name} == null && _${prop.name} != null) return false;
+        if (this.${prop.name} != null) {
+            if (!this.${prop.name}.equals(_${prop.name})) return false;
+        }
+    <% } %>
+        return true;
+    }
+    
+    <% if (!currentType.tags.contains('mongodb')) { %>
+    public static ${ upperCamelCase.call(currentType.name) } createFromDocument(Document document) {
+        if (document==null) return null;
+        ${ upperCamelCase.call(currentType.name) } newObj = new ${ upperCamelCase.call(currentType.name) }();
+        // handle base types
+        <% currentType.properties.findAll {prop -> return ! prop.isRefTypeOrComplexType() }.each { prop -> %>
+        newObj.${prop.name} = (${ typeToJava.call(prop.type) }) document.get(${toUpperCase.call(prop.name)});
+        <% } %>
+        // handle complex types
+        <% currentType.properties.findAll {prop -> return prop.isRefTypeOrComplexType() }.each { prop -> %>
+            <% if (prop.type.isArray) { %>
+        newObj.${prop.name} = ${ prop.type.type.name }.createArrayFromDocument((java.util.List<Document>)document.get(${toUpperCase.call(prop.name)}));
+            <% } else { %>
+        newObj.${prop.name} = ${ typeToJava.call(prop.type) }.createFromDocument((Document)document.get(${toUpperCase.call(prop.name)}));
+            <% } %>
+        <% } %>
+        return newObj;
+    }
+    <% } %>
+
+    public static java.util.List<${ upperCamelCase.call(currentType.name) }> createArrayFromDocument(java.util.List<Document> documentList) {
+        if (documentList==null) return null;
+        ArrayList<${ upperCamelCase.call(currentType.name) }> ret = new ArrayList<>();
+        for (Document document: documentList) {
+            ${ upperCamelCase.call(currentType.name) } newObj = createFromDocument(document);
+            if (newObj!=null) {
+                ret.add(newObj);
+            }
+        }
+        return ret;
+    }
+
+
+    <% if (currentType.tags.contains('mongodb')) { %>
+    private ObjectId objectId;
+    public ObjectId getObjectId() { return this.objectId; }
+    public final static String COLLECTION_NAME="${ upperCamelCase.call(currentType.name) }";
+        <% if (isJoinedType) { %>
+    ${renderInnerTemplate.call('templates/java/sub/mongo_bean_joined_crud.txt',currentType,4)}
+        <% } else { %>
+    ${renderInnerTemplate.call('templates/java/sub/mongo_bean_normal_crud.txt',currentType,4)}
+        <% } %>
+
+    public static MongoCollection getCollection() throws SerializationException {
+        MongoDatabase db = DbFactory.getInst().getDB();
+        return db.getCollection(COLLECTION_NAME);
+    }
+    <% } %>
+
+    <% currentType.properties.each { prop -> %>
+    public final static String ${toUpperCase.call(prop.name)} = "${lowerCamelCase.call(prop.name)}";
+    <% } %>
+}

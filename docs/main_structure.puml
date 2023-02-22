@@ -78,14 +78,17 @@ class Property {
 }
 
 BaseType <|-- BooleanType
+BaseType <|-- ByteType
 BaseType <|-- MinMaxType
 BaseType <|-- ComplexType
 MinMaxType <|-- DateType
 MinMaxType <|-- DateTimeType
 MinMaxType <|-- IntType
+MinMaxType <|-- LongType
 MinMaxType <|-- NumberType
 BaseType <|-- RefType
 BaseType <|-- StringType
+BaseType <|-- ArrayType
 BaseType <|-- UnsupportedType
 
 Property o-- BaseType

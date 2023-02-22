@@ -1,6 +1,6 @@
 //define INDENT=${printIndent.call(indent)}
 //// write one property entry to the resulting json schema
-"${toLowerCase.call(actObj.name)}": {
+"${actObj.name}": {
 <% if (actObj.description) { %>
 ${printIndent.call(indent)}  "description": "${actObj.description}",
 <% } %>
@@ -9,7 +9,7 @@ ${printIndent.call(indent)}  "description": "${actObj.description}",
 INDENT  "type": "array",
 INDENT  "items": {
     <% if (actObj.isRefType()) { %>
-INDENT    "${DOLLAR}ref": "#/definitions/${toLowerCase.call(actObj.type.type.name)}"
+INDENT    "${DOLLAR}ref": "#/definitions/${actObj.type.type.name}"
     <% } else if (actObj.isComplexType() ) { %>
 
 INDENT    "type": "object",
@@ -31,9 +31,9 @@ INDENT    "type": "${typeToJson.call(actObj.type)}"
         <% } %>
         <% if (actObj.implicitRef) { %>
             <% if (actObj.implicitRefIsRefType()) { %>
-INDENT    ,"ref": "#/definitions/${toLowerCase.call(actObj.implicitRef.type.name)}"
+INDENT    ,"ref": "#/definitions/${actObj.implicitRef.type.name}"
             <% } else if (actObj.implicitRefIsComplexType() ) { %>
-INDENT    ,"ref": "#/definitions/${toLowerCase.call(actObj.implicitRef.name)}"
+INDENT    ,"ref": "#/definitions/${actObj.implicitRef.name}"
             <% }%>
         <% } %>
     <% } %>
@@ -41,7 +41,7 @@ INDENT  }
 <% } else { %>
 //// the property is no arraytype
     <% if (actObj.isRefType()) { %>
-INDENT  "${DOLLAR}ref": "#/definitions/${toLowerCase.call(actObj.type.type.name)}"
+INDENT  "${DOLLAR}ref": "#/definitions/${actObj.type.type.name}"
     <% } else if (actObj.isComplexType() ) { %>
 INDENT  "type": "object",
 INDENT  "properties": {
@@ -63,9 +63,9 @@ INDENT  "type": "${typeToJson.call(actObj.type)}"
 //// implizit to another type
         <% if (actObj.implicitRef) { %>
             <% if (actObj.implicitRefIsRefType()) { %>
-INDENT  ,"ref": "#/definitions/${toLowerCase.call(actObj.implicitRef.type.name)}"
+INDENT  ,"ref": "#/definitions/${actObj.implicitRef.type.name}"
             <% } else if (actObj.implicitRefIsComplexType() ) { %>
-INDENT  ,"ref": "#/definitions/${toLowerCase.call(actObj.implicitRef.name)}"
+INDENT  ,"ref": "#/definitions/${actObj.implicitRef.name}"
             <% }%>
         <% } %>
     <% } %>

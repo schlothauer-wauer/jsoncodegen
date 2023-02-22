@@ -13,5 +13,6 @@
       "type": "string"
     }
   },
+  "__tags": ["eins","zwei","drei"],
   "version": 1
 }

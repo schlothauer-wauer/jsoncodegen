@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Object base model",
+  "description": "Object is an anchor point of interest of application level",
+  "definitions": {
+    "ObjectBase": {
+      "type": "object",
+      "description": "Object is a anchor point of interest of application level, that's the minimal information about that",
+      "properties": {
+        "guid": {
+          "type": "string",
+          "format": "uuid",
+          "__tags": ["notDisplayed", "notNull"]
+        },
+        "tenantId": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": ["notDisplayed"]
+        },
+        "tags": {
+          "description": "key word to group entries for customer, f.e. in front-ends",
+          "type": "array",
+          "items": {
+            "$ref": "./shared/list_entry.json",
+            "__ref": "./shared/tag.json"
+          },
+          "__tags": ["listEntry","noMask"]
+        },
+        "regions": {
+          "description": "allows vertical grouping of objects, f.e. in sense of grants",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "__ref": "./shared/region.json"
+          }
+        },
+        "name": {
+          "description": "main name of the junction",
+          "type": "string",
+          "__tags": ["notNull","inputRequired"]
+        },
+        "number": {
+          "description": "main number of the junction",
+          "type": "string",
+          "__tags": ["unique"]
+        },
+        "gis": {
+          "description": "location of that junciton",
+          "type": "object",
+          "properties": {
+            "area": {
+              "description": "geografic area of this object",
+              "$ref": "./shared/geo_area.json",
+              "__tags": ["gisAreaFilter"]
+            },
+            "route": {
+              "description": "geografic multiline of this object",
+              "$ref": "./shared/geo_multiline.json",
+              "__tags": ["gisRouteFilter"]
+            },
+            "center": {
+              "description": "geografic area of this object",
+              "$ref": "./shared/geo_point.json",
+              "__tags": ["gisPointFilter"]
+            }
+          },
+          "__tags": ["restSubPath"]
+        },
+        "objectGroup": {
+          "description": "what group is that object related to (f.e. intersections, INES nets, public transport route, ...)",
+          "$ref": "./shared/list_entry.json",
+          "__ref": "#/definitions/ObjectGroup",
+          "__tags": ["notDisplayed", "listEntry"]
+        }
+      },
+      "__tags": ["rest","mongodb","index2d"],
+      "__version": 1
+    },
+    "ObjectGroup": {
+      "description": "Groups of objects (f.e. intersections, INES nets, public transport route, ...)",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "a describing name",
+          "type": "string"
+        },
+        "comment": {
+          "description": "some more words to explain",
+          "type": "string"
+        },
+        "guid": {
+          "description": "global identifier",
+          "type": "string",
+          "format": "uuid"
+        },
+        "resStr": {
+          "description": "a pure resource identifier, or a combined format string, f.e. ${RES_ID}: const text [${RES_ID2}]",
+          "type": "string"
+        },
+        "active": {
+          "description": "is this entry still active",
+          "type": "boolean"
+        },
+        "locked": {
+          "description": "entry is needed and should not be deleted",
+          "type": "boolean"
+        },
+        "tenantId": {
+          "description": "what is the related domain",
+          "type": "string",
+          "format": "uuid",
+          "__ref": "./shared/tenant.json",
+          "__tags": ["notDisplayed"]
+        }
+      },
+      "__tags": ["rest","mongodb","selList"],
+      "__version": 1
+    }
+  },
+  "type": "object"
+}

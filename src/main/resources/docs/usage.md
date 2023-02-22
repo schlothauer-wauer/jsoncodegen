@@ -26,7 +26,7 @@ de.lisaplus.atlas.DoCodeGen -o ./test/mein_output -m ./test/mein_modell.json -g 
 ```
 ```bash
 # creates a json schema from test schema - only for test cases
-build/release/jsonCodeGen.sh -o /tmp -m src/test/resources/test_schemas/multiType.json \
+    build/release/jsonCodeGen.sh -o /tmp -m src/test/resources/test_schemas/multiType.json \
     -g singlefile=src/main/resources/templates/meta/json_schema.txt \
     -gp destFileName=test.json
 
@@ -45,7 +45,8 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
   - containsAttrib - name of an attribute that is needed for the generation
   - missingAttrib - name of an attribute that the type doesn't contain for generation
-  
+  - versionConst - set with any value will add a version const into the bean
+
 * java_interfaces - creates a set of Java interfaces from the model 
   - packageName - what is the package for the generated beans (!)
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
@@ -93,12 +94,17 @@ build/release/jsonCodeGen.sh -o /tmp/test_beans -m src/test/resources/test_schem
   - destFileName - name of the generated file
   - removeEmptyLines - if set, then empty lines will be removed before file is written
 
+### PlantUML
+  - printTags - if set to true then plantuml prints also tags to the diagrams
+  - guidTypeColor - if given that color is used as background for the guid-types, f.e. -gp guidTypeColor=adadad
+  
 ### Base generators
 * multifiles - creates multiple files from model and extra given template
   - includeExtTypes - also use external type to generate files
   - outputDirExt - a needed subpath below the given outputBasePath
   - removeEmptyLines - if set, then empty lines will be removed before file is written 
   - destFileNamePre - standard prefix for the created file names
+  - destFileNamePost - standard suffix for the created file names
   - destFileNameExt - file extension for the generated files
 
 * singlefile - creates single file from model and extra given template

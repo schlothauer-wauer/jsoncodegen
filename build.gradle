@@ -1,54 +1,33 @@
 apply plugin: 'groovy'
 apply plugin: 'java'
-/*
 apply plugin: 'maven'
-*/
+apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 8
 
 def mainClass='de.lisaplus.atlas.DoCodeGen'
 
 project.group = 'de.lisaplus.tools'
-project.version = '0.4'
-def releaseArchiveName = "jsonCodeGen_${project.version}.zip"
-/*
- * the following attributes need to be declared in $HOME/.gradle/gradle.properties
-    mavenReleaseRepo=http://localhost:8081/content/repositories/releases
-    mavenSnapshotRepo=http://localhost:8081/content/repositories/snapshots
-    mavenUser=admin
-    mavenUserPwd=admin123
-    mavenBaseRepo=http://localhost:8081/content/groups/public
- **/
-publishing {
-    publications {
-        libraryJar(MavenPublication) {
-            from components.java
-            artifact zipRelease
-        }
-    }
-    repositories {
-        maven {
-            url "${project.version.endsWith('-SNAPSHOT') ? mavenSnapshotRepo : mavenReleaseRepo }"
-            credentials {
-                username = "${mavenUser}"
-                password = "${mavenUserPwd}"
-            }
-        }
-    }
+project.version = '0.13.2'
+
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
 
 repositories {
-    mavenLocal()
-    maven {
-        url "${mavenBaseRepo}"
-    }
     mavenCentral()
 }
 
 artifacts {
     archives jar
-    archives file: new File("$releaseArchiveName"), name: 'jsonCodeGen', type: 'zip'
 }
 
 dependencies {
@@ -56,7 +35,8 @@ dependencies {
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     compile group: 'com.beust', name: 'jcommander', version: '1.69'
     compile 'org.apache.commons:commons-lang3:3.3'
-    compile 'org.codehaus.groovy:groovy-all:2.3.11'
+    compile 'org.codehaus.groovy:groovy-all:2.5.7'
+    compile group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '3.0.0'
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
@@ -70,26 +50,34 @@ task dependenciesToLibDir(type: Copy) {
 }
 
 task buildRelease (type: Copy) {
-    outputs.upToDateWhen { false }
-    into "${buildDir}/release/lib"
-    from "${buildDir}/libs"
+        println 'buildRelease start ...'
+        outputs.upToDateWhen { false }
 
-    copy {
-        from "${project.rootDir}/src/main/resources/bin"
-        into "${buildDir}/release"
-    }
-    copy {
-        from "${project.rootDir}/src/main/resources/conf"
-        into "${buildDir}/release/conf"
-    }
+        copy {
+            from "${project.rootDir}/src/main/resources/bin"
+            into "${buildDir}/release"
+        }
+        copy {
+            from "${project.rootDir}/src/main/resources/conf"
+            into "${buildDir}/release/conf"
+        }
+
+
+        into "${buildDir}/release/lib"
+        from "${buildDir}/libs"
+
+        println 'buildRelease end ...'
 }
 
 task zipRelease (type: Zip) {
-    from "${buildDir}/release"
-    include '*'
-    include '*/*'
-    archiveName "$releaseArchiveName"
-    destinationDir(file("${buildDir}"))
+    doLast {
+        println 'zipRelease'
+        from "${buildDir}/release"
+        include '*'
+        include '*/*'
+        archiveName "$releaseArchiveName"
+        destinationDir(file("${buildDir}"))
+    }
 }
 
 task myRun (type: JavaExec, dependsOn: classes){
@@ -106,7 +94,6 @@ task myRun (type: JavaExec, dependsOn: classes){
 
 dependenciesToLibDir.dependsOn jar
 buildRelease.dependsOn dependenciesToLibDir
-
 
 configurations {
     integrationTestCompile.extendsFrom testCompile
@@ -139,40 +126,29 @@ task integrationTest(type: Test) {
     outputs.upToDateWhen { false }
 }
 
-task copyReleaseToDockerImage (type: Copy) {
-    outputs.upToDateWhen { false }
-    into "docker/image/release"
-    from "${buildDir}/release"
-}
-
-task cleanImageSources (type: Delete) {
-    delete 'docker/image/release'
-}
-
 task buildDockerImage {
     outputs.upToDateWhen { false }
-    def imageName=['bash','docker/bin/image_conf.sh'].execute().text.trim()
-    println "create image: $imageName ..."
-    def cmd = ['docker', 'build', '-t', imageName,'docker/image']
-    def sout = new StringBuilder(), serr = new StringBuilder()
-    def proc = cmd.execute()
-    proc.consumeProcessOutput(sout, serr)
-    proc.waitForOrKill(10000)
-    if (serr.size()>0) {
-        println "err> $serr"
-    }
-    else {
-        println "... created"
+    doLast {
+        def imageName=['bash','docker/bin/image_conf.sh'].execute().text.trim()
+        println "create image: $imageName ..."
+        def cmd = ['docker', 'build', '-t', imageName,'.']
+        def sout = new StringBuilder(), serr = new StringBuilder()
+        def proc = cmd.execute()
+        proc.consumeProcessOutput(sout, serr)
+        proc.waitForOrKill(20000)
+        if (serr.size()>0) {
+            println "err> $serr"
+        }
+        else {
+            println "... created"
+        }
     }
 }
 
-buildRelease.dependsOn build
-cleanImageSources.dependsOn buildRelease
-copyReleaseToDockerImage.dependsOn cleanImageSources
-buildDockerImage.dependsOn copyReleaseToDockerImage
+buildRelease.dependsOn assemble
+buildDockerImage.dependsOn buildRelease
 
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
 buildRelease.dependsOn test
 zipRelease.dependsOn buildRelease
-

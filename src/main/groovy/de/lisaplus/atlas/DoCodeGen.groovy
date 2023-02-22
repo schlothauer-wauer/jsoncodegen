@@ -4,6 +4,7 @@ import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.ParameterException
 import de.lisaplus.atlas.builder.JsonSchemaBuilder
+import de.lisaplus.atlas.builder.XSDBuilder
 import de.lisaplus.atlas.codegen.TemplateType
 import de.lisaplus.atlas.codegen.external.ExtMultiFileGenarator
 import de.lisaplus.atlas.codegen.external.ExtSingleFileGenarator
@@ -12,11 +13,13 @@ import de.lisaplus.atlas.codegen.java.JavaInterfaceGenerator
 import de.lisaplus.atlas.codegen.java.JavaInterfacedBeanGenerator
 import de.lisaplus.atlas.codegen.java.JavaInterfacedGenericDerivedBeanGenerator
 import de.lisaplus.atlas.codegen.java.JavaGenericDerivedBeanGenerator
+import de.lisaplus.atlas.codegen.java.MongoBeanGenerator
 import de.lisaplus.atlas.codegen.meta.HistModelGenerator
 import de.lisaplus.atlas.codegen.meta.JsonSchemaGenerator
 import de.lisaplus.atlas.codegen.meta.PlantUmlGenerator
 import de.lisaplus.atlas.codegen.meta.SwaggerGenerator
 import de.lisaplus.atlas.codegen.meta.SwaggerGeneratorExt
+import de.lisaplus.atlas.codegen.meta.XsdGenerator
 import de.lisaplus.atlas.interf.IExternalCodeGen
 import de.lisaplus.atlas.interf.IModelBuilder
 import de.lisaplus.atlas.model.Model
@@ -28,20 +31,121 @@ import org.slf4j.LoggerFactory
  * Created by eiko on 30.05.17.
  */
 class DoCodeGen {
+    /**
+     * model file
+     */
     @Parameter(names = [ '-m', '--model' ], description = "Path to JSON schema to parse", required = true)
-    String model
+    List<String> models=[]
 
-    @Parameter(names = [ '-o', '--outputBase' ], description = "Base directory for the output", required = true)
+    /**
+     * Base directory for the output
+     */
+    @Parameter(names = [ '-o', '--outputBase' ], description = "Base directory for the output")
     String outputBaseDir
 
+    /**
+     * Generator to use
+     */
     @Parameter(names = ['-g', '--generator'], description = "generator that are used with the model. This parameter can be used multiple times")
     List<String> generators = []
 
+
+    /**
+     * Generator to use
+     */
+    @Parameter(names = ['-gs', '--generator-scripts'], description = "additional script that should be passed to the used templates")
+        String generatorScript
+
+    /**
+     * Generator parameter
+     */
     @Parameter(names = ['-gp', '--generator-parameter'], description = "special parameter that are passed to template via maps")
     List<String> generator_parameters = []
 
+    /**
+     * Type white list
+     */
+    @Parameter(names = ['-w', '--white-list'], description = "white listed type, multiple usage possible")
+    List<String> whiteListed = []
+
+    /**
+     * Type black list
+     */
+    @Parameter(names = ['-b', '--black-list'], description = "black listed type, multiple usage possible")
+    List<String> blackListed = []
+
+    /**
+     * Print help
+     */
     @Parameter(names = ['-h','--help'], help = true)
     boolean help = false
+
+    /**
+     * Simply print main types
+     */
+    @Parameter(names = ['-pmt','--print-main-types'], description = "don't do any code generation, simply loads the model and print the main-types of it")
+    boolean printMainTypes = false
+
+    @Parameter(names = ['-pmts','--print-main-types-separator'], description = "separator to use for printing main types")
+    String printMainTypesSeparator
+
+    @Parameter(names = ['-pmti','--print-main-types-info'], description = "print with info header")
+    boolean printMainTypesInfo = false
+
+    /**
+     * an required type property to include into main types
+     */
+    @Parameter(names = ['-mta','--main-types-attrib'], description = "specify a needed attribute to be a maintype, used in addition to the schema location")
+    String mainTypeAttrib
+
+    /**
+     * an required type property to include into main types
+     */
+    @Parameter(names = ['-tmt','--tag-main-types'], description = "if this flag is set all maintypes will be extended with a 'mainType' tag")
+    boolean tagMainTypes
+
+    /**
+     * List of type-name tag-text tuple, The tags will be merged after initialization with the object tree
+     */
+    @Parameter(names = ['-at', '--add-tag'], description = "add a text as tag to a specific type, f.e. -at User=unused")
+    List<String> typeAddTagList = []
+
+    /**
+     * List of type-name tag-text tuple, after initialization the tags will be removed for the given types in the object tree
+     */
+    @Parameter(names = ['-rt', '--remove-tag'], description = "remove a tag from a specific type, f.e. -rt User=unused")
+    List<String> typeRemoveTagList = []
+
+    /**
+     * List of tags-text tuple, after initialization the tags will be removed for the given types in the object tree
+     */
+    @Parameter(names = ['-rta', '--remove-tag-all'], description = "remove a tag from all model types, f.e. -rta rest")
+    List<String> typeRemoveTagAllList = []
+
+
+    /**
+     * List of tags-text tuple, after initialization the tags will be removed for the given types in the object tree
+     */
+    @Parameter(names = ['-rta2', '--remove-tag-all-if-not-main'], description = "remove a tag from all model types that are no main types, f.e. -rta rest")
+    List<String> typeRemoveTagAllList2 = []
+
+    /**
+     * an required type property to include into main types
+     */
+    @Parameter(names = ['-rta2a','--remove-tag-all-if-not-main-attrib'], description = "don't do any code generation, simply loads the model and print the main-types of it")
+    String mainTypeAttrib2
+
+    /**
+     * if set enum types insteed of strings will be used
+     */
+    @Parameter(names = ['-cet','--create-enum-types'], description = "if set the model is built with enum types")
+    boolean createEnumTypes = false
+
+
+    /**
+     * The datamodel parsed by the builder. It is public accessible for tests
+     */
+    Model dataModel
 
     static void main(String ... args) {
         DoCodeGen doCodeGen = new DoCodeGen()
@@ -64,29 +168,50 @@ class DoCodeGen {
     }
 
     void run() {
-        log.info("model=${model}")
+        log.info("model=${models}")
         log.info("outPutBase=${outputBaseDir}")
 
-        def modelFile = new File (model)
-        if (!modelFile.isFile()) {
-            log.error("path to model file doesn't point to a file: ${model}")
-            System.exit(1)
-        }
-        else {
-            log.info("use model file: ${model}")
-        }
+        models.each { model ->
+            def modelFile = model instanceof File ? model : new File (model)
+            def modelName = modelFile.getName()
+            if (!modelFile.isFile()) {
+                log.error("path to model file doesn't point to a file: ${model}")
+                System.exit(1)
+            }
+            else {
+                log.info("use model file: ${model}")
+            }
 
+            IModelBuilder builder = modelName.toLowerCase().endsWith('.json') ? new JsonSchemaBuilder() :
+                    modelName.toLowerCase().endsWith('.xsd') ? new XSDBuilder() : null
+            if (builder==null) {
+                log.error("unknown file type, currently only jscon schema and xsd are supported: ${model}")
+                System.exit(1)
+            }
+            if (builder instanceof JsonSchemaBuilder) {
+                ((JsonSchemaBuilder)builder).createEnumTypes = createEnumTypes
+            }
+            Model tmpModel = builder.buildModel(modelFile)
+            printMainTypesIfNeeded(tmpModel,modelFile.getName())
+            adjustTagsForModel(tmpModel,modelFile.getName())
+            if (!dataModel) {
+                dataModel = tmpModel
+            }
+            else {
+                mergeIntoDataModel(dataModel,tmpModel)
+            }
+        }
+        sortTypesAndProperties(dataModel)
         prepareOutputBaseDir(outputBaseDir)
 
-        IModelBuilder builder = new JsonSchemaBuilder()
-        Model dataModel = builder.buildModel(modelFile)
         // convert extra generator parameter to a map
         Map<String,String> extraParameters = getMapFromGeneratorParams(generator_parameters)
+        extraParameters['blackListed']=blackListed
+        extraParameters['whiteListed']=whiteListed
         if (generators==null || generators.isEmpty()) {
             log.warn('no generators configured - skip')
         }
         else {
-            // TODO start CodeGen
             generators.each { generatorName ->
                 def trennerIndex = generatorName.indexOf('=')
                 def templateName = trennerIndex!=-1 && trennerIndex < generatorName.length() - 1? generatorName.substring(trennerIndex+1) : null
@@ -94,14 +219,54 @@ class DoCodeGen {
                 def pureGeneratorName = trennerIndex!=-1? generatorName.substring(0,trennerIndex) : generatorName
                 // later linked generators needs to contain package seperator
                 if (pureGeneratorName.indexOf('.')!=-1) {
-                    // a later linked generator
-                    useCustomGenerator(pureGeneratorName,templateName,dataModel,extraParameters,outputBaseDir)
+                    // a later linked generator - not implemented yet
+                    useCustomGenerator(pureGeneratorName,templateName,dataModel,extraParameters,outputBaseDir,generatorScript)
                 }
                 else {
                     // a build in generator
-                    useBuiltInGenerator(pureGeneratorName,templateName,dataModel,extraParameters,outputBaseDir)
+                    useBuiltInGenerator(pureGeneratorName,templateName,dataModel,extraParameters,outputBaseDir,generatorScript)
                 }
             }
+        }
+    }
+
+    static void mergeIntoDataModel(Model mainModel,Model newModel) {
+        newModel.types.each { type ->
+            if (!mainModel.types.find { existingType -> existingType.name==type.name &&
+                    existingType.schemaFileName==type.schemaFileName }) {
+                mainModel.types.add(type)
+            }
+        }
+    }
+
+    static void sortTypesAndProperties(Model model) {
+        model.types.sort{ a,b -> a.name<=>b.name}
+        model.types.each { type ->
+            type.properties.sort{ a,b -> a.name<=>b.name }
+        }
+    }
+
+    void printMainTypesIfNeeded(Model dataModel, String fileName) {
+        if (printMainTypes) {
+            def mfn = fileName
+            String separator = printMainTypesSeparator ? printMainTypesSeparator : ' '
+            def attrib = mainTypeAttrib ? " - needed attrib: $mainTypeAttrib" : ''
+            def info = "mainTypes [$mfn$attrib]:"
+            def outStr = printMainTypesInfo ? info : ''
+            dataModel.types.each { type ->
+                if (type.isMainType(mfn)) {
+                    if ((!mainTypeAttrib) || (type.hasPropertyWithName(mainTypeAttrib))) {
+                        if (outStr=='') {
+                            outStr = "${type.name}"
+                        }
+                        else {
+                            outStr = "${outStr}${separator}${type.name}"
+                        }
+                    }
+                }
+            }
+            println (outStr)
+            System.exit(0)
         }
     }
 
@@ -148,11 +313,11 @@ class DoCodeGen {
         }
     }
 
-    static void useCustomGenerator(String generatorName, String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
+    static void useCustomGenerator(String generatorName, String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir,String generatorScript) {
         // TODO
     }
 
-    static void useBuiltInGenerator(String generatorName, String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
+    static void useBuiltInGenerator(String generatorName, String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir,String generatorScript) {
         switch (generatorName) {
             case 'java_interfaces':
                 JavaInterfaceGenerator generator = new JavaInterfaceGenerator()
@@ -161,6 +326,11 @@ class DoCodeGen {
                 break
             case 'java_beans':
                 JavaBeanGenerator generator = new JavaBeanGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
+            case 'mongo_beans':
+                MongoBeanGenerator generator = new MongoBeanGenerator()
                 generator.initTemplate()
                 generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break
@@ -210,11 +380,16 @@ class DoCodeGen {
                 generator.initTemplate()
                 generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
                 break
+            case 'xsd':
+                XsdGenerator generator = new XsdGenerator()
+                generator.initTemplate()
+                generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
+                break
             case 'multifiles':
-                generateMultiFiles(generatorName,templateName,dataModel,extraParameters,outputBaseDir)
+                generateMultiFiles(generatorName,templateName,dataModel,extraParameters,outputBaseDir,generatorScript)
                 break
             case 'singlefile':
-                generateSingleFile(generatorName,templateName,dataModel,extraParameters,outputBaseDir)
+                generateSingleFile(generatorName,templateName,dataModel,extraParameters,outputBaseDir,generatorScript)
                 break
             default:
                 def errorMsg = "unknown built in generator: ${generatorName}"
@@ -223,9 +398,10 @@ class DoCodeGen {
         }
     }
 
-    static void generateMultiFiles(String generatorName,String templateName,Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
+    static void generateMultiFiles(String generatorName,String templateName,Model dataModel, Map<String,String> extraParameters,String outputBaseDir,String generatorScript) {
         checkForTemplate(generatorName,templateName)
         IExternalCodeGen generator = new ExtMultiFileGenarator()
+        generator.setGeneratorScript(generatorScript)
         if (isTemplateFile(templateName)) {
             generator.initTemplateFromFile(templateName, TemplateType.GString)
         }
@@ -235,9 +411,10 @@ class DoCodeGen {
         generator.doCodeGen(dataModel,outputBaseDir,extraParameters)
     }
 
-    static void generateSingleFile(String generatorName,String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir) {
+    static void generateSingleFile(String generatorName,String templateName, Model dataModel, Map<String,String> extraParameters,String outputBaseDir,String generatorScript) {
         checkForTemplate(generatorName,templateName)
         IExternalCodeGen generator = new ExtSingleFileGenarator()
+        generator.setGeneratorScript(generatorScript)
         if (isTemplateFile(templateName)) {
             generator.initTemplateFromFile(templateName, TemplateType.GString)
         }
@@ -272,6 +449,91 @@ class DoCodeGen {
         print (usageFile.getText())
     }
 
+    private void adjustTagsForModel(Model dataModel, String modelFileName) {
+        Map<String, List<String>> typeAddTagMap = mapFromConfig(typeAddTagList)
+        Map<String, List<String>> typeRemoveTagMap = mapFromConfig(typeRemoveTagList)
+        // remove all tags
+        dataModel.types.each { type ->
+            boolean isMainType = type.isMainType(modelFileName) && ((!mainTypeAttrib) || type.hasPropertyWithName(mainTypeAttrib))
+            if(tagMainTypes && isMainType) {
+                type.tags.add('mainType')
+            }
+            // remove all tags
+            typeRemoveTagAllList.each { tag ->
+                def tagList = tag.indexOf(',')!=-1 ? tag.split(',') : tag.split(':')
+                tagList.each { t ->
+                    if (type.tags.contains(t)) {
+                        type.tags.remove(t)
+                    }
+                }
+            }
+            // remove tags from not main types
+            typeRemoveTagAllList2.each { tag ->
+                def tagList = tag.indexOf(',')!=-1 ? tag.split(',') : tag.split(':')
+                if ((!isMainType) && ((!mainTypeAttrib2) || (type.hasPropertyWithName(mainTypeAttrib2)))) {
+                    tagList.each { t ->
+                        if (type.tags.contains(t)) {
+                            type.tags.remove(t)
+                        }
+                    }
+                }
+            }
+            // remove undesired tags
+            List<String> tagsToRemove = typeRemoveTagMap[type.name]
+            if (tagsToRemove) {
+                // remove tags
+                tagsToRemove.each { tag ->
+                    type.tags.remove(tag)
+                }
+            }
+            // add new tags
+            List<String> tagsToAdd = typeAddTagMap[type.name]
+            if (tagsToAdd) {
+                // add tags
+                tagsToAdd.each { tag ->
+                    if (!type.tags.contains(tag)) {
+                        type.tags.add(tag)
+                    }
+                }
+            }
+        }
+    }
 
+
+    private Map<String, List<String>> mapFromConfig(List<String> config) {
+        Map<String, List<String>> ret = [:]
+        if (!config) return ret
+        config.each { typeTagStr ->
+            def typeTagArray = typeTagStr.split('=')
+            if (typeTagArray.length!=2) {
+                println "[mapFromConfig] - wrong type/tag-tuple: $typeTagStr"
+                return
+            }
+            def typeName = typeTagArray[0].trim()
+            def typeNameList = typeName.indexOf(',')!=-1 ? typeName.split(',') : typeName.split(':')
+            def tag = typeTagArray[1].trim()
+            def tagList = tag.indexOf(',')!=-1 ? tag.split(',') :  tag.split(':')
+            typeNameList.each { name ->
+                List<String> alreadyExistingValues = ret[name]
+                if (alreadyExistingValues) {
+                    tagList.each { t ->
+                        if (!alreadyExistingValues.contains(t)) {
+                            alreadyExistingValues.add(t)
+                        }
+                    }
+                }
+                else {
+                    List<String> values = []
+                    tagList.each { t ->
+                        if (!values.contains(t)) {
+                            values.add(t)
+                        }
+                    }
+                    ret[name] = values
+                }
+            }
+        }
+        return ret
+    }
     private static final Logger log=LoggerFactory.getLogger(DoCodeGen.class)
 }

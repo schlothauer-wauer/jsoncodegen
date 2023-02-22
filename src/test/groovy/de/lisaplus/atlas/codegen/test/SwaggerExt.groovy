@@ -13,7 +13,7 @@ class SwaggerExt {
     void createUserModel_SingleFile() {
         def destFile='tmp/user.swagger'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model='src/test/resources/test_schemas/ds/user.json'
+        doCodeGen.models=['src/test/resources/test_schemas/ds/user.json']
         doCodeGen.generators.add('singlefile=src/main/resources/templates/meta/swagger_ext.txt')
         doCodeGen.outputBaseDir='tmp'
         doCodeGen.generator_parameters.add('destFileName=user.swagger')
@@ -25,9 +25,9 @@ class SwaggerExt {
 
     @Test
     void createUserModel_BuiltIn() {
-        def destFile='tmp/user_model.swagger'
+        def destFile='tmp/userModel.swagger'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model='src/test/resources/test_schemas/ds/user.json'
+        doCodeGen.models=['src/test/resources/test_schemas/ds/user.json']
         doCodeGen.generators.add('swagger_ext')
         doCodeGen.outputBaseDir='tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')
@@ -38,9 +38,9 @@ class SwaggerExt {
 
     @Test
     void createLicenseModel_BuiltIn() {
-        def destFile='tmp/license_model.swagger'
+        def destFile='tmp/licenseModel.swagger'
         de.lisaplus.atlas.DoCodeGen doCodeGen = new de.lisaplus.atlas.DoCodeGen()
-        doCodeGen.model='src/test/resources/test_schemas/ds/license.json'
+        doCodeGen.models=['src/test/resources/test_schemas/ds/license.json']
         doCodeGen.generators.add('swagger_ext')
         doCodeGen.outputBaseDir='tmp'
         doCodeGen.generator_parameters.add('removeEmptyLines=true')

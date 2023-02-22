@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Type-Test",
+  "description": "Test for more exotic types",
+  "definitions": {
+    "ExtraType": {
+      "type": "object",
+      "properties": {
+        "intAttrib": {
+          "type": "integer",
+        },
+        "intAttrib2": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "noIntAttrib": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "byteAttrib": {
+          "type": "integer",
+          "format": "byte"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "__version": 3
+}

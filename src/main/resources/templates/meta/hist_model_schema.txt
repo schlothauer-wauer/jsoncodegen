@@ -25,7 +25,7 @@
     <% model.types.each  { type -> %>
       <% if (! type.isInnerType()) { %> //// Only not inner types need to be handled
       ,
-      "${toLowerCase.call(type.name)}": {
+      "${type.name}": {
         <% if (type.description) { %>
         "description": "${type.description}",
         <% } %>
@@ -45,7 +45,7 @@
             "type": "array",
             "description": "array with the historical values of that entry",
             "items": {
-              "${DOLLAR}ref": "#/definitions/${toLowerCase.call(type.name)}"
+              "${DOLLAR}ref": "#/definitions/${type.name}"
             }
           },
           "meta_entry": {
@@ -58,8 +58,8 @@
       <% } %>
     <% } %>
   },
-  "type": "object",
+  "type": "object"
   <% if ( model.version ) { %>
-  "version": "${model.version}"
+  ,"version": "${model.version}"
   <% } %>
 }
