@@ -79,14 +79,12 @@ task buildRelease (type: Copy) {
 }
 
 task zipRelease (type: Zip) {
-    doLast {
-        println 'zipRelease'
-        from "${buildDir}/release"
-        include '*'
-        include '*/*'
-        archiveName "$releaseArchiveName"
-        destinationDir(file("${buildDir}"))
-    }
+    // creates build/jsonCodeGen-[version].zip
+    println 'zipRelease'
+    from layout.buildDirectory.dir("release")
+    include '*'
+    include '*/*'
+    destinationDirectory = layout.buildDirectory.dir("${buildDir}")
 }
 
 task myRun (type: JavaExec, dependsOn: classes){
