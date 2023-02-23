@@ -4,9 +4,9 @@ scriptPos=${0%/*}
 
 # Uploads a binary release / release archive of jsonCodeGen to a NEXUS instance
 # This script relies on these environment variabels:
-# * nexus_user: Username use to authenticate at the NEXUS instance
-# * nexus_password: Password used to authenticate at the NEXUS instance (optional)
-# * nexus_raw_archive: URL to the directory, where the binary release is to be POSTed
+# * NEXUS_USER: Username use to authenticate at the NEXUS instance
+# * NEXUS_PWD: Password used to authenticate at the NEXUS instance (optional)
+# * NEXUS_RAW_ARCHIVE: URL to the directory, where the binary release is to be POSTed
 # If no password is available, then curl will prompt for one!
 
 # retrieve the version from project file
@@ -20,13 +20,13 @@ if ! gradle publish; then
 fi
 popd > /dev/null
 
-if [ -z "$nexus_user" ]; then
-    echo "nexus_user not defined"
+if [ -z "$NEXUS_USER" ]; then
+    echo "NEXUS_USER not defined"
     exit 1
 fi
 
-if [ -z "$nexus_raw_archive" ]; then
-    echo "nexus_raw_archive not defined"
+if [ -z "$NEXUS_RAW_ARCHIVE" ]; then
+    echo "NEXUS_RAW_ARCHIVE not defined"
     exit 1
 fi
 
@@ -52,15 +52,15 @@ fi
 tar -czf "$releaseFile" *
 
 # use password if availagle
-if [ -z "$nexus_password" ]; then
-    user="$nexus_user"
+if [ -z "$NEXUS_PWD" ]; then
+    user="$NEXUS_USER"
 else
-    echo "Making us of env. variable nexus_password!"
-    user="$nexus_user:$nexus_password"
+    echo "Making us of env. variable NEXUS_PWD!"
+    user="$NEXUS_USER:$NEXUS_PWD"
 fi
 
 if ! curl -v --user $user --upload-file "$releaseFile" \
-    "$nexus_raw_archive/$releaseFile"
+    "$NEXUS_RAW_ARCHIVE/$releaseFile"
 then
     echo "error while upload release to nexus raw repo"
 fi

@@ -219,8 +219,8 @@ This approach can also be used for other projects.
 For uploading a binary release / release archive of jsonCodeGen to a NEXUS instance use corresponding release script [uploadReleaseToNexus.sh](bin/uploadReleaseToNexus.sh).  
 It needs some environment variables to work properly:
 
-* nexus_raw_archive: URL to the directory, where the binary release is to be POSTed
-* nexus_user: Username use to authenticate at the NEXUS instance
-* nexus_password: Password used to authenticate at the NEXUS instance (optional)
+* NEXUS_RAW_ARCHIVE: URL to the directory, where the binary release is to be POSTed
+* NEXUS_USER: Username use to authenticate at the NEXUS instance
+* NEXUS_PWD: Password used to authenticate at the NEXUS instance (optional)
 
 If no password is available, then curl will prompt for one!
