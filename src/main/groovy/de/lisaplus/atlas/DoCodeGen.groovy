@@ -163,6 +163,7 @@ class DoCodeGen {
             doCodeGen.run()
         }
         catch(ParameterException e) {
+            log.error("Encountered a problem while parsing the start parameters: {}", e)
             e.usage()
         }
     }

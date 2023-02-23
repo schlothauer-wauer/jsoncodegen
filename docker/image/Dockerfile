@@ -1,4 +1,5 @@
-FROM openjdk:8-jre-alpine
+# FROM openjdk:8-jre-alpine
+FROM azul/zulu-openjdk-alpine:17.0.4.1
 
 ADD release /opt/jsonCodeGen
 

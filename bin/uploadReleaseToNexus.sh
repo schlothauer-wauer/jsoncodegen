@@ -2,6 +2,13 @@
 
 scriptPos=${0%/*}
 
+# Uploads a binary release / release archive of jsonCodeGen to a NEXUS instance
+# This script relies on these environment variabels:
+# * NEXUS_USER: Username use to authenticate at the NEXUS instance
+# * NEXUS_PWD: Password used to authenticate at the NEXUS instance (optional)
+# * NEXUS_RAW_ARCHIVE: URL to the directory, where the binary release is to be POSTed
+# If no password is available, then curl will prompt for one!
+
 # retrieve the version from project file
 version=`cat "$scriptPos/../build.gradle" | grep project.version | grep = | sed -e "s-.* '--" -e "s-'--"`
 echo "version: $version"
@@ -34,8 +41,7 @@ if ! gradle buildRelease; then
     exit 1
 fi
 
-cd build/release
-
+pushd "build/release" > /dev/null
 
 releaseFile="jsonCodeGen_$version.tgz"
 
@@ -45,7 +51,15 @@ fi
 
 tar -czf "$releaseFile" *
 
-if ! curl -v --user "$NEXUS_USER" --upload-file "$releaseFile" \
+# use password if availagle
+if [ -z "$NEXUS_PWD" ]; then
+    user="$NEXUS_USER"
+else
+    echo "Making us of env. variable NEXUS_PWD!"
+    user="$NEXUS_USER:$NEXUS_PWD"
+fi
+
+if ! curl -v --user $user --upload-file "$releaseFile" \
     "$NEXUS_RAW_ARCHIVE/$releaseFile"
 then
     echo "error while upload release to nexus raw repo"
@@ -53,5 +67,8 @@ fi
 
 git tag "$version"
 
+echo "tagged version $version, please push it using command git push origin refs/tags/$version"
+
 popd > /dev/null
 
+popd > /dev/null

@@ -2,8 +2,8 @@
 A simple Groovy based program to do generation tasks from a JSON schema.
 
 ## Requirements
-* Java 8
-* Gradle v5.4*
+* Java 17
+* Gradle v7.*
 
 ## Unsupported JSON schema features
 * patternProperties - make no sense in model description
@@ -59,7 +59,7 @@ A simple Groovy based program to do generation tasks from a JSON schema.
 gradle buildRelease
 
 # builds release and copy artifacts to docker image dir as preparation for the image build
-gradle copyReleaseToDockerImage
+gradle buildDockerImage
 
 # run program without any arguments from project
 gradle myRun
@@ -69,13 +69,17 @@ gradle myRun -PmyArgs="-m,src/test/resources/schemas/ProcessDataEvent.json"
 
 # complex example for debug mode run
 gradle myRun -PDEBUG -PmyArgs="-o,/tmp/test_beans,-m,src/test/resources/test_schemas/multiType.json,\
--g,multifiles=src/main/resources/templates/java/java_bean.txt,\
+-g,multifiles=src/main/resources/templates/java/bean.txt,\
 -gp,destFileNameExt=java,-gp,packageName=de.sw.atlas.test"
 
 # complex example without debug mode run
 gradle myRun -PmyArgs="-o,/tmp/test_beans,-m,src/test/resources/test_schemas/multiType.json,\
--g,multifiles=src/main/resources/templates/java/java_bean.txt,\
+-g,multifiles=src/main/resources/templates/java/bean.txt,\
 -gp,destFileNameExt=java,-gp,packageName=de.sw.atlas.test"
+
+# swagger example
+gradle myRun -PmyArgs="-o,/tmp/swagger,-m,src/test/resources/test_schemas/ds/user.json\
+,-g,swagger,-gp,removeEmptyLines=true,-gp,host=api.lisaplus.de"
 ```
 ### Usage of the release
 
@@ -89,6 +93,9 @@ Usage: de.lisaplus.atlas.DoCodeGen [options]
     -b, --black-list
       black listed type, multiple usage possible
       Default: []
+    -cet, --create-enum-types
+      if set the model is built with enum types
+      Default: false
     -g, --generator
       generator that are used with the model. This parameter can be used 
       multiple times
@@ -96,19 +103,22 @@ Usage: de.lisaplus.atlas.DoCodeGen [options]
     -gp, --generator-parameter
       special parameter that are passed to template via maps
       Default: []
+    -gs, --generator-scripts
+      additional script that should be passed to the used templates
     -h, --help
 
+    -mta, --main-types-attrib
+      specify a needed attribute to be a maintype, used in addition to the 
+      schema location
   * -m, --model
       Path to JSON schema to parse
+      Default: []
     -o, --outputBase
       Base directory for the output
     -pmt, --print-main-types
       don't do any code generation, simply loads the model and print the 
       main-types of it
       Default: false
-    -pmta, --print-main-types-attrib
-      don't do any code generation, simply loads the model and print the 
-      main-types of it
     -pmti, --print-main-types-info
       print with info header
       Default: false
@@ -120,6 +130,15 @@ Usage: de.lisaplus.atlas.DoCodeGen [options]
     -rta, --remove-tag-all
       remove a tag from all model types, f.e. -rta rest
       Default: []
+    -rta2, --remove-tag-all-if-not-main
+      remove a tag from all model types that are no main types, f.e. -rta rest
+      Default: []
+    -rta2a, --remove-tag-all-if-not-main-attrib
+      don't do any code generation, simply loads the model and print the 
+      main-types of it
+    -tmt, --tag-main-types
+      if this flag is set all maintypes will be extended with a 'mainType' tag
+      Default: false
     -w, --white-list
       white listed type, multiple usage possible
       Default: []
@@ -195,3 +214,13 @@ def generatorScriptDefinedFunction(def someString) {
 7. Break-Point should be triggered in IDE
 
 This approach can also be used for other projects.
+
+## Do NEXUS release
+For uploading a binary release / release archive of jsonCodeGen to a NEXUS instance use corresponding release script [uploadReleaseToNexus.sh](bin/uploadReleaseToNexus.sh).  
+It needs some environment variables to work properly:
+
+* NEXUS_RAW_ARCHIVE: URL to the directory, where the binary release is to be POSTed
+* NEXUS_USER: Username use to authenticate at the NEXUS instance
+* NEXUS_PWD: Password used to authenticate at the NEXUS instance (optional)
+
+If no password is available, then curl will prompt for one!

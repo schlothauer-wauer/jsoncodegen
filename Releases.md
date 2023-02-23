@@ -1,3 +1,7 @@
+## 0.14.0
+- switched to Groovy 4.x, Gradle 7.x and Java 17
+- updated dependencies
+
 ## 0.13.1
 - handle the right notation of external references: e.g. ./object_base.json#/definitions/ObjectBase
 

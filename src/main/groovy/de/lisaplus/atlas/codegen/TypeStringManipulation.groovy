@@ -116,7 +116,7 @@ class TypeStringManipulation {
     }
 
     def breakTxt = { String txtToBreak,int charPerLine,String breakText='\n' ->
-        if (!txtToBreak) return EMPTY
+        if (!txtToBreak) return TypeStringManipulation.EMPTY
         StringBuilder sb = new StringBuilder()
         int txtLen = txtToBreak.length()
         int aktPos = 0
@@ -155,15 +155,15 @@ class TypeStringManipulation {
     }
 
     def toLowerCase = { str ->
-        return str==null ? EMPTY : str.toLowerCase()
+        return str==null ? TypeStringManipulation.EMPTY : str.toLowerCase()
     }
 
     def toUpperCase = { str ->
-        return str==null ? EMPTY : str.toUpperCase()
+        return str==null ? TypeStringManipulation.EMPTY : str.toUpperCase()
     }
 
     def firstLowerCase = { str ->
-        if (!str) return EMPTY
+        if (!str) return TypeStringManipulation.EMPTY
         def first = str.substring(0,1)
         first = first.toLowerCase()
         if (str.length()>1) {
@@ -176,7 +176,7 @@ class TypeStringManipulation {
     }
 
     def firstUpperCase = { str ->
-        if (!str) return EMPTY
+        if (!str) return TypeStringManipulation.EMPTY
         def first = str.substring(0,1)
         first = first.toUpperCase()
         if (str.length()>1) {
@@ -189,19 +189,19 @@ class TypeStringManipulation {
     }
 
     def firstUpperCamelCase = { str ->
-        if (!str) return EMPTY
+        if (!str) return TypeStringManipulation.EMPTY
         def firstUpper = firstUpperCase(str)
         return convertAllUnderLinesToCamelCase(firstUpper)
     }
 
     def firstLowerCamelCase = { str ->
-        if (!str) return EMPTY
+        if (!str) return TypeStringManipulation.EMPTY
         def firstLower = firstLowerCase(str)
         return convertAllUnderLinesToCamelCase(firstLower)
     }
 
     def convertAllUnderLinesToCamelCase = { String str ->
-        if (!str) return EMPTY
+        if (!str) return TypeStringManipulation.EMPTY
         def i_ = str.indexOf('_')
         while (i_!=-1) {
             def stopLen = str.length()-1
@@ -285,5 +285,5 @@ class TypeStringManipulation {
         return Type.copyOf(type, [:])
     }
 
-    private final static String EMPTY=''
+    private static final String EMPTY=''
 }

@@ -23,8 +23,8 @@ bin/run_jsonCodeGen.sh -m ../src/test/resources/schemas/vera.json \
 
 ## How to create a docker image
 Requirements:
-- installed Java v8
-- installed Gradle
+- installed Java v17
+- installed Gradle v7.x
 ```bash
 # show all available Gradle tasks (only for information)
 gradle tasks --all

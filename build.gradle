@@ -1,24 +1,32 @@
+/*
 apply plugin: 'groovy'
 apply plugin: 'java'
-apply plugin: 'maven'
+// apply plugin: 'maven'
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'
+ */
+plugins {
+    id 'groovy'
+    id 'java'
+    id 'maven-publish'
+    id 'java-library'
+}
+sourceCompatibility = 17
+targetCompatibility = 17
 
-sourceCompatibility = 8
-
-def mainClass='de.lisaplus.atlas.DoCodeGen'
+def mc='de.lisaplus.atlas.DoCodeGen'
 
 project.group = 'de.lisaplus.tools'
-project.version = '0.13.2'
+project.version = '0.14.0'
 
 
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allJava
 }
 
 task javadocJar(type: Jar) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
@@ -31,13 +39,13 @@ artifacts {
 }
 
 dependencies {
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
-    compile group: 'com.beust', name: 'jcommander', version: '1.69'
-    compile 'org.apache.commons:commons-lang3:3.3'
-    compile 'org.codehaus.groovy:groovy-all:2.5.7'
-    compile group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '3.0.0'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.36'
+    runtimeOnly group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.11'
+    implementation group: 'com.beust', name: 'jcommander', version: '1.82'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation group: 'org.apache.groovy', name: 'groovy-all', version: '4.0.9'
+    implementation group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '5.1.1'
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
 }
 
 clean {
@@ -46,7 +54,8 @@ clean {
 
 task dependenciesToLibDir(type: Copy) {
     into "$buildDir/release/lib"
-    from configurations.runtime
+    from sourceSets.main.runtimeClasspath
+    // from configurations.runtime
 }
 
 task buildRelease (type: Copy) {
@@ -70,14 +79,12 @@ task buildRelease (type: Copy) {
 }
 
 task zipRelease (type: Zip) {
-    doLast {
-        println 'zipRelease'
-        from "${buildDir}/release"
-        include '*'
-        include '*/*'
-        archiveName "$releaseArchiveName"
-        destinationDir(file("${buildDir}"))
-    }
+    // creates build/jsonCodeGen-[version].zip
+    println 'zipRelease'
+    from layout.buildDirectory.dir("release")
+    include '*'
+    include '*/*'
+    destinationDirectory = layout.buildDirectory.dir("${buildDir}")
 }
 
 task myRun (type: JavaExec, dependsOn: classes){
@@ -88,7 +95,7 @@ task myRun (type: JavaExec, dependsOn: classes){
         jvmArgs '-Xdebug',
                 '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=9009'
     }
-    main = mainClass
+    mainClass = mc
     classpath = sourceSets.main.runtimeClasspath
 }
 
@@ -132,7 +139,7 @@ task buildDockerImage {
         def imageName=['bash','docker/bin/image_conf.sh'].execute().text.trim()
         println "create image: $imageName ..."
         def cmd = ['docker', 'build', '-t', imageName,'.']
-        def sout = new StringBuilder(), serr = new StringBuilder()
+        def sout = new java.lang.StringBuilder(), serr = new java.lang.StringBuilder()
         def proc = cmd.execute()
         proc.consumeProcessOutput(sout, serr)
         proc.waitForOrKill(20000)
